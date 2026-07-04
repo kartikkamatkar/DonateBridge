@@ -64,6 +64,35 @@ export default function NgoConsole() {
     return matchesSearch && matchesFilter;
   });
 
+  if (user?.role === 'ngo' && user?.verificationStatus === 'rejected') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center p-6">
+        <Card className="w-full max-w-2xl p-8 border border-slate-200 dark:border-slate-800">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-xs font-semibold uppercase tracking-wide">
+              <AlertTriangle className="w-4 h-4" />
+              Verification Rejected
+            </div>
+            <h1 className="text-2xl font-bold">Your NGO verification was not approved</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Your dashboard access is restricted until your verification documents are accepted.
+            </p>
+            <div className="p-4 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm">
+              <p className="font-semibold mb-1">Rejection reason</p>
+              <p className="text-slate-600 dark:text-slate-400">
+                {user?.rejectionReason || 'No rejection reason was provided by admin.'}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Button variant="primary" onClick={() => navigate('/settings')}>Resubmit Documents</Button>
+              <Button variant="secondary" onClick={() => navigate('/chat')}>Contact Support</Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
       {/* Dashboard Top bar */}

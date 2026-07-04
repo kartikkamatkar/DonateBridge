@@ -14,9 +14,9 @@ export default function AdminDashboard() {
 
   // NGO Registration validation requests
   const [pendingNgos, setPendingNgos] = useState([
-    { id: 'NGO-8821', name: 'Sanctuary Care Center', email: 'reg@sanctuary.org', regNo: '501C3-899120', docs: 'Tax_Exemption_Form.pdf', date: '2026-07-02' },
-    { id: 'NGO-8819', name: 'Youth Books Project', email: 'info@ybp.org', regNo: '501C3-441209', docs: 'NGO_Incorporation.pdf', date: '2026-07-01' },
-    { id: 'NGO-8804', name: 'Staple Foods for All', email: 'staples@sffa.org', regNo: '501C3-112003', docs: 'Staples_Bylaws.pdf', date: '2026-06-29' },
+    { id: 'NGO-8821', name: 'Sanctuary Care Center', email: 'reg@sanctuary.org', regNo: '501C3-899120', docs: 'Tax_Exemption_Form.pdf', date: '2026-07-02', status: 'pending' },
+    { id: 'NGO-8819', name: 'Youth Books Project', email: 'info@ybp.org', regNo: '501C3-441209', docs: 'NGO_Incorporation.pdf', date: '2026-07-01', status: 'pending' },
+    { id: 'NGO-8804', name: 'Staple Foods for All', email: 'staples@sffa.org', regNo: '501C3-112003', docs: 'Staples_Bylaws.pdf', date: '2026-06-29', status: 'pending' },
   ]);
 
   // Fraud risk logs
@@ -31,12 +31,29 @@ export default function AdminDashboard() {
   const [rejectionReason, setRejectionReason] = useState('');
 
   const handleApprove = (id) => {
+    const approvedNgo = pendingNgos.find((ngo) => ngo.id === id);
+    if (approvedNgo) {
+      const raw = localStorage.getItem('ngoVerificationMap');
+      const map = raw ? JSON.parse(raw) : {};
+      map[approvedNgo.email] = {
+        status: 'approved',
+        rejectionReason: '',
+      };
+      localStorage.setItem('ngoVerificationMap', JSON.stringify(map));
+    }
     setPendingNgos(prev => prev.filter(ngo => ngo.id !== id));
   };
 
   const handleRejectSubmit = (e) => {
     e.preventDefault();
     if (!rejectionReason) return;
+    const raw = localStorage.getItem('ngoVerificationMap');
+    const map = raw ? JSON.parse(raw) : {};
+    map[selectedNgo.email] = {
+      status: 'rejected',
+      rejectionReason,
+    };
+    localStorage.setItem('ngoVerificationMap', JSON.stringify(map));
     setPendingNgos(prev => prev.filter(ngo => ngo.id !== selectedNgo.id));
     setSelectedNgo(null);
     setRejectionReason('');

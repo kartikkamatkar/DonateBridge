@@ -12,7 +12,7 @@ export const Button = ({
   icon: Icon,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] hover:-translate-y-0.5';
+  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none';
   
   const variants = {
     primary: 'bg-primary hover:bg-primary-hover text-white focus:ring-primary',

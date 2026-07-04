@@ -15,6 +15,18 @@ export const api = axios.create({
   },
 });
 
+const TOKEN_TTL_MS = 60 * 60 * 1000;
+
+const getNgoVerificationSnapshot = (email) => {
+  const raw = localStorage.getItem('ngoVerificationMap');
+  const map = raw ? JSON.parse(raw) : {};
+  const row = map[email] || {};
+  return {
+    status: row.status || 'approved',
+    rejectionReason: row.rejectionReason || '',
+  };
+};
+
 export const GlobalStateProvider = ({ children }) => {
   // --- THEME CONTEXT STATE ---
   const [theme, setTheme] = useState(() => {
@@ -45,22 +57,50 @@ export const GlobalStateProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : null; // e.g., { name: 'Sarah Jenkins', email: 'sarah@donor.org', role: 'donor' }
   });
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  const [authMessage, setAuthMessage] = useState(() => localStorage.getItem('authMessage') || '');
 
-  const login = (role, email, name = '') => {
+  const clearAuthMessage = () => {
+    setAuthMessage('');
+    localStorage.removeItem('authMessage');
+  };
+
+  const setSessionExpired = () => {
+    const msg = 'Session expired. Please sign in again.';
+    setAuthMessage(msg);
+    localStorage.setItem('authMessage', msg);
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('tokenExpiresAt');
+  };
+
+  const login = (role, email, name = '', options = {}) => {
     const fallbackName = role === 'admin' ? 'Super Admin' : role === 'ngo' ? 'Hope Foundation' : 'Sarah Jenkins';
+    const ngoStatus = role === 'ngo'
+      ? (options.verificationStatus || getNgoVerificationSnapshot(email || `${role}@donatebridge.org`).status)
+      : null;
+    const ngoReason = role === 'ngo'
+      ? (options.rejectionReason || getNgoVerificationSnapshot(email || `${role}@donatebridge.org`).rejectionReason)
+      : '';
     const mockUser = {
       name: name || fallbackName,
       email: email || `${role}@donatebridge.org`,
       role: role, // 'donor', 'ngo', 'admin'
       avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${name || role}`,
       trustScore: role === 'ngo' ? 98 : null,
+      verificationStatus: ngoStatus,
+      rejectionReason: ngoReason,
     };
     const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ';
+    const expiresAt = Date.now() + TOKEN_TTL_MS;
     
+    clearAuthMessage();
     setUser(mockUser);
     setToken(mockToken);
     localStorage.setItem('user', JSON.stringify(mockUser));
     localStorage.setItem('token', mockToken);
+    localStorage.setItem('tokenExpiresAt', String(expiresAt));
   };
 
   const logout = () => {
@@ -68,7 +108,22 @@ export const GlobalStateProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('tokenExpiresAt');
   };
+
+  useEffect(() => {
+    const checkSessionExpiry = () => {
+      const expiresAtRaw = localStorage.getItem('tokenExpiresAt');
+      const expiresAt = expiresAtRaw ? Number(expiresAtRaw) : null;
+      if (token && expiresAt && Date.now() >= expiresAt) {
+        setSessionExpired();
+      }
+    };
+
+    checkSessionExpiry();
+    const timer = setInterval(checkSessionExpiry, 30000);
+    return () => clearInterval(timer);
+  }, [token]);
 
   // Axios Request & Response Interceptors
   useEffect(() => {
@@ -91,10 +146,15 @@ export const GlobalStateProvider = ({ children }) => {
           // Simulate JWT refreshing token
           console.log('[Axios Interceptor] Simulating 401 JWT Refresh Token...');
           const newMockToken = 'refreshed-jwt-token-xyz';
+          const newExpiresAt = Date.now() + TOKEN_TTL_MS;
           setToken(newMockToken);
           localStorage.setItem('token', newMockToken);
+          localStorage.setItem('tokenExpiresAt', String(newExpiresAt));
           originalRequest.headers['Authorization'] = `Bearer ${newMockToken}`;
           return api(originalRequest);
+        }
+        if (error.response?.status === 401) {
+          setSessionExpired();
         }
         return Promise.reject(error);
       }
@@ -167,7 +227,17 @@ export const GlobalStateProvider = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, logout }}>
+      <AuthContext.Provider
+        value={{
+          user,
+          token,
+          isAuthenticated: !!token,
+          login,
+          logout,
+          authMessage,
+          clearAuthMessage,
+        }}
+      >
         <SocketContext.Provider value={{ socket, unreadCount, notifications, markAllRead, addNotification, setNotifications }}>
           {children}
         </SocketContext.Provider>

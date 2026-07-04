@@ -1,25 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --color-primary: #2E7D32;
-  --color-primary-hover: #43A047;
+  --color-primary-hover: #276b2a;
   --color-success: #22C55E;
-  
-  --shadow-premium-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-premium-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08);
-  --shadow-premium-lg: 0 12px 25px -5px rgba(15, 23, 42, 0.12);
-  
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
 
-  --font-sans: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+  /* Flat, subtle shadows only — no glow/premium look */
+  --shadow-premium-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.06);
+  --shadow-premium-md: 0 1px 3px 0 rgba(15, 23, 42, 0.08);
+  --shadow-premium-lg: 0 2px 8px 0 rgba(15, 23, 42, 0.10);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   overflow-x: hidden;
 }
 
