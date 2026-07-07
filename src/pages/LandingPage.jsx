@@ -5,6 +5,7 @@ import { useMockDB } from '../hooks/useMockDB';
 import { Search, ShieldCheck, MapPin, Heart, ArrowRight, Star, Award, Leaf, Users, ChevronRight, Check } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const CATEGORIES = [
   { name: 'Books & Learning', count: 124, icon: Award, desc: 'Textbooks, lab kits, and children novels.' },
@@ -114,7 +115,7 @@ export default function LandingPage() {
                   <span className="w-2.5 h-2.5 bg-success rounded-full animate-pulse" />
                 </div>
 
-                <div className="space-y-4 z-10 my-auto">
+                <div className="space-y-4 my-auto z-10">
                   <div className="p-4 bg-white border border-border rounded-2xl shadow-premium-sm flex gap-3 items-center">
                     <div className="w-8 h-8 rounded-lg bg-emerald-50 text-primary flex items-center justify-center shrink-0">
                       <Check className="w-4 h-4" />
@@ -306,53 +307,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer / Newsletter */}
-      <footer className="bg-slate-900 text-slate-300 py-16 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-slate-800">
-            
-            <div className="md:col-span-5 space-y-4 text-left">
-              <span className="text-white font-display font-extrabold text-lg tracking-tight">DonateBridge</span>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-                SaaS coordinating logistics pipelines between vetted nonprofit organizations and individual or corporate donors. Zero monetary handling.
-              </p>
-            </div>
-
-            {/* Newsletter Container */}
-            <div className="md:col-span-7 space-y-4 text-left">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-white">Subscribe to Impact Reports</h4>
-              <p className="text-xs text-slate-400">Get monthly updates on CO2 metrics, lives reached, and urgent needs inventory logs.</p>
-              
-              <form onSubmit={handleSubscribe} className="flex gap-2 max-w-md">
-                <input
-                  type="email"
-                  placeholder="enter your email..."
-                  required
-                  value={emailSub}
-                  onChange={(e) => setEmailSub(e.target.value)}
-                  className="flex-1 px-4 py-2 text-xs rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shrink-0 cursor-pointer"
-                >
-                  {subscribed ? 'Subscribed!' : 'Subscribe'}
-                </button>
-              </form>
-            </div>
-
-          </div>
-
-          <div className="pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-            <p>© {new Date().getFullYear()} DonateBridge. All legal rights reserved.</p>
-            <div className="flex gap-4 font-medium">
-              <Link to="/discover" className="hover:text-white transition-colors">Marketplace</Link>
-              <Link to="/impact" className="hover:text-white transition-colors">Impact Analytics</Link>
-              <Link to="/auth" className="hover:text-white transition-colors">Sign In</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
