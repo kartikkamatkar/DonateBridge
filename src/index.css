@@ -1,47 +1,49 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* DonateBridge SaaS Light Theme Tokens */
+  /* Startup Palette */
   --color-primary: #2E7D32;
-  --color-primary-hover: #1B5E20;
+  --color-primary-hover: #1b5e20;
   --color-secondary: #43A047;
-  --color-secondary-hover: #2E7D32;
   --color-accent: #4CAF50;
-  --color-paper: #FFFFFF;
-  --color-secondary-bg: #F8FAFC;
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
   --color-ink: #111827;
-  --color-muted: #6B7280;
-  --color-stone: #E5E7EB;
-  --color-subtle: #F1F5F9;
-  --color-card: #FFFFFF;
-  --color-clay: #EF4444;
+  --color-ink-muted: #6B7280;
+  --color-border: #E5E7EB;
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
 
-  /* Aliasing default blue to green for safety with legacy classes */
-  --color-blue-50: #E8F5E9;
-  --color-blue-100: #C8E6C9;
-  --color-blue-200: #A5D6A7;
-  --color-blue-300: #81C784;
-  --color-blue-400: #66BB6A;
-  --color-blue-500: #4CAF50;
-  --color-blue-600: #2E7D32;
-  --color-blue-700: #1B5E20;
-  --color-blue-800: #1B5E20;
-  --color-blue-900: #0C3410;
+  /* Font Families */
+  --font-sans: 'Inter', 'Geist', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Poppins', 'Manrope', var(--font-sans);
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Consolas, monospace;
 
+  /* Spacing Scale (8pt grid) */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 24px;
+  --spacing-6: 32px;
+  --spacing-7: 48px;
+  --spacing-8: 64px;
+  --spacing-9: 96px;
+
+  /* Shadow scale */
   --shadow-premium-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-premium-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-premium-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-premium-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-premium-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-premium-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
 
+  /* Radius */
   --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
 }
 
 *, *::before, *::after {
@@ -50,186 +52,104 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #FFFFFF;
-  color: #111827;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-ink);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ============================================
-   KEYFRAME ANIMATIONS
-   ============================================ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-ink);
+}
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+/* Custom premium styles */
+.saas-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-5);
+  box-shadow: var(--shadow-premium-sm);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.saas-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-md);
+  border-color: rgba(46, 125, 50, 0.2);
+}
+
+/* Accessibility settings */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-primary) !important;
+  outline-offset: 2px;
+}
+
+/* Animations */
+.animate-fadeInUp {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
-
-/* ============================================
-   UTILITY ANIMATION CLASSES
-   ============================================ */
-
-.animate-shimmer {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-
-.animate-fadeInUp {
-  animation: fadeInUp 0.25s ease-out both;
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
 }
-
-.animate-fadeIn {
-  animation: fadeIn 0.2s ease-out both;
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
-
-/* Stagger delays for list items */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.10s; }
-.stagger-3 { animation-delay: 0.15s; }
-
-/* ============================================
-   DB DESIGN SYSTEM COMPONENTS (LIGHT ONLY)
-   ============================================ */
-
-/* Page wrapper */
-.db-page {
-  min-height: 100vh;
-  background-color: #F8FAFC;
-  color: #111827;
-  font-family: 'Inter', system-ui, sans-serif;
-}
-
-/* Sticky sub-header */
-.db-header {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  background-color: #FFFFFF;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-/* Card */
-.db-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 6px;
-  padding: 1.25rem 1.5rem;
-}
-
-/* Status badges */
-.db-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.db-badge-critical { background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; }
-.db-badge-high { background: #FFFBEB; color: #D97706; border: 1px solid #FCD34D; }
-.db-badge-medium { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
-.db-badge-low { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
-.db-badge-success { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
-.db-badge-pending { background: #F8FAFC; color: #6B7280; border: 1px solid #E5E7EB; }
-
-/* Tab bar */
-.db-tabs {
-  display: flex;
-  border-bottom: 1px solid #E5E7EB;
-  gap: 1.5rem;
-}
-
-.db-tab {
-  padding: 12px 4px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #6B7280;
-  border-bottom: 2px solid transparent;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  white-space: nowrap;
-  background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-}
-
-.db-tab:hover { color: #111827; }
-
-.db-tab.active {
-  color: #2563EB;
-  border-bottom-color: #2563EB;
-  font-weight: 600;
-}
-
-/* ============================================
-   CUSTOM SCROLLBARS
-   ============================================ */
-
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
-
-/* ============================================
-   RANGE INPUT STYLING
-   ============================================ */
-
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  border-radius: 9999px;
-  background: #E5E7EB;
-  outline: none;
-  cursor: pointer;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #2563EB;
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  transition: transform 0.15s ease;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-
-/* ============================================
-   SELECTION COLOR
-   ============================================ */
 
 ::selection {
-  background: #2563EB;
-  color: #FFFFFF;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+}
+
+/* Leaflet maps global customization */
+.leaflet-container {
+  font-family: var(--font-sans);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-premium-md);
+  border: 1px solid var(--color-border);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
+  border: 1px solid var(--color-border) !important;
+  padding: 0px !important;
+}
+.leaflet-popup-content {
+  margin: 12px !important;
+  line-height: 1.4 !important;
+}
+.leaflet-bar {
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-premium-sm) !important;
+  border-radius: var(--radius-sm) !important;
+}
+.leaflet-bar a {
+  background-color: var(--color-surface) !important;
+  color: var(--color-ink) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+.leaflet-bar a:hover {
+  background-color: var(--color-bg) !important;
 }

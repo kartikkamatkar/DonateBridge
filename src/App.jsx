@@ -29,9 +29,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // If authenticated but role not allowed, redirect to correct landing/dashboard
-    if (user.role === 'admin') return <Navigate to="/admin-dashboard" replace />;
-    if (user.role === 'ngo') return <Navigate to="/ngo-dashboard" replace />;
-    return <Navigate to="/donor-dashboard" replace />;
+    if (user.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user.role === 'ngo') return <Navigate to="/ngo" replace />;
+    return <Navigate to="/donor" replace />;
   }
 
   return children;
@@ -47,8 +47,10 @@ export default function App() {
         {/* Screen 2: Authentication Core Suite */}
         <Route path="/auth" element={<AuthSuite />} />
 
-        {/* Screen 6: Dynamic Faceted Search & NGO Directory */}
-        <Route path="/search" element={<SearchDirectory />} />
+        {/* Screen 6: Dynamic Faceted Search & NGO Directory (Discover Dashboard) */}
+        <Route path="/discover" element={<SearchDirectory />} />
+        {/* Alias search path to discover */}
+        <Route path="/search" element={<Navigate to="/discover" replace />} />
 
         {/* Screen 7: NGO Portfolio & Public Verification Profile */}
         <Route path="/ngo/:id" element={<NgoProfile />} />
@@ -63,33 +65,39 @@ export default function App() {
 
         {/* Screen 3: The Donor Dashboard Workspace (Donor Only) */}
         <Route
-          path="/donor-dashboard"
+          path="/donor"
           element={
             <ProtectedRoute allowedRoles={['donor']}>
               <DonorDashboard />
             </ProtectedRoute>
           }
         />
+        {/* Backwards compatibility */}
+        <Route path="/donor-dashboard" element={<Navigate to="/donor" replace />} />
 
         {/* Screen 4: Inbound Logistics NGO Control Console (NGO Only) */}
         <Route
-          path="/ngo-dashboard"
+          path="/ngo"
           element={
             <ProtectedRoute allowedRoles={['ngo']}>
               <NgoConsole />
             </ProtectedRoute>
           }
         />
+        {/* Backwards compatibility */}
+        <Route path="/ngo-dashboard" element={<Navigate to="/ngo" replace />} />
 
         {/* Screen 5: Platform Integrity Control Center (Admin Only) */}
         <Route
-          path="/admin-dashboard"
+          path="/admin"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
             </ProtectedRoute>
           }
         />
+        {/* Backwards compatibility */}
+        <Route path="/admin-dashboard" element={<Navigate to="/admin" replace />} />
 
         {/* Screen 8: Donation Request Logistics Wizard (Donor Only) */}
         <Route

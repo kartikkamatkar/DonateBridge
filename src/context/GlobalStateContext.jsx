@@ -224,6 +224,7 @@ export const GlobalStateProvider = ({ children }) => {
       <AuthContext.Provider
         value={{
           user,
+          setUser,
           token,
           isAuthenticated: !!token,
           login,

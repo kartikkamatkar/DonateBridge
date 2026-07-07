@@ -1,18 +1,9 @@
 import React, { useState } from 'react';
-import { useTheme } from '../context/GlobalStateContext';
-import { useNavigate } from 'react-router-dom';
-import {
-  Settings, Moon, Sun, ShieldCheck, Bell, Eye,
-  Lock, ArrowLeft, ToggleLeft, ToggleRight, Check, AlertTriangle
-} from 'lucide-react';
+import { Settings, Sun, Eye, Bell, Lock, ToggleLeft, ToggleRight, Check } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
 import Navbar from '../components/Navbar';
 
 export default function SettingsTerminal() {
-  const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
-
   const [textSize, setTextSize] = useState('normal'); // 'small' | 'normal' | 'large'
   const [highContrast, setHighContrast] = useState(false);
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -29,58 +20,56 @@ export default function SettingsTerminal() {
   };
 
   return (
-    <div className="db-page min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
-      {/* Shared Main Navbar */}
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
 
-      {/* Main Settings Panel */}
-      <main className="flex-1 max-w-2xl mx-auto w-full p-6 space-y-6 overflow-y-auto">
+      <main className="flex-1 max-w-2xl mx-auto w-full p-6 sm:p-8 space-y-6">
         
-        <div className="animate-fadeInUp">
-          <h1 className="font-sans font-bold text-xl flex items-center gap-2 text-slate-900">
-            <Settings className="w-5 h-5 text-blue-600" /> Application Settings
+        <div>
+          <h1 className="text-xl font-display font-bold tracking-tight text-slate-900 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-primary" /> Application Preferences
           </h1>
-          <p className="text-xs text-slate-500">Configure theme, accessibility scaling, SMS routing, and MFA preferences.</p>
+          <p className="text-xs text-slate-500 mt-1 font-medium">Configure system settings, alerts, accessibility parameters, and security credentials.</p>
         </div>
 
-        <form onSubmit={handleSaveSettings} className="space-y-6 animate-fadeInUp stagger-1">
+        <form onSubmit={handleSaveSettings} className="space-y-6">
           
           {/* Theme Info card */}
-          <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm">
-            <h3 className="font-sans font-bold text-sm mb-3 flex items-center gap-2 text-slate-900">
-              <Sun className="w-4 h-4 text-blue-600" /> Interface Color Mode
+          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
+            <h3 className="text-xs font-display font-bold mb-3 flex items-center gap-2 text-slate-400 uppercase tracking-wider">
+              <Sun className="w-4 h-4 text-primary" /> Visual Color System
             </h3>
             <div className="flex justify-between items-center text-xs">
               <div>
-                <p className="font-bold text-slate-900">Light Theme Only</p>
-                <p className="text-[10px] text-slate-500">Dark mode support has been decommissioned for absolute ledger visual consistency.</p>
+                <p className="font-semibold text-slate-900">Light Theme Only</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">Custom green theme variables are loaded globally to ensure visual layout structure consistency.</p>
               </div>
-              <span className="text-[10px] font-mono font-bold px-2 py-1 rounded bg-blue-50 text-blue-600 border border-blue-200">
+              <span className="text-[9px] font-mono font-bold px-2 py-1 rounded bg-[#F1F8F5] border border-emerald-100 text-primary uppercase">
                 ACTIVE
               </span>
             </div>
           </div>
 
           {/* Accessibility card */}
-          <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm space-y-4">
-            <h3 className="font-sans font-bold text-sm flex items-center gap-2 text-slate-900 text-amber-600">
-              <Eye className="w-4 h-4 text-amber-600" /> Accessibility Layout Overrides
+          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
+            <h3 className="text-xs font-display font-bold flex items-center gap-2 text-slate-400 uppercase tracking-wider">
+              <Eye className="w-4 h-4 text-primary" /> Accessibility Configuration
             </h3>
 
             <div className="space-y-3 text-xs">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-bold text-slate-800">Scale Text Font Size</p>
-                  <p className="text-[10px] text-slate-500">Multiply textual line-height dimensions.</p>
+                  <p className="font-semibold text-slate-900">Scale Text Font Size</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Adapt text sizes for visual comfort.</p>
                 </div>
-                <div className="flex gap-1 bg-slate-50 p-1 rounded-md border border-slate-200 shadow-premium-xs">
+                <div className="flex gap-1 bg-slate-50 p-1 rounded-xl border border-border">
                   {['small', 'normal', 'large'].map(sz => (
                     <button
                       key={sz}
                       type="button"
                       onClick={() => setTextSize(sz)}
-                      className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-md capitalize transition-all cursor-pointer ${
-                        textSize === sz ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-100'
+                      className={`px-3 py-1 text-[10px] font-semibold rounded-lg capitalize transition-all cursor-pointer ${
+                        textSize === sz ? 'bg-primary text-white font-bold' : 'text-slate-500 hover:bg-slate-100'
                       }`}
                     >
                       {sz}
@@ -89,10 +78,10 @@ export default function SettingsTerminal() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-3 border-t border-slate-100">
+              <div className="flex justify-between items-center pt-3 border-t border-border">
                 <div>
-                  <p className="font-bold text-slate-800">High Contrast Mode</p>
-                  <p className="text-[10px] text-slate-500">Increase outline contrast compliance ratio to WCAG AAA anchor.</p>
+                  <p className="font-semibold text-slate-900">High Contrast Mode</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Enforces higher readability parameters.</p>
                 </div>
                 <button
                   type="button"
@@ -101,26 +90,26 @@ export default function SettingsTerminal() {
                   aria-label="Toggle High Contrast Mode"
                 >
                   {highContrast ? (
-                    <ToggleRight className="w-9 h-9 text-blue-600" />
+                    <ToggleRight className="w-9 h-9 text-primary" />
                   ) : (
-                    <ToggleLeft className="w-9 h-9 text-slate-400" />
+                    <ToggleLeft className="w-9 h-9 text-slate-300" />
                   )}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Alert rule toggles */}
-          <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm space-y-4">
-            <h3 className="font-sans font-bold text-sm flex items-center gap-2 text-slate-900">
-              <Bell className="w-4 h-4 text-blue-600" /> Notification Delivery Parameters
+          {/* Alert rules */}
+          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
+            <h3 className="text-xs font-display font-bold flex items-center gap-2 text-slate-400 uppercase tracking-wider">
+              <Bell className="w-4 h-4 text-primary" /> Notifications & Alerts
             </h3>
 
             <div className="space-y-3 text-xs">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-bold text-slate-800">Transit Milestone Alert Emails</p>
-                  <p className="text-[10px] text-slate-500">Deliver notifications upon dispatch and signature ledger logs.</p>
+                  <p className="font-semibold text-slate-900">Email Dispatch Notifications</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Trigger alerts upon item verification checkpoint updates.</p>
                 </div>
                 <button
                   type="button"
@@ -129,17 +118,17 @@ export default function SettingsTerminal() {
                   aria-label="Toggle Email Alerts"
                 >
                   {emailAlerts ? (
-                    <ToggleRight className="w-9 h-9 text-blue-600" />
+                    <ToggleRight className="w-9 h-9 text-primary" />
                   ) : (
-                    <ToggleLeft className="w-9 h-9 text-slate-400" />
+                    <ToggleLeft className="w-9 h-9 text-slate-300" />
                   )}
                 </button>
               </div>
 
-              <div className="flex justify-between items-center pt-3 border-t border-slate-100">
+              <div className="flex justify-between items-center pt-3 border-t border-border">
                 <div>
-                  <p className="font-bold text-slate-800">Transit Delay Alerts</p>
-                  <p className="text-[10px] text-slate-500">SMS coordinates triggers regarding traffic block delays.</p>
+                  <p className="font-semibold text-slate-900">SMS Milestone Alerts</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">SMS updates for delay warnings and successful drop-offs.</p>
                 </div>
                 <button
                   type="button"
@@ -148,25 +137,25 @@ export default function SettingsTerminal() {
                   aria-label="Toggle Transit Alerts"
                 >
                   {transitAlerts ? (
-                    <ToggleRight className="w-9 h-9 text-blue-600" />
+                    <ToggleRight className="w-9 h-9 text-primary" />
                   ) : (
-                    <ToggleLeft className="w-9 h-9 text-slate-400" />
+                    <ToggleLeft className="w-9 h-9 text-slate-300" />
                   )}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Security details configuration */}
-          <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm space-y-4">
-            <h3 className="font-sans font-bold text-sm flex items-center gap-2 text-slate-900">
-              <Lock className="w-4 h-4 text-blue-600" /> Identity Credentials Security
+          {/* Security controls */}
+          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
+            <h3 className="text-xs font-display font-bold flex items-center gap-2 text-slate-400 uppercase tracking-wider">
+              <Lock className="w-4 h-4 text-primary" /> Security & Session Privacy
             </h3>
 
             <div className="flex justify-between items-center text-xs">
               <div>
-                <p className="font-bold text-slate-800">Require 6-digit MFA OTP Code</p>
-                <p className="text-[10px] text-slate-500">Verify email OTP tokens for every dashboard access session.</p>
+                <p className="font-semibold text-slate-900">Enforce OTP Verification Code</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">Always request email OTP verification tokens during authentication.</p>
               </div>
               <button
                 type="button"
@@ -175,17 +164,17 @@ export default function SettingsTerminal() {
                 aria-label="Toggle MFA Requirement"
               >
                 {mfaEnabled ? (
-                  <ToggleRight className="w-9 h-9 text-blue-600" />
+                  <ToggleRight className="w-9 h-9 text-primary" />
                 ) : (
-                  <ToggleLeft className="w-9 h-9 text-slate-400" />
+                  <ToggleLeft className="w-9 h-9 text-slate-300" />
                 )}
               </button>
             </div>
           </div>
 
           {/* Submit */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-            <Button type="submit" variant="primary" icon={isSaved ? Check : undefined}>
+          <div className="flex justify-end gap-2 pt-4 border-t border-border">
+            <Button type="submit" variant="primary" className="text-xs font-bold" icon={isSaved ? Check : undefined}>
               {isSaved ? 'Settings Saved' : 'Confirm Prefs'}
             </Button>
           </div>

@@ -32,7 +32,6 @@ export default function RequestWizard() {
     'School Supplies', 'Books', 'Toys', 'Food', 'Electronics'
   ];
 
-  // Drag and drop mock state
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleNextStep = (e) => {
@@ -60,50 +59,47 @@ export default function RequestWizard() {
   };
 
   return (
-    <div className="db-page min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
-      {/* Shared Main Navbar */}
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
 
-      {/* Main Workspace Frame */}
       <main className="flex-1 max-w-xl mx-auto w-full p-6 flex flex-col justify-center">
         
-        {/* Step Indicator Header (Hide on Success) */}
+        {/* Step Indicator */}
         {step < 3 && (
-          <div className="mb-8 flex justify-between items-center text-xs animate-fadeInUp">
+          <div className="mb-8 flex justify-between items-center text-xs">
             <div className="flex items-center gap-2">
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>1</span>
-              <span className={step === 1 ? 'font-bold text-slate-900' : 'text-slate-500'}>Category & Specs</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] ${step >= 1 ? 'bg-primary text-white' : 'bg-slate-200 text-slate-500'}`}>1</span>
+              <span className={step === 1 ? 'font-semibold text-slate-900' : 'text-slate-500'}>Category & Specs</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400" />
+            <ChevronRight className="w-4 h-4 text-slate-300" />
             <div className="flex items-center gap-2">
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2</span>
-              <span className={step === 2 ? 'font-bold text-slate-900' : 'text-slate-500'}>Document Verification</span>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] ${step >= 2 ? 'bg-primary text-white' : 'bg-slate-200 text-slate-500'}`}>2</span>
+              <span className={step === 2 ? 'font-semibold text-slate-900' : 'text-slate-500'}>Verification Logs</span>
             </div>
           </div>
         )}
 
-        {/* Wizard content cards */}
+        {/* Form Step Cards */}
         {step === 1 && (
-          <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6 animate-fadeInUp">
-            <h2 className="font-sans font-bold text-lg mb-1 text-slate-900">Select Parcel Category & Specifications</h2>
-            <p className="text-xs text-slate-500 mb-6">Describe the materials you are dispatching to matched NGOs.</p>
+          <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 space-y-6">
+            <div>
+              <h2 className="text-lg font-display font-bold text-ink">Parcel Specifications</h2>
+              <p className="text-xs text-slate-500">Provide shipment metrics for AI-assisted NGO routing matches.</p>
+            </div>
 
             <form onSubmit={handleNextStep} className="space-y-5">
-              {/* Category list picks */}
               <div className="space-y-2">
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  Item Category
-                </label>
+                <label className="text-xs font-semibold text-slate-700 block">Item Category</label>
                 <div className="grid grid-cols-3 gap-2">
                   {categories.map((c) => (
                     <button
                       key={c}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, category: c }))}
-                      className={`p-2.5 text-xs rounded-md border text-center transition-all cursor-pointer font-medium ${
+                      className={`p-2.5 text-xs rounded-xl border text-center transition-all cursor-pointer font-semibold ${
                         formData.category === c
-                          ? 'border-blue-600 bg-blue-50 text-blue-600 font-semibold'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-blue-600 hover:text-blue-600'
+                          ? 'border-primary bg-[#F1F8F5] text-primary'
+                          : 'border-border bg-white text-slate-600 hover:border-primary hover:text-primary'
                       }`}
                     >
                       {c}
@@ -115,7 +111,7 @@ export default function RequestWizard() {
               <InputField
                 label="Detailed Description"
                 id="description"
-                placeholder="e.g. 25 organic cotton sweaters, size medium, packed in waterproof box"
+                placeholder="e.g. 25 clean wool blankets in waterproof packaging"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 required
@@ -131,9 +127,9 @@ export default function RequestWizard() {
                 required
               />
 
-              <div className="pt-4 border-t border-slate-100 flex justify-end">
+              <div className="pt-4 border-t border-border flex justify-end">
                 <Button type="submit" variant="primary" icon={ArrowRight}>
-                  Next: Verify Materials
+                  Next step
                 </Button>
               </div>
             </form>
@@ -141,12 +137,13 @@ export default function RequestWizard() {
         )}
 
         {step === 2 && (
-          <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6 animate-fadeInUp">
-            <h2 className="font-sans font-bold text-lg mb-1 text-slate-900">Verification Document Upload</h2>
-            <p className="text-xs text-slate-500 mb-6">Optional: Upload material purchase logs or certificates to secure higher verification points.</p>
+          <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 space-y-6">
+            <div>
+              <h2 className="text-lg font-display font-bold text-ink">Verification Documentation</h2>
+              <p className="text-xs text-slate-500">Optional: Add receipts, photos, or certifications to secure swift approvals.</p>
+            </div>
 
             <form onSubmit={handleNextStep} className="space-y-5">
-              {/* Drag and Drop File box */}
               <div
                 onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                 onDragLeave={() => setIsDragOver(false)}
@@ -158,13 +155,13 @@ export default function RequestWizard() {
                     setFormData(prev => ({ ...prev, trustDocUploaded: true, fileName: file.name }));
                   }
                 }}
-                className={`border border-dashed rounded-md p-8 text-center transition-all ${
-                  isDragOver ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200'
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                  isDragOver ? 'border-primary bg-slate-50' : 'border-border bg-slate-50'
                 }`}
               >
-                <Upload className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <p className="text-xs font-bold mb-1 text-slate-800">Drag and drop receipts or documentation here</p>
-                <p className="text-[10px] text-slate-500 mb-3">Accepts PDF, PNG, JPG files up to 5MB</p>
+                <Upload className="w-8 h-8 text-primary mx-auto mb-2" />
+                <p className="text-xs font-bold mb-1 text-slate-800">Drag & Drop certificate files here</p>
+                <p className="text-[10px] text-slate-400 mb-3">PDF, PNG or JPG files up to 5MB</p>
                 
                 <input
                   type="file"
@@ -182,19 +179,19 @@ export default function RequestWizard() {
                 </Button>
 
                 {formData.trustDocUploaded && (
-                  <div className="mt-4 p-2 bg-blue-50 border border-blue-200 rounded-md text-xs font-mono text-blue-600 inline-flex items-center gap-2">
+                  <div className="mt-4 p-2 bg-[#F1F8F5] border border-emerald-100 rounded-lg text-xs font-mono text-primary inline-flex items-center gap-2">
                     <FileText className="w-3.5 h-3.5" />
                     <span>{formData.fileName || 'document.pdf'}</span>
                   </div>
                 )}
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex justify-between">
+              <div className="pt-4 border-t border-border flex justify-between">
                 <Button type="button" variant="secondary" onClick={() => setStep(1)}>
                   Back
                 </Button>
                 <Button type="submit" variant="primary" icon={CheckCircle}>
-                  Sign & Confirm Dispatch
+                  Broadcast Shipment
                 </Button>
               </div>
             </form>
@@ -202,39 +199,38 @@ export default function RequestWizard() {
         )}
 
         {step === 3 && (
-          <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6 text-center space-y-6 animate-successPop">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-600 flex items-center justify-center mx-auto">
-              <CheckCircle className="w-6 h-6 text-emerald-600" />
+          <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 text-center space-y-6">
+            <div className="w-12 h-12 rounded-full bg-[#F1F8F5] border border-emerald-200 flex items-center justify-center mx-auto text-primary">
+              <CheckCircle className="w-6 h-6" />
             </div>
 
-            <div className="space-y-1.5">
-              <h2 className="font-sans font-bold text-lg text-slate-900">Donation Transaction Lodged</h2>
-              <p className="text-xs text-slate-500">Your dispatch request has been signed and matching algorithms are calculated.</p>
+            <div>
+              <h2 className="text-lg font-display font-bold text-ink">Transaction Lodged</h2>
+              <p className="text-xs text-slate-500 mt-1">AI-assisted logistics tags are successfully generated.</p>
             </div>
 
-            {/* Receipt Summary receipt block */}
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-md text-left text-xs font-mono space-y-2">
+            <div className="p-4 bg-slate-50 border border-border rounded-xl text-left text-xs font-mono space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-500">RECEIPT ID:</span>
-                <span className="font-bold text-blue-600">DB-{Math.floor(Math.random() * 9000 + 1000)}</span>
+                <span className="text-slate-400">TRANSACTION ID:</span>
+                <span className="font-bold text-primary">DB-{Math.floor(Math.random() * 9000 + 1000)}</span>
               </div>
-              <div className="flex justify-between border-t border-slate-200 pt-2">
-                <span className="text-slate-500">CATEGORY:</span>
-                <span className="text-slate-950 font-bold">{formData.category}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">WEIGHT:</span>
-                <span className="text-slate-950 font-bold">{formData.weight} kg</span>
+              <div className="flex justify-between border-t border-border pt-2">
+                <span className="text-slate-400">CATEGORY:</span>
+                <span className="text-slate-900 font-bold">{formData.category}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">DOCUMENTATION:</span>
-                <span className="text-emerald-600 font-bold">{formData.trustDocUploaded ? 'VERIFIED SIGNATURE' : 'NOT UPLOADED'}</span>
+                <span className="text-slate-400">WEIGHT:</span>
+                <span className="text-slate-900 font-bold">{formData.weight} kg</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">TRUST RATING:</span>
+                <span className="text-emerald-700 font-bold">{formData.trustDocUploaded ? 'HIGH TRUST VERIFICATION' : 'STANDARD'}</span>
               </div>
             </div>
 
             <div className="pt-2 flex flex-col gap-2">
-              <Button variant="primary" className="w-full" onClick={() => navigate('/smart-match')}>
-                Find Optimal Routing
+              <Button variant="primary" className="w-full" onClick={() => navigate('/discover')}>
+                Go to Marketplace
               </Button>
               <Button variant="secondary" className="w-full" onClick={() => navigate('/donor-dashboard')}>
                 Go to Dashboard
