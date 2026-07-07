@@ -3,8 +3,11 @@
 
 @theme {
   /* DonateBridge SaaS Light Theme Tokens */
-  --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
+  --color-primary: #2E7D32;
+  --color-primary-hover: #1B5E20;
+  --color-secondary: #43A047;
+  --color-secondary-hover: #2E7D32;
+  --color-accent: #4CAF50;
   --color-paper: #FFFFFF;
   --color-secondary-bg: #F8FAFC;
   --color-ink: #111827;
@@ -12,10 +15,22 @@
   --color-stone: #E5E7EB;
   --color-subtle: #F1F5F9;
   --color-card: #FFFFFF;
-  --color-clay: #DC2626;
-  --color-success: #16A34A;
+  --color-clay: #EF4444;
+  --color-success: #22C55E;
   --color-warning: #F59E0B;
-  --color-error: #DC2626;
+  --color-error: #EF4444;
+
+  /* Aliasing default blue to green for safety with legacy classes */
+  --color-blue-50: #E8F5E9;
+  --color-blue-100: #C8E6C9;
+  --color-blue-200: #A5D6A7;
+  --color-blue-300: #81C784;
+  --color-blue-400: #66BB6A;
+  --color-blue-500: #4CAF50;
+  --color-blue-600: #2E7D32;
+  --color-blue-700: #1B5E20;
+  --color-blue-800: #1B5E20;
+  --color-blue-900: #0C3410;
 
   --shadow-premium-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-premium-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);

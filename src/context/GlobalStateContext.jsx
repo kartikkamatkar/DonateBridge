@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import { useToast } from '../components/ui/Toast';
 
 // Create isolated contexts
 const ThemeContext = createContext();
@@ -28,6 +29,7 @@ const getNgoVerificationSnapshot = (email) => {
 };
 
 export const GlobalStateProvider = ({ children }) => {
+  const { toast } = useToast();
   // --- THEME CONTEXT STATE ---
   const theme = 'light';
   const toggleTheme = () => {};
@@ -61,6 +63,7 @@ export const GlobalStateProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('tokenExpiresAt');
+    toast.error(msg);
   };
 
   const login = (role, email, name = '', options = {}) => {
@@ -89,6 +92,7 @@ export const GlobalStateProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(mockUser));
     localStorage.setItem('token', mockToken);
     localStorage.setItem('tokenExpiresAt', String(expiresAt));
+    toast.success(`Logged in as ${mockUser.name}`);
   };
 
   const logout = () => {
@@ -97,6 +101,7 @@ export const GlobalStateProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('tokenExpiresAt');
+    toast.info('Signed out successfully.');
   };
 
   useEffect(() => {
@@ -194,6 +199,7 @@ export const GlobalStateProvider = ({ children }) => {
           ...prev
         ]);
         setUnreadCount(prev => prev + 1);
+        toast.info(newMsg);
       }
     }, 45000); // Trigger occasionally for preview
 
@@ -201,7 +207,7 @@ export const GlobalStateProvider = ({ children }) => {
       socketInstance.disconnect();
       clearInterval(interval);
     };
-  }, []);
+  }, [toast]);
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));

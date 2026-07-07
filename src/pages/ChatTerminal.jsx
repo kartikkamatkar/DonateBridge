@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ui/Toast';
 import {
   Send, ShieldCheck, Phone, Video, Info, ArrowLeft,
   Search, MessageSquare, Check, Sparkles, AlertCircle
@@ -10,6 +11,7 @@ import Navbar from '../components/Navbar';
 
 export default function ChatTerminal() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [activeChannel, setActiveChannel] = useState(1);
   const [typedMessage, setTypedMessage] = useState('');
@@ -113,8 +115,8 @@ export default function ChatTerminal() {
               <p className="text-[10px] text-slate-500">Active match channel &bull; Secure dispatch logs</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="secondary" size="sm" onClick={() => alert('Initiating voice call...')} icon={Phone} />
-              <Button variant="secondary" size="sm" onClick={() => alert('Initiating video call...')} icon={Video} />
+              <Button variant="secondary" size="sm" onClick={() => toast.info('Initiating voice call...')} icon={Phone} />
+              <Button variant="secondary" size="sm" onClick={() => toast.info('Initiating video call...')} icon={Video} />
             </div>
           </div>
 

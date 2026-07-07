@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/GlobalStateContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ui/Toast';
 import {
   User, ShieldCheck, Download, Award, Heart, Leaf, Star,
   Lock, Settings, ArrowLeft, Mail, Phone, MapPin, Check
@@ -12,6 +13,7 @@ import Navbar from '../components/Navbar';
 
 export default function UserProfile() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('account'); // 'account' | 'receipts' | 'achievements'
@@ -30,13 +32,14 @@ export default function UserProfile() {
   const handleSaveProfile = (e) => {
     e.preventDefault();
     setIsSaved(true);
+    toast.success('Profile details saved successfully!');
     setTimeout(() => {
       setIsSaved(false);
     }, 2000);
   };
 
   const handleDownload = (id) => {
-    alert(`Downloading Tax-Exempt Physical Donation Receipt: ${id}.pdf`);
+    toast.info(`Downloading Tax-Exempt Physical Donation Receipt: ${id}.pdf`);
   };
 
   return (

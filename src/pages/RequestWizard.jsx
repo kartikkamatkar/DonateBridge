@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ui/Toast';
 import {
   Sparkles, CheckCircle, Package, ArrowRight, ArrowLeft,
   FileText, Upload, ShieldCheck, Heart, Info, ChevronRight
@@ -12,6 +13,7 @@ import Navbar from '../components/Navbar';
 export default function RequestWizard() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const preselectedCategory = searchParams.get('category') || '';
   const preselectedNgoId = searchParams.get('ngo') || '';
@@ -37,7 +39,7 @@ export default function RequestWizard() {
     e.preventDefault();
     if (step === 1) {
       if (!formData.category) {
-        alert('Please select an item category.');
+        toast.error('Please select an item category.');
         return;
       }
       setStep(2);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/GlobalStateContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ui/Toast';
 import {
   ShieldCheck, AlertTriangle, CheckCircle, XCircle, Info,
   TrendingUp, Award, User, RefreshCw, Star, Trash2
@@ -12,6 +13,7 @@ import Navbar from '../components/Navbar';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('ngos'); // 'ngos' | 'fraud' | 'metrics'
@@ -35,7 +37,7 @@ export default function AdminDashboard() {
   const handleApproveNgo = (id, name) => {
     // Simulated approval
     setPendingNgos(prev => prev.filter(ngo => ngo.id !== id));
-    alert(`Approved NGO Organization: ${name}`);
+    toast.success(`Approved NGO Organization: ${name}`);
   };
 
   const handleRejectNgoSubmit = (e) => {
@@ -43,7 +45,7 @@ export default function AdminDashboard() {
     if (!rejectionReason.trim()) return;
 
     setPendingNgos(prev => prev.filter(ngo => ngo.id !== rejectingNgoId));
-    alert(`Rejected NGO organization ID ${rejectingNgoId} for reason: ${rejectionReason}`);
+    toast.warning(`Rejected NGO organization ID ${rejectingNgoId} for reason: ${rejectionReason}`);
     setRejectingNgoId(null);
     setRejectionReason('');
   };
