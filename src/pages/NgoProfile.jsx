@@ -1,270 +1,254 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ShieldCheck, FileText, CheckCircle, MapPin, AlertCircle, Star,
-  MessageSquare, Heart, ArrowLeft, Calendar, FileSpreadsheet, Send
+  MapPin, ShieldCheck, Star, Heart, Clock, ArrowLeft,
+  MessageSquare, Sparkles, Navigation, Send, HelpCircle
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { InputField } from '../components/ui/InputField';
+import Navbar from '../components/Navbar';
 
 export default function NgoProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('essentials'); // 'essentials' | 'verification' | 'reviews'
 
-  // Review state
+  const [activeTab, setActiveTab] = useState('demands'); // 'demands' | 'timeline' | 'reviews'
+
+  // Review submission state
   const [reviews, setReviews] = useState([
-    { id: 1, author: 'Sarah Jenkins', rating: 5, date: '2026-06-28', comment: 'Superb coordination. The courier picked up my blankets in 40 mins and they logged receipt immediately.' },
-    { id: 2, author: 'Marcus Cole', rating: 4, date: '2026-06-15', comment: 'Easy to match items. Handed over school textbooks and they sent the validation ledger PDF quickly.' },
-    { id: 3, author: 'TechCorp Social Team', rating: 5, date: '2026-05-19', comment: 'We donated 15 desktop PCs. Excellent transparency, clear route tracking, and audited receipt logs.' },
+    { author: 'Sarah Jenkins', rating: 5, comment: 'Quick collection dispatched. Excellent coordinates matching for winter blankets.', date: '2026-06-28' },
+    { author: 'Microsoft logistics', rating: 5, comment: 'Laptops audit ledger processed immediately. Fully transparent.', date: '2026-06-25' },
+    { author: 'Green Foods Inc', rating: 4, comment: 'Daily staples reached target community within 2 hours of pickup.', date: '2026-06-12' },
   ]);
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(5);
 
-  const handlePostReview = (e) => {
+  const handleAddReview = (e) => {
     e.preventDefault();
-    if (!newComment) return;
+    if (!newComment.trim()) return;
+
     setReviews(prev => [
-      {
-        id: Date.now(),
-        author: 'Verified Donor',
-        rating: newRating,
-        date: new Date().toISOString().split('T')[0],
-        comment: newComment
-      },
+      { author: 'You (Anonymous)', rating: newRating, comment: newComment, date: new Date().toISOString().split('T')[0] },
       ...prev
     ]);
     setNewComment('');
+    setNewRating(5);
   };
 
-  const ngoDetails = {
-    name: id === '2' ? 'Red Cross Depot' : id === '3' ? 'Green Life NGO' : 'Hope Foundation',
-    regNo: '501C3-899120',
-    trustScore: id === '2' ? 95 : id === '3' ? 91 : 98,
-    joined: 'Jan 2018',
-    description: 'Providing food programs, basic apparel, emergency supplies, and educational books to community centers and underprivileged segments.',
-    essentials: [
-      { item: 'Winter Blankets', category: 'Blankets', status: 'Critical', needed: '45 units', current: '5 units' },
-      { item: 'School Textbooks (Grades 1-5)', category: 'Books', status: 'High', needed: '120 books', current: '60 books' },
-      { item: 'Canned Staples & Pulses', category: 'Food', status: 'Medium', needed: '80 kg', current: '30 kg' },
-      { item: 'First-Aid Dressing Kits', category: 'Medical Equipment', status: 'Critical', needed: '50 packs', current: '2 packs' },
-    ],
-  };
+  // Timeline events representing audit trails
+  const timelineEvents = [
+    { title: 'NGO Verification Signed', desc: 'Government registration document approved by admin superuser.', date: 'June 01, 2026', time: '10:00 AM' },
+    { title: 'Tax-Exempt Code Issued', desc: 'Verified 501c3 exemption status synced to dispatch logs.', date: 'June 02, 2026', time: '11:15 AM' },
+    { title: 'First Logistics Route Fulfilled', desc: 'Shipped 40 items under coordinates supervision.', date: 'June 10, 2026', time: '04:30 PM' },
+    { title: 'Trust Score Rating Upgraded', desc: 'Trust index moved to 98% based on zero delay reports.', date: 'June 25, 2026', time: '09:00 AM' },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Top Banner Navigation */}
-      <nav className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0 z-10">
-        <button onClick={() => navigate(-1)} className="hover:text-primary transition-colors flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <div className="flex items-center gap-2">
-          <Button variant="primary" size="sm" onClick={() => navigate(`/request-wizard?ngo=${id || 1}`)}>
-            Donate to this NGO
-          </Button>
-        </div>
-      </nav>
+    <div className="db-page min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+      {/* Shared Main Navbar */}
+      <Navbar />
 
-      {/* Main Profile Area */}
-      <main className="flex-1 max-w-5xl mx-auto w-full p-6 space-y-6 overflow-y-auto">
-        
-        {/* Verification Top High-Contrast Banner */}
-        <div className="bg-gradient-to-r from-emerald-800 to-primary text-white p-6 rounded-lg shadow-premium-md relative overflow-hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_right,_var(--tw-gradient-stops))] from-emerald-700/30 to-transparent pointer-events-none" />
-          
-          <div className="space-y-2 relative z-10">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold">{ngoDetails.name}</h1>
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500 text-white flex items-center gap-1">
-                <CheckCircle className="w-3.5 h-3.5" /> Verified
-              </span>
+      {/* Hero Banner Area */}
+      <div className="bg-gradient-to-r from-blue-50 via-white to-slate-100 border-b border-slate-200 py-8 px-6">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-6">
+          <div className="w-16 h-16 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
+            H
+          </div>
+          <div className="space-y-1.5 text-center md:text-left flex-1">
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-2">
+              <h1 className="font-sans font-bold text-2xl text-slate-900">Hope Foundation</h1>
+              <span className="db-badge db-badge-success">Verified Hub</span>
             </div>
-            <p className="text-xs text-emerald-100 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" /> District 4 East Main Hub | Reg No: <strong className="font-mono">{ngoDetails.regNo}</strong>
+            <p className="text-xs text-slate-600 max-w-xl">
+              Focusing on physical blankets, winter apparel, daily groceries, and medical equipment matching routes.
+            </p>
+            <p className="text-[10px] text-slate-500 flex items-center justify-center md:justify-start gap-1 font-mono">
+              <MapPin className="w-3.5 h-3.5" /> Coordinates: East End Sector 4 &bull; 1.4 miles away
             </p>
           </div>
-
-          <div className="relative z-10 bg-slate-950/20 border border-emerald-600 px-4 py-2.5 rounded text-center shrink-0">
-            <span className="text-[10px] text-emerald-200 block font-bold uppercase tracking-wider">Trust Index</span>
-            <span className="text-2xl font-extrabold text-white">{ngoDetails.trustScore}%</span>
+          <div className="flex gap-2">
+            <Button variant="primary" onClick={() => navigate('/request-wizard?ngo=1')}>Donate Now</Button>
+            <Button variant="secondary" onClick={() => navigate('/chat?ngo=1')}>Chat</Button>
           </div>
         </div>
+      </div>
 
-        {/* Overview Information */}
-        <Card className="p-6">
-          <h3 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">Organization Overview</h3>
-          <p className="text-xs sm:text-sm text-slate-650 dark:text-slate-400 leading-relaxed">
-            {ngoDetails.description}
-          </p>
-        </Card>
-
-        {/* Tab Selection */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800">
+      {/* Profile workspace */}
+      <main className="flex-1 max-w-4xl mx-auto w-full p-6 space-y-6">
+        {/* Tab selection */}
+        <div className="db-tabs">
           <button
-            onClick={() => setActiveTab('essentials')}
-            className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'essentials' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
+            onClick={() => setActiveTab('demands')}
+            className={`db-tab ${activeTab === 'demands' ? 'active' : ''}`}
           >
-            Required Essentials Grid
+            Active Demands (3)
           </button>
           <button
-            onClick={() => setActiveTab('verification')}
-            className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'verification' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
+            onClick={() => setActiveTab('timeline')}
+            className={`db-tab ${activeTab === 'timeline' ? 'active' : ''}`}
           >
             Verification Timeline
           </button>
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'reviews' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
+            className={`db-tab ${activeTab === 'reviews' ? 'active' : ''}`}
           >
             Donor Reviews ({reviews.length})
           </button>
         </div>
 
-        {/* Tab Panel Contents */}
-        {activeTab === 'essentials' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {ngoDetails.essentials.map((need, idx) => (
-              <Card key={idx} className="p-4 border border-slate-200 dark:border-slate-800 flex justify-between items-center text-xs">
-                <div className="space-y-1">
-                  <p className="font-bold text-slate-900 dark:text-white">{need.item}</p>
-                  <p className="text-slate-500 text-[10px]">Category: {need.category}</p>
-                  <div className="w-48 bg-slate-100 dark:bg-slate-900 h-2 rounded-full overflow-hidden mt-2 flex">
-                    {/* Progress representation */}
-                    <div className="bg-primary h-full" style={{ width: `${(parseInt(need.current) / parseInt(need.needed)) * 100}%` }} />
-                  </div>
-                  <span className="text-[10px] text-slate-550 dark:text-slate-450 block mt-1">Received {need.current} of {need.needed}</span>
+        {/* Tab panels */}
+        {activeTab === 'demands' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fadeIn">
+            <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-5 flex flex-col justify-between h-44">
+              <div>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-sans font-bold text-sm text-slate-900">Winter Blankets</h4>
+                  <span className="db-badge db-badge-critical">Critical</span>
                 </div>
-                <span className={`px-2.5 py-1 rounded font-bold text-[9px] ${
-                  need.status === 'Critical' ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300' :
-                  need.status === 'High' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300' :
-                  'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300'
-                }`}>
-                  {need.status} Need
-                </span>
-              </Card>
-            ))}
+                <p className="text-[11px] text-slate-500">Estimated necessity: 50 units for shelter bedding kits.</p>
+              </div>
+              <div className="space-y-2 mt-4">
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>Progress:</span>
+                  <span>14/50 blankets</span>
+                </div>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-red-600 h-full w-[28%]" />
+                </div>
+              </div>
+            </div>
+
+            <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-5 flex flex-col justify-between h-44">
+              <div>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-sans font-bold text-sm text-slate-900">School Notebooks</h4>
+                  <span className="db-badge db-badge-high">High</span>
+                </div>
+                <p className="text-[11px] text-slate-500">Educational materials matching for public community tutoring centers.</p>
+              </div>
+              <div className="space-y-2 mt-4">
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>Progress:</span>
+                  <span>120/200 books</span>
+                </div>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-blue-600 h-full w-[60%]" />
+                </div>
+              </div>
+            </div>
+
+            <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-5 flex flex-col justify-between h-44">
+              <div>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-sans font-bold text-sm text-slate-900">First-Aid Kits</h4>
+                  <span className="db-badge db-badge-medium">Medium</span>
+                </div>
+                <p className="text-[11px] text-slate-500">General medical equipment packaging for primary care response units.</p>
+              </div>
+              <div className="space-y-2 mt-4">
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>Progress:</span>
+                  <span>45/50 kits</span>
+                </div>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-emerald-600 h-full w-[90%]" />
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        {activeTab === 'verification' && (
-          <Card className="p-6">
-            <h3 className="font-bold text-sm mb-4">Official Document Credentials</h3>
+        {activeTab === 'timeline' && (
+          <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6 animate-fadeIn">
+            <h3 className="font-sans font-bold text-base mb-6 text-slate-900">Government Audit Trails</h3>
             
-            {/* Document Badges */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-              <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded flex items-center gap-3 text-xs">
-                <FileText className="w-6 h-6 text-indigo-500" />
-                <div>
-                  <p className="font-bold">Tax Exemption</p>
-                  <span className="text-[9px] text-emerald-500 font-bold">APPROVED</span>
+            <div className="relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 pl-8 space-y-6">
+              {timelineEvents.map((evt, idx) => (
+                <div key={idx} className="relative text-xs">
+                  <div className="w-6 h-6 rounded-full bg-blue-50 border border-blue-600 flex items-center justify-center absolute -left-[38px] -top-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="font-semibold text-slate-900">{evt.title}</p>
+                    <p className="text-[10px] text-slate-400 font-mono">{evt.date} &bull; {evt.time}</p>
+                    <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">{evt.desc}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded flex items-center gap-3 text-xs">
-                <FileSpreadsheet className="w-6 h-6 text-indigo-550" />
-                <div>
-                  <p className="font-bold">Logistical Audit</p>
-                  <span className="text-[9px] text-emerald-500 font-bold">VERIFIED</span>
-                </div>
-              </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded flex items-center gap-3 text-xs">
-                <ShieldCheck className="w-6 h-6 text-emerald-500" />
-                <div>
-                  <p className="font-bold">Incorporation</p>
-                  <span className="text-[9px] text-emerald-500 font-bold">REGISTERED</span>
-                </div>
-              </div>
+              ))}
             </div>
-
-            {/* Vertical Verification Timeline */}
-            <h3 className="font-bold text-sm mb-4">Verification Audit Timeline</h3>
-            <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800 pl-8">
-              <div className="relative text-xs">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -left-[25px] top-1" />
-                <p className="font-bold text-slate-850 dark:text-slate-200">Regulatory Clearance Completed</p>
-                <p className="text-slate-450 text-[10px] flex items-center gap-1 mt-0.5"><Calendar className="w-3.5 h-3.5" /> Jan 12, 2026 &bull; Verified by Super Admin ID #440</p>
-              </div>
-              <div className="relative text-xs">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -left-[25px] top-1" />
-                <p className="font-bold text-slate-850 dark:text-slate-200">Physical Facilities Inspected</p>
-                <p className="text-slate-450 text-[10px] flex items-center gap-1 mt-0.5"><Calendar className="w-3.5 h-3.5" /> Jan 19, 2026 &bull; On-site inspector check verified</p>
-              </div>
-              <div className="relative text-xs">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute -left-[25px] top-1" />
-                <p className="font-bold text-slate-850 dark:text-slate-200">Ledger Accountability Audit Passed</p>
-                <p className="text-slate-450 text-[10px] flex items-center gap-1 mt-0.5"><Calendar className="w-3.5 h-3.5" /> Feb 02, 2026 &bull; 0% transaction leakage confirmed</p>
-              </div>
-            </div>
-          </Card>
+          </div>
         )}
 
         {activeTab === 'reviews' && (
-          <div className="space-y-6">
-            {/* Reviews Stream */}
-            <div className="space-y-4">
-              {reviews.map((rev) => (
-                <Card key={rev.id} className="p-4 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
+            {/* Reviews stream */}
+            <div className="lg:col-span-2 space-y-4">
+              {reviews.map((rev, idx) => (
+                <div key={idx} className="p-4 bg-white border border-slate-200 rounded-lg shadow-premium-sm text-xs space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-slate-900 dark:text-white">{rev.author}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="flex text-amber-500">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`w-3.5 h-3.5 ${i < rev.rating ? 'fill-current' : 'text-slate-300'}`} />
-                        ))}
-                      </div>
-                      <span className="text-slate-400 text-[10px]">{rev.date}</span>
-                    </div>
+                    <p className="font-bold text-slate-900">{rev.author}</p>
+                    <span className="text-[10px] text-slate-400 font-mono">{rev.date}</span>
                   </div>
-                  <p className="text-slate-650 dark:text-slate-400 leading-relaxed italic">
-                    "{rev.comment}"
-                  </p>
-                </Card>
+                  <div className="flex items-center gap-0.5 text-amber-500">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-3.5 h-3.5 ${i < rev.rating ? 'fill-current text-amber-500' : 'text-slate-200'}`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">{rev.comment}</p>
+                </div>
               ))}
             </div>
 
-            {/* Write a review form */}
-            <Card className="p-4">
-              <h4 className="font-bold text-xs mb-3">Leave Verified Donor Feedback</h4>
-              <form onSubmit={handlePostReview} className="space-y-3 text-xs">
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold text-slate-500">Your Rating:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setNewRating(star)}
-                        className="text-amber-500 focus:outline-none"
-                      >
-                        <Star className={`w-5 h-5 ${star <= newRating ? 'fill-current' : 'stroke-current text-slate-350'}`} />
-                      </button>
-                    ))}
+            {/* Leave Review Form */}
+            <div>
+              <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6 sticky top-20">
+                <h4 className="font-sans font-bold text-xs mb-3 text-slate-900">Add Donor Experience</h4>
+                <form onSubmit={handleAddReview} className="space-y-3">
+                  <div>
+                    <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                      Rating
+                    </label>
+                    <div className="flex gap-1 text-amber-500">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setNewRating(star)}
+                          className="focus:outline-none cursor-pointer"
+                        >
+                          <Star className={`w-5 h-5 ${star <= newRating ? 'fill-current' : 'text-slate-200'}`} />
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                <InputField
-                  label="Review Comments"
-                  id="newComment"
-                  placeholder="Share details about logistics fulfillment and verification times..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  required
-                />
+                  <div>
+                    <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                      Share Feedback
+                    </label>
+                    <textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Comment on receipt validation speed or logistics handling..."
+                      rows={4}
+                      className="w-full p-2.5 text-xs rounded-md border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      required
+                    />
+                  </div>
 
-                <Button type="submit" variant="primary" size="sm" icon={Send}>
-                  Post Feedback
-                </Button>
-              </form>
-            </Card>
+                  <Button type="submit" variant="primary" className="w-full text-xs" icon={Send}>
+                    Publish Review
+                  </Button>
+                </form>
+              </div>
+            </div>
           </div>
         )}
-
       </main>
     </div>
   );

@@ -1,253 +1,263 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/GlobalStateContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  ShieldAlert, ShieldCheck, Check, X, AlertTriangle, Eye, Map,
-  FileText, Activity, Users, FileCheck, Search, Filter, AlertCircle
+  ShieldCheck, AlertTriangle, CheckCircle, XCircle, Info,
+  TrendingUp, Award, User, RefreshCw, Star, Trash2
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { InputField } from '../components/ui/InputField';
-import { MockMap } from '../components/ui/MockMap';
+import Navbar from '../components/Navbar';
 
 export default function AdminDashboard() {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // NGO Registration validation requests
-  const [pendingNgos, setPendingNgos] = useState([
-    { id: 'NGO-8821', name: 'Sanctuary Care Center', email: 'reg@sanctuary.org', regNo: '501C3-899120', docs: 'Tax_Exemption_Form.pdf', date: '2026-07-02', status: 'pending' },
-    { id: 'NGO-8819', name: 'Youth Books Project', email: 'info@ybp.org', regNo: '501C3-441209', docs: 'NGO_Incorporation.pdf', date: '2026-07-01', status: 'pending' },
-    { id: 'NGO-8804', name: 'Staple Foods for All', email: 'staples@sffa.org', regNo: '501C3-112003', docs: 'Staples_Bylaws.pdf', date: '2026-06-29', status: 'pending' },
-  ]);
-
-  // Fraud risk logs
-  const [fraudFlags, setFraudFlags] = useState([
-    { id: 'F-909', type: 'Weight Mismatch', item: 'DB-1042', details: 'Donor declared 22kg; Courier scaled 29kg.', risk: 'Medium', status: 'Pending Review' },
-    { id: 'F-904', type: 'IP Location Anomaly', item: 'DB-1011', details: 'NGO signed dispatch from different region IP.', risk: 'High', status: 'Investigating' },
-    { id: 'F-881', type: 'Duplicate Items Claim', item: 'DB-9901', details: 'Item photos match exactly with an older post.', risk: 'High', status: 'Flagged' },
-  ]);
-
-  // Modal State for Reject Justification
-  const [selectedNgo, setSelectedNgo] = useState(null);
+  const [activeTab, setActiveTab] = useState('ngos'); // 'ngos' | 'fraud' | 'metrics'
+  const [rejectingNgoId, setRejectingNgoId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  const handleApprove = (id) => {
-    const approvedNgo = pendingNgos.find((ngo) => ngo.id === id);
-    if (approvedNgo) {
-      const raw = localStorage.getItem('ngoVerificationMap');
-      const map = raw ? JSON.parse(raw) : {};
-      map[approvedNgo.email] = {
-        status: 'approved',
-        rejectionReason: '',
-      };
-      localStorage.setItem('ngoVerificationMap', JSON.stringify(map));
-    }
+  // Simulated NGO Registrations state
+  const [pendingNgos, setPendingNgos] = useState([
+    { id: 1, name: 'Mercy Corp', registrationNumber: 'NGO-88019', location: 'Metropolis West', taxExemptId: '501c3-mercy' },
+    { id: 2, name: 'Sustain Earth Foundation', registrationNumber: 'NGO-77102', location: 'Coastal Sector B', taxExemptId: '501c3-earth' },
+    { id: 3, name: 'Community Care Hub', registrationNumber: 'NGO-66014', location: 'District 4 Heights', taxExemptId: '501c3-care' },
+  ]);
+
+  // Fraud risk flags state
+  const [fraudLogs, setFraudLogs] = useState([
+    { id: 'FL-902', entityName: 'Green Life NGO', trigger: 'Coordinates Discrepancy', riskScore: 'Medium (42%)', date: '2026-07-02' },
+    { id: 'FL-899', entityName: 'Sarah Jenkins', trigger: 'High Frequency Requests', riskScore: 'Low (15%)', date: '2026-07-01' },
+    { id: 'FL-871', entityName: 'Fake Help Depot', trigger: 'Suspicious Document Hash', riskScore: 'Critical (95%)', date: '2026-06-25' },
+  ]);
+
+  const handleApproveNgo = (id, name) => {
+    // Simulated approval
     setPendingNgos(prev => prev.filter(ngo => ngo.id !== id));
+    alert(`Approved NGO Organization: ${name}`);
   };
 
-  const handleRejectSubmit = (e) => {
+  const handleRejectNgoSubmit = (e) => {
     e.preventDefault();
-    if (!rejectionReason) return;
-    const raw = localStorage.getItem('ngoVerificationMap');
-    const map = raw ? JSON.parse(raw) : {};
-    map[selectedNgo.email] = {
-      status: 'rejected',
-      rejectionReason,
-    };
-    localStorage.setItem('ngoVerificationMap', JSON.stringify(map));
-    setPendingNgos(prev => prev.filter(ngo => ngo.id !== selectedNgo.id));
-    setSelectedNgo(null);
+    if (!rejectionReason.trim()) return;
+
+    setPendingNgos(prev => prev.filter(ngo => ngo.id !== rejectingNgoId));
+    alert(`Rejected NGO organization ID ${rejectingNgoId} for reason: ${rejectionReason}`);
+    setRejectingNgoId(null);
     setRejectionReason('');
   };
 
+  const handleDeleteFraudLog = (id) => {
+    setFraudLogs(prev => prev.filter(log => log.id !== id));
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Top dashboard nav */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-2">
-          <ShieldAlert className="w-6 h-6 text-red-500" />
-          <span className="font-bold text-lg">System Integrity Hub</span>
-          <span className="ml-2 px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-            SUPER ADMIN CORE
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button variant="secondary" size="sm" onClick={() => navigate('/')}>Home</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/settings')}>System Config</Button>
-        </div>
-      </header>
+    <div className="db-page min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+      {/* Shared Main Navbar */}
+      <Navbar />
 
-      {/* Main Grid Layout */}
-      <main className="flex-1 p-6 space-y-6 overflow-y-auto max-w-7xl mx-auto w-full">
-        
-        {/* Metric widgets */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="p-4 border border-slate-200 dark:border-slate-850">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase">Pending Validations</span>
-              <FileCheck className="w-4 h-4 text-emerald-500" />
-            </div>
-            <p className="text-2xl font-bold mt-2">{pendingNgos.length} NGOs</p>
-          </Card>
-          
-          <Card className="p-4 border border-slate-200 dark:border-slate-850">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase">Open Fraud Alerts</span>
-              <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse" />
-            </div>
-            <p className="text-2xl font-bold mt-2 text-red-550 dark:text-red-400">{fraudFlags.length} Flags</p>
-          </Card>
+      {/* Main Grid workspace */}
+      <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6">
+        {/* Navigation Sidebar */}
+        <aside className="w-full md:w-64 bg-white border border-slate-200 rounded-lg p-5 shrink-0 flex flex-col gap-2 shadow-premium-sm">
+          <div className="mb-4 pb-4 border-b border-slate-100">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block font-semibold">Active User</span>
+            <span className="text-sm font-bold text-slate-900">{user?.name || 'Admin Officer'}</span>
+            <span className="text-xs text-red-600 block capitalize font-mono mt-0.5">Superuser Mode</span>
+          </div>
 
-          <Card className="p-4 border border-slate-200 dark:border-slate-850">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase">Active Transit Nodes</span>
-              <Activity className="w-4 h-4 text-indigo-500" />
-            </div>
-            <p className="text-2xl font-bold mt-2">128 Shipments</p>
-          </Card>
+          <button
+            onClick={() => setActiveTab('ngos')}
+            className={`w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'ngos'
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" /> Pending Registrations
+          </button>
+          <button
+            onClick={() => setActiveTab('fraud')}
+            className={`w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'fraud'
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <AlertTriangle className="w-4 h-4" /> Fraud Risk Flags
+          </button>
+          <button
+            onClick={() => setActiveTab('metrics')}
+            className={`w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'metrics'
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <TrendingUp className="w-4 h-4" /> Global Platform KPIs
+          </button>
+        </aside>
 
-          <Card className="p-4 border border-slate-200 dark:border-slate-850">
-            <div className="flex justify-between items-center text-slate-500">
-              <span className="text-xs font-semibold uppercase">Security Trust Index</span>
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            </div>
-            <p className="text-2xl font-bold mt-2 text-emerald-500">99.4% Validated</p>
-          </Card>
-        </div>
+        {/* Central Workspace area */}
+        <main className="flex-1 space-y-6">
+          {activeTab === 'ngos' && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6">
+                <h3 className="font-sans font-bold text-base mb-1 text-slate-900">Verify Pending NGO Authorities</h3>
+                <p className="text-xs text-slate-500 mb-6">Review legal documents, physical addresses, and tax-exempt status registration certificates.</p>
 
-        {/* 2-Pane splits */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Left Panel: NGO Registration verification list */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="font-bold text-base">Pending NGO Credentials Valuations</h3>
-                  <p className="text-xs text-slate-500">Review tax exemption records and regulatory certification codes.</p>
-                </div>
-                <Button variant="secondary" size="sm" icon={Filter}>Filters</Button>
+                {pendingNgos.length === 0 ? (
+                  <div className="text-center py-12 text-xs text-slate-500 border border-slate-200 rounded-md bg-slate-50">
+                    All NGO queues are currently clear and audited.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingNgos.map((ngo) => (
+                      <div key={ngo.id} className="p-4 bg-slate-50 border border-slate-200 rounded-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs">
+                        <div className="space-y-1">
+                          <p className="font-bold text-sm text-slate-900">{ngo.name}</p>
+                          <p className="text-slate-600">Reg Number: <span className="font-mono">{ngo.registrationNumber}</span> | Location: {ngo.location}</p>
+                          <p className="text-[10px] text-blue-600 font-mono font-semibold">Tax Exempt ID: {ngo.taxExemptId}</p>
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="flex-1 md:flex-initial"
+                            onClick={() => handleApproveNgo(ngo.id, ngo.name)}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="flex-1 md:flex-initial text-red-600 border-red-200 hover:bg-red-50"
+                            onClick={() => setRejectingNgoId(ngo.id)}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {pendingNgos.length === 0 ? (
-                <div className="text-center py-12 text-slate-400 text-xs">
-                  <Check className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                  All pending NGO applications validated.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {pendingNgos.map(ngo => (
-                    <div key={ngo.id} className="p-4 bg-slate-55 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 dark:text-white text-sm">{ngo.name}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-mono text-[9px] text-slate-500">{ngo.id}</span>
-                        </div>
-                        <p className="text-slate-550 dark:text-slate-450">Reg ID: <strong className="font-mono">{ngo.regNo}</strong> | Email: {ngo.email}</p>
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-450 mt-1">
-                          <FileText className="w-3.5 h-3.5 text-indigo-500" />
-                          <span className="underline hover:text-indigo-400 cursor-pointer">{ngo.docs}</span>
-                          <span>&bull; Registered: {ngo.date}</span>
-                        </div>
-                      </div>
+              {/* Rejection Modal overlay logic */}
+              {rejectingNgoId && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="db-card w-full max-w-md p-6 bg-white border border-slate-200 rounded-lg shadow-premium-lg animate-scaleIn space-y-4">
+                    <h4 className="font-sans font-bold text-base text-slate-900">Provide Rejection Rationale</h4>
+                    <p className="text-xs text-slate-500">This feedback will be shown directly on the NGO Console dashboard restricting access.</p>
+                    
+                    <form onSubmit={handleRejectNgoSubmit} className="space-y-4">
+                      <InputField
+                        label="Reason for Rejection"
+                        id="rejectionReason"
+                        placeholder="e.g. Invalid Registration Certificate, Tax Exempt ID verification failed."
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        required
+                      />
 
-                      <div className="flex gap-2 w-full sm:w-auto">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedNgo(ngo)}
-                          className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 text-xs font-bold border border-red-200 dark:border-red-900"
-                        >
-                          Reject
+                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                        <Button type="button" variant="secondary" onClick={() => setRejectingNgoId(null)}>
+                          Cancel
                         </Button>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleApprove(ngo.id)}
-                          icon={Check}
-                          className="text-xs py-1.5"
-                        >
-                          Approve
+                        <Button type="submit" variant="primary" className="bg-red-600 hover:bg-red-700 text-white border-red-600">
+                          Confirm Rejection
                         </Button>
                       </div>
-                    </div>
-                  ))}
+                    </form>
+                  </div>
                 </div>
               )}
-            </Card>
-          </div>
-
-          {/* Right Panel: Fraud risk log & Spatial density Map */}
-          <div className="space-y-6">
-            <Card className="p-6 border border-slate-200 dark:border-slate-700">
-              <h3 className="font-bold text-base mb-2">Cross-Platform Fraud Logs</h3>
-              <p className="text-xs text-slate-500 mb-4">Anomaly flags generated by weight scale and signature monitors.</p>
-
-              <div className="space-y-3">
-                {fraudFlags.map(flag => (
-                  <div key={flag.id} className="p-3 bg-slate-55 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded space-y-1.5 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="font-mono font-bold text-red-500">{flag.id} &bull; {flag.type}</span>
-                      <span className={`px-2 py-0.5 rounded font-bold text-[9px] ${
-                        flag.risk === 'High' ? 'bg-red-650 text-white' : 'bg-amber-500 text-white'
-                      }`}>
-                        {flag.risk} Risk
-                      </span>
-                    </div>
-                    <p className="text-slate-500 text-[10px]">{flag.details}</p>
-                    <div className="flex justify-between items-center pt-1.5 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400">
-                      <span>Ref ID: {flag.item}</span>
-                      <span className="font-semibold text-slate-600 dark:text-slate-300">{flag.status}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Geographical Density Heatmap teaser */}
-            <Card className="p-4 border border-slate-200 dark:border-slate-700">
-              <h3 className="font-bold text-xs mb-2 flex items-center gap-1.5">
-                <Map className="w-4 h-4 text-emerald-500" /> Geographic Density Risk Map
-              </h3>
-              <MockMap interactive={false} className="h-44" activeStep={3} />
-            </Card>
-          </div>
-
-        </div>
-      </main>
-
-      {/* Slide Modal/Context Overlay for Reject NGO */}
-      {selectedNgo && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <Card className="w-full max-w-md border border-slate-200 dark:border-slate-800 shadow-premium-lg">
-            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700/80 pb-4 mb-4">
-              <h3 className="font-bold text-base text-red-600">Reject Application</h3>
-              <button onClick={() => setSelectedNgo(null)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
-                <X className="w-5 h-5" />
-              </button>
             </div>
+          )}
 
-            <form onSubmit={handleRejectSubmit} className="space-y-4">
-              <p className="text-xs text-slate-500">
-                Provide the validation failure reason for <strong className="text-slate-800 dark:text-slate-250">{selectedNgo.name}</strong>. This log will be sent via system notification.
-              </p>
+          {activeTab === 'fraud' && (
+            <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6 animate-fadeIn">
+              <h3 className="font-sans font-bold text-base mb-1 text-slate-900">System Fraud Risk Radar</h3>
+              <p className="text-xs text-slate-500 mb-6">Real-time heuristics analysis and coordinates mismatch alerts.</p>
 
-              <InputField
-                label="Rejection Justification Code / Description"
-                id="rejectionReason"
-                placeholder="e.g. 501(c)3 tax documentation is expired or unreadable."
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                required
-              />
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="secondary" onClick={() => setSelectedNgo(null)}>Cancel</Button>
-                <Button type="submit" variant="danger">Confirm Rejection</Button>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
+                      <th className="p-3 font-mono font-semibold">Log ID</th>
+                      <th className="p-3 font-semibold">Entity Name</th>
+                      <th className="p-3 font-semibold">Trigger Warning</th>
+                      <th className="p-3 font-mono font-semibold">Risk Index</th>
+                      <th className="p-3 font-mono font-semibold">Date</th>
+                      <th className="p-3 font-semibold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fraudLogs.map((log) => (
+                      <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
+                        <td className="p-3 font-mono font-semibold text-slate-500">{log.id}</td>
+                        <td className="p-3 font-bold text-slate-900">{log.entityName}</td>
+                        <td className="p-3 text-red-600 font-bold">{log.trigger}</td>
+                        <td className="p-3 font-mono">
+                          <span className={`db-badge ${
+                            log.riskScore.includes('Critical') ? 'db-badge-critical' :
+                            log.riskScore.includes('Medium') ? 'db-badge-high' :
+                            'db-badge-low'
+                          }`}>
+                            {log.riskScore}
+                          </span>
+                        </td>
+                        <td className="p-3 font-mono text-slate-500">{log.date}</td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => handleDeleteFraudLog(log.id)}
+                            className="text-slate-400 hover:text-red-600 p-1 rounded transition-colors cursor-pointer"
+                            title="Dismiss Flag"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </form>
-          </Card>
-        </div>
-      )}
+            </div>
+          )}
+
+          {activeTab === 'metrics' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fadeIn">
+              <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">Active Donors</span>
+                <p className="text-3xl font-bold font-mono mt-2 text-slate-900">1,024</p>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full mt-4">
+                  <div className="bg-blue-600 h-full w-[78%]" />
+                </div>
+                <span className="text-[9px] text-slate-500 block mt-2">+12% growth over 30 days</span>
+              </div>
+
+              <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">Fulfilled Shipments</span>
+                <p className="text-3xl font-bold font-mono mt-2 text-slate-900">342</p>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full mt-4">
+                  <div className="bg-blue-600 h-full w-[65%]" />
+                </div>
+                <span className="text-[9px] text-slate-500 block mt-2">98.4% delivery success rating</span>
+              </div>
+
+              <div className="db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm p-6">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">Carbon Saved</span>
+                <p className="text-3xl font-bold font-mono mt-2 text-emerald-600">1.4 Tons</p>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full mt-4">
+                  <div className="bg-emerald-600 h-full w-[90%]" />
+                </div>
+                <span className="text-[9px] text-emerald-600 font-semibold block mt-2">Equivalent to 64 trees planted</span>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

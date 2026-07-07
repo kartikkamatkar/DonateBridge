@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import Navbar from '../components/Navbar';
 
 export default function NotificationCenter() {
   const { notifications, unreadCount, markAllRead, setNotifications } = useSocket();
@@ -29,25 +30,20 @@ export default function NotificationCenter() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Navigation header */}
-      <nav className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0 z-10">
-        <button onClick={() => navigate(-1)} className="hover:text-primary transition-colors flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <span className="font-bold text-sm uppercase text-slate-500">Alert Center</span>
-      </nav>
+    <div className="db-page min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+      {/* Shared Main Navbar */}
+      <Navbar />
 
       {/* Main Workspace Frame */}
       <main className="flex-1 max-w-2xl mx-auto w-full p-6 space-y-6 overflow-y-auto">
         
         {/* Title bar */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 animate-fadeInUp">
           <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Bell className="w-5 h-5 text-primary" /> Notifications
+            <h1 className="font-sans font-bold text-xl flex items-center gap-2 text-slate-900">
+              <Bell className="w-5 h-5 text-blue-600" /> Notifications
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-350 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[10px] font-mono font-bold">
                   {unreadCount} UNREAD
                 </span>
               )}
@@ -63,14 +59,12 @@ export default function NotificationCenter() {
         </div>
 
         {/* Tab Filters */}
-        <div className="flex border-b border-slate-200 dark:border-slate-850 gap-2 overflow-x-auto">
+        <div className="db-tabs animate-fadeInUp stagger-1">
           {['All', 'Unread', 'Deliveries', 'Security'].map(tab => (
             <button
               key={tab}
               onClick={() => setFilterTab(tab)}
-              className={`px-4 py-2 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-                filterTab === tab ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-750'
-              }`}
+              className={`db-tab ${filterTab === tab ? 'active' : ''}`}
             >
               {tab}
             </button>
@@ -78,50 +72,50 @@ export default function NotificationCenter() {
         </div>
 
         {/* Stream List */}
-        <div className="space-y-3">
+        <div className="space-y-3 animate-fadeInUp stagger-2">
           {filteredNotifications.length === 0 ? (
-            <div className="text-center py-16 text-slate-400 text-xs bg-white dark:bg-slate-850 rounded border border-slate-200 dark:border-slate-800">
-              <MailOpen className="w-8 h-8 text-slate-350 mx-auto mb-2" />
+            <div className="text-center py-16 text-xs text-slate-500 db-card bg-white border border-slate-200 rounded-lg shadow-premium-sm">
+              <MailOpen className="w-8 h-8 text-slate-400 mx-auto mb-2" />
               Your notification log is currently clear.
             </div>
           ) : (
             filteredNotifications.map((notif) => (
-              <Card
+              <div
                 key={notif.id}
-                className={`p-4 border transition-all ${
-                  notif.read ? 'border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-800/40' : 'border-primary/40 bg-emerald-50/5 dark:bg-slate-800/90'
+                className={`db-card p-4 transition-all duration-200 bg-white border rounded-lg shadow-premium-sm ${
+                  notif.read ? 'border-slate-200 opacity-80' : 'border-blue-600 bg-blue-50/10'
                 }`}
               >
                 <div className="flex gap-3 text-xs">
                   {/* Icon depending on type */}
                   <div className="shrink-0 pt-0.5">
-                    {notif.type === 'delivery' ? <Truck className="w-4 h-4 text-emerald-500" /> :
-                     notif.type === 'match' ? <Check className="w-4 h-4 text-indigo-500" /> :
+                    {notif.type === 'delivery' ? <Truck className="w-4 h-4 text-blue-600" /> :
+                     notif.type === 'match' ? <Check className="w-4 h-4 text-emerald-600" /> :
                      <ShieldAlert className="w-4 h-4 text-amber-500" />}
                   </div>
 
                   <div className="flex-1 space-y-1">
                     <div className="flex justify-between items-start">
-                      <p className={`font-semibold ${notif.read ? 'text-slate-650 dark:text-slate-300' : 'text-slate-900 dark:text-white font-bold'}`}>
+                      <p className={`leading-relaxed ${notif.read ? 'text-slate-600' : 'text-slate-900 font-bold'}`}>
                         {notif.message}
                       </p>
                       <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-4">{notif.time}</span>
                     </div>
 
-                    <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800 mt-2 text-[10px]">
-                      <span className="text-slate-400 uppercase font-semibold">REF ID: {notif.id}</span>
-                      <div className="flex gap-2">
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-100 mt-2 text-[10px] font-mono">
+                      <span className="text-slate-400 uppercase font-bold">REF ID: {notif.id}</span>
+                      <div className="flex gap-3">
                         {!notif.read && (
                           <button
                             onClick={() => handleMarkOneRead(notif.id)}
-                            className="text-primary hover:underline font-bold"
+                            className="text-blue-600 hover:underline font-bold cursor-pointer"
                           >
                             Mark Read
                           </button>
                         )}
                         <button
                           onClick={() => handleArchive(notif.id)}
-                          className="text-slate-500 hover:text-red-500 flex items-center gap-1 font-semibold"
+                          className="text-slate-400 hover:text-red-600 flex items-center gap-1 font-bold cursor-pointer"
                           aria-label="Archive notification"
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Archive
@@ -130,7 +124,7 @@ export default function NotificationCenter() {
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))
           )}
         </div>

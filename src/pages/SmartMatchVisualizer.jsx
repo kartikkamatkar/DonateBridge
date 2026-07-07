@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles, RefreshCw, MapPin, Star, AlertTriangle, ArrowRight,
@@ -7,6 +7,7 @@ import {
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { MockMap } from '../components/ui/MockMap';
+import Navbar from '../components/Navbar';
 
 export default function SmartMatchVisualizer() {
   const navigate = useNavigate();
@@ -76,28 +77,19 @@ export default function SmartMatchVisualizer() {
   const currentMatch = matches.find(m => m.id === selectedMatch) || matches[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Top sticky nav */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0 z-10">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-emerald-500 animate-pulse" />
-          <div>
-            <span className="font-bold text-base block">Smart Match Optimizer</span>
-            <span className="text-[9px] text-slate-500 block -mt-1">Spring Boot Dispatch Calculus</span>
-          </div>
-        </div>
-        <Button variant="secondary" size="sm" onClick={() => navigate(-1)}>Back</Button>
-      </header>
+    <div className="db-page min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+      {/* Shared Main Navbar */}
+      <Navbar />
 
-      {/* Main Workspace split */}
+      {/* Main Workspace Split layout */}
       <div className="flex-1 flex flex-col lg:flex-row min-h-0">
         
         {/* Left Side: Calculations list */}
-        <aside className="w-full lg:w-[460px] bg-white dark:bg-slate-850 border-r border-slate-200 dark:border-slate-800 flex flex-col min-h-0 overflow-y-auto p-6 space-y-6">
-          <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
+        <aside className="w-full lg:w-[460px] bg-white border-r border-slate-200 flex flex-col min-h-0 overflow-y-auto p-6 space-y-6 shrink-0 shadow-premium-sm">
+          <div className="flex justify-between items-center pb-4 border-b border-slate-100">
             <div>
-              <h3 className="font-bold text-sm">Matching Rankings</h3>
-              <p className="text-xs text-slate-500">Ranked by logistics proximity and urgency indices.</p>
+              <h3 className="font-sans font-bold text-sm text-slate-900">Matching Rankings</h3>
+              <p className="text-xs text-slate-500">Ranked by proximity and urgency indices.</p>
             </div>
             <Button
               variant="secondary"
@@ -113,59 +105,58 @@ export default function SmartMatchVisualizer() {
           {/* Matches List */}
           <div className="space-y-4">
             {matches.map((match, idx) => (
-              <Card
+              <div
                 key={match.id}
-                isHoverable
                 onClick={() => setSelectedMatch(match.id)}
-                className={`p-4 border transition-all ${
+                className={`db-card bg-white border rounded-lg p-4 shadow-premium-sm transition-all duration-200 cursor-pointer ${
                   selectedMatch === match.id
-                    ? 'border-primary ring-1 ring-primary/45 bg-emerald-50/10 dark:bg-slate-800'
-                    : 'border-slate-200 dark:border-slate-800'
+                    ? 'border-blue-600 bg-blue-50/30 ring-2 ring-blue-600/10'
+                    : 'border-slate-200 hover:border-blue-600/50'
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-450 block">Rank #{idx + 1} Recommendation</span>
-                    <h4 className="font-bold text-sm">{match.ngo}</h4>
+                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-slate-400 block">Rank #{idx + 1} Recommendation</span>
+                    <h4 className="font-sans font-bold text-sm text-slate-950">{match.ngo}</h4>
                     <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-slate-450" /> {match.proximity} miles away &bull; ETA {match.eta}
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" /> {match.proximity} miles &bull; ETA {match.eta}
                     </p>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-xl font-black text-primary block">{match.score}</span>
-                    <span className="text-[9px] text-slate-400 block -mt-1 font-semibold uppercase">Match Score</span>
+                    <span className="text-xl font-bold font-mono text-blue-600 block">{match.score}</span>
+                    <span className="text-[9px] text-slate-400 block -mt-1 font-bold uppercase font-mono">Match Score</span>
                   </div>
                 </div>
 
                 {/* Score Breakdown weights visualizer */}
-                <div className="space-y-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                <div className="space-y-2 mt-4 pt-3 border-t border-slate-100">
                   <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500 font-semibold">Proximity Weight (40%):</span>
-                    <span className="font-mono font-bold text-slate-850 dark:text-slate-200">{match.proximityScore}/100</span>
+                    <span className="text-slate-500 font-bold">Proximity Weight (40%):</span>
+                    <span className="font-mono font-bold text-slate-900">{match.proximityScore}/100</span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-900 h-1 rounded-full overflow-hidden">
-                    <div className="bg-blue-500 h-full" style={{ width: `${match.proximityScore}%` }} />
+                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-blue-600 h-full" style={{ width: `${match.proximityScore}%` }} />
                   </div>
 
                   <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500 font-semibold">Urgency priority Index (35%):</span>
-                    <span className="font-mono font-bold text-red-500">{match.urgencyScore}/100</span>
+                    <span className="text-slate-500 font-bold">Urgency Index (35%):</span>
+                    <span className="font-mono font-bold text-red-600">{match.urgencyScore}/100</span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-900 h-1 rounded-full overflow-hidden">
-                    <div className="bg-red-500 h-full" style={{ width: `${match.urgencyScore}%` }} />
+                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-red-600 h-full" style={{ width: `${match.urgencyScore}%` }} />
                   </div>
 
                   <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500 font-semibold">NGO Trust Rating (25%):</span>
-                    <span className="font-mono font-bold text-emerald-500">{match.trustScore}/100</span>
+                    <span className="text-slate-500 font-bold">NGO Trust Rating (25%):</span>
+                    <span className="font-mono font-bold text-blue-600">{match.trustScore}/100</span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-900 h-1 rounded-full overflow-hidden">
-                    <div className="bg-emerald-500 h-full" style={{ width: `${match.trustScore}%` }} />
+                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-blue-600 h-full" style={{ width: `${match.trustScore}%` }} />
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-3 mt-3 border-t border-slate-100 dark:border-slate-850">
+                <div className="flex justify-end pt-3 mt-3 border-t border-slate-100">
                   <Button
                     variant="primary"
                     size="sm"
@@ -179,36 +170,36 @@ export default function SmartMatchVisualizer() {
                     Confirm Dispatch Route
                   </Button>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </aside>
 
         {/* Right Side: Map showing computed route */}
-        <main className="flex-1 relative min-h-[350px] lg:min-h-0">
+        <main className="flex-1 relative min-h-[350px] lg:min-h-0 bg-slate-100">
           <MockMap highlightedNgoId={currentMatch.id} activeStep={mapStep} className="w-full h-full border-none rounded-none" />
 
           {/* floating detailed overlay */}
-          <div className="absolute bottom-4 left-4 right-4 bg-slate-950/90 backdrop-blur-md border border-slate-800 p-4 rounded-lg text-white max-w-md space-y-3 z-10 text-xs">
+          <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md border border-slate-200 p-4 rounded-lg text-slate-900 max-w-md space-y-3 z-10 text-xs shadow-premium-lg">
             <div className="flex justify-between items-center font-bold">
-              <span className="flex items-center gap-1.5"><Navigation className="w-4 h-4 text-emerald-400 animate-pulse" /> Computed Optimization Route</span>
-              <span className="font-mono text-emerald-400">ETA {currentMatch.eta}</span>
+              <span className="flex items-center gap-1.5 font-sans"><Navigation className="w-4 h-4 text-blue-600 animate-pulse" /> Computed Optimization Route</span>
+              <span className="font-mono text-blue-600">ETA {currentMatch.eta}</span>
             </div>
-            <p className="text-[11px] text-slate-400">
-              The routing engine selected <strong className="text-slate-200">{currentMatch.ngo}</strong> due to a high urgency need for <strong className="text-slate-200">{currentMatch.item}</strong> and close coordinates proximity.
+            <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
+              The routing engine selected <strong className="text-slate-900 font-bold">{currentMatch.ngo}</strong> due to high urgency for <strong className="text-slate-900 font-bold">{currentMatch.item}</strong> and close coordinates proximity.
             </p>
-            <div className="grid grid-cols-3 gap-2 text-[10px] text-center pt-2 border-t border-slate-800">
+            <div className="grid grid-cols-3 gap-2 text-[10px] text-center pt-2 border-t border-slate-100 font-mono">
               <div>
-                <span className="text-slate-500 block">DISTANCE</span>
-                <span className="font-bold">{currentMatch.proximity} miles</span>
+                <span className="text-slate-400 block font-semibold">DISTANCE</span>
+                <span className="font-bold text-slate-900">{currentMatch.proximity} miles</span>
               </div>
               <div>
-                <span className="text-slate-500 block">FUEL USAGE</span>
-                <span className="font-bold text-emerald-400">0.2 gal equivalent</span>
+                <span className="text-slate-400 block font-semibold">FUEL USAGE</span>
+                <span className="font-bold text-emerald-600">0.2 gal eq</span>
               </div>
               <div>
-                <span className="text-slate-500 block">CO2 REDUCTION</span>
-                <span className="font-bold text-emerald-400">4.2 kg saved</span>
+                <span className="text-slate-400 block font-semibold">CO2 REDUCTION</span>
+                <span className="font-bold text-emerald-600">4.2 kg saved</span>
               </div>
             </div>
           </div>

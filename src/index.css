@@ -1,72 +1,220 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #2E7D32;
-  --color-primary-hover: #276b2a;
-  --color-success: #22C55E;
+  /* DonateBridge SaaS Light Theme Tokens */
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-paper: #FFFFFF;
+  --color-secondary-bg: #F8FAFC;
+  --color-ink: #111827;
+  --color-muted: #6B7280;
+  --color-stone: #E5E7EB;
+  --color-subtle: #F1F5F9;
+  --color-card: #FFFFFF;
+  --color-clay: #DC2626;
+  --color-success: #16A34A;
+  --color-warning: #F59E0B;
+  --color-error: #DC2626;
 
-  /* Flat, subtle shadows only — no glow/premium look */
-  --shadow-premium-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.06);
-  --shadow-premium-md: 0 1px 3px 0 rgba(15, 23, 42, 0.08);
-  --shadow-premium-lg: 0 2px 8px 0 rgba(15, 23, 42, 0.10);
+  --shadow-premium-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-premium-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-premium-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
+  background-color: #FFFFFF;
+  color: #111827;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom micro-animations & layout skeletons */
+/* ============================================
+   KEYFRAME ANIMATIONS
+   ============================================ */
+
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================
+   UTILITY ANIMATION CLASSES
+   ============================================ */
 
 .animate-shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-.dark .animate-shimmer {
-  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+.animate-fadeInUp {
+  animation: fadeInUp 0.25s ease-out both;
 }
 
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out both;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+/* Stagger delays for list items */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+
+/* ============================================
+   DB DESIGN SYSTEM COMPONENTS (LIGHT ONLY)
+   ============================================ */
+
+/* Page wrapper */
+.db-page {
+  min-height: 100vh;
+  background-color: #F8FAFC;
+  color: #111827;
+  font-family: 'Inter', system-ui, sans-serif;
 }
-.dark ::-webkit-scrollbar-track {
-  background: transparent;
+
+/* Sticky sub-header */
+.db-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E5E7EB;
 }
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+
+/* Card */
+.db-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+}
+
+/* Status badges */
+.db-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.db-badge-critical { background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; }
+.db-badge-high { background: #FFFBEB; color: #D97706; border: 1px solid #FCD34D; }
+.db-badge-medium { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+.db-badge-low { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
+.db-badge-success { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
+.db-badge-pending { background: #F8FAFC; color: #6B7280; border: 1px solid #E5E7EB; }
+
+/* Tab bar */
+.db-tabs {
+  display: flex;
+  border-bottom: 1px solid #E5E7EB;
+  gap: 1.5rem;
+}
+
+.db-tab {
+  padding: 12px 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B7280;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.db-tab:hover { color: #111827; }
+
+.db-tab.active {
+  color: #2563EB;
+  border-bottom-color: #2563EB;
+  font-weight: 600;
+}
+
+/* ============================================
+   CUSTOM SCROLLBARS
+   ============================================ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* ============================================
+   RANGE INPUT STYLING
+   ============================================ */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
   border-radius: 9999px;
+  background: #E5E7EB;
+  outline: none;
+  cursor: pointer;
 }
-.dark ::-webkit-scrollbar-thumb {
-  background: #475569;
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563EB;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
 }
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+
+/* ============================================
+   SELECTION COLOR
+   ============================================ */
+
+::selection {
+  background: #2563EB;
+  color: #FFFFFF;
 }

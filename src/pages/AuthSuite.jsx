@@ -134,13 +134,13 @@ export default function AuthSuite() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F4] dark:bg-[#1C1B19] text-[#2A2823] dark:text-[#EDEAE3] flex flex-col lg:grid lg:grid-cols-2">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col lg:grid lg:grid-cols-2">
       {/* Left Panel: Trust & Welcome */}
-      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 min-h-screen bg-[#F5F1ED] dark:bg-[#26241F]">
+      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 min-h-screen bg-white border-r border-slate-200">
         {/* Back button */}
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-sm text-[#8A8577] hover:text-[#2A2823] dark:hover:text-[#EDEAE3] transition-colors"
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors cursor-pointer w-fit"
           aria-label="Back to home"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -150,10 +150,10 @@ export default function AuthSuite() {
         {/* Welcome content */}
         <div className="space-y-8 max-w-md">
           <div>
-            <h2 className="text-3xl font-semibold text-[#2A2823] dark:text-[#EDEAE3] mb-2">
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
               Welcome to DonateBridge
             </h2>
-            <p className="text-sm text-[#8A8577] leading-relaxed">
+            <p className="text-sm text-slate-600 leading-relaxed">
               Join a community helping verified NGOs through transparent item donations.
             </p>
           </div>
@@ -161,44 +161,44 @@ export default function AuthSuite() {
           {/* Trust points */}
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-[#4A6B4E] shrink-0 mt-0.5" />
-              <span className="text-sm text-[#2A2823] dark:text-[#EDEAE3]">Verified NGOs only</span>
+              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <span className="text-sm text-slate-700">Verified NGOs only</span>
             </div>
             <div className="flex items-start gap-3">
-              <Lock className="w-5 h-5 text-[#4A6B4E] shrink-0 mt-0.5" />
-              <span className="text-sm text-[#2A2823] dark:text-[#EDEAE3]">No cash donations</span>
+              <Lock className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <span className="text-sm text-slate-700">No cash donations</span>
             </div>
             <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-[#4A6B4E] shrink-0 mt-0.5" />
-              <span className="text-sm text-[#2A2823] dark:text-[#EDEAE3]">Secure donor and NGO accounts</span>
+              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <span className="text-sm text-slate-700">Secure donor and NGO accounts</span>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="text-xs text-[#8A8577]">
+        <p className="text-xs text-slate-400">
           © {new Date().getFullYear()} DonateBridge. All rights reserved.
         </p>
       </div>
 
       {/* Right Panel: Auth Card */}
-      <div className="flex items-center justify-center p-6 sm:p-8 lg:p-12 min-h-screen bg-[#FAF8F4] dark:bg-[#1C1B19]">
+      <div className="flex items-center justify-center p-6 sm:p-8 lg:p-12 min-h-screen bg-slate-50">
         <div className="w-full max-w-sm space-y-6">
           {/* Logo & heading */}
           <div className="text-center space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-[#4A6B4E] text-[#FAF8F4] flex items-center justify-center font-semibold text-sm mx-auto">
+            <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm mx-auto">
               DB
             </div>
-            <h1 className="text-2xl font-semibold text-[#2A2823] dark:text-[#EDEAE3]">
+            <h1 className="text-2xl font-bold text-slate-900">
               {isRegister ? 'Create Your Account' : 'Welcome Back'}
             </h1>
-            <p className="text-sm text-[#8A8577]">
+            <p className="text-sm text-slate-500">
               {isRegister
                 ? 'Join DonateBridge and make meaningful donations.'
                 : 'Sign in to continue helping verified NGOs.'}
             </p>
             {authMessage && (
-              <p className="text-xs text-[#B5653A]" role="status">
+              <p className="text-xs text-red-600" role="status">
                 {authMessage}
               </p>
             )}
@@ -207,14 +207,14 @@ export default function AuthSuite() {
           {step === 'credentials' && (
             <div className="space-y-5">
               {/* Role tabs */}
-              <div className="flex gap-2 bg-[#F5F1ED] dark:bg-[#26241F] p-1 rounded-lg">
+              <div className="flex gap-2 bg-slate-100 p-1 rounded-lg border border-slate-200">
                 <button
                   type="button"
                   onClick={() => setSelectedRole('donor')}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                  className={`flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-colors ${
                     selectedRole === 'donor'
-                      ? 'bg-white dark:bg-[#1C1B19] text-[#4A6B4E] shadow-sm'
-                      : 'text-[#8A8577] hover:text-[#2A2823] dark:hover:text-[#EDEAE3]'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
                   }`}
                   aria-label="Switch to donor account"
                   aria-pressed={selectedRole === 'donor'}
@@ -224,10 +224,10 @@ export default function AuthSuite() {
                 <button
                   type="button"
                   onClick={() => setSelectedRole('ngo')}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                  className={`flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-colors ${
                     selectedRole === 'ngo'
-                      ? 'bg-white dark:bg-[#1C1B19] text-[#4A6B4E] shadow-sm'
-                      : 'text-[#8A8577] hover:text-[#2A2823] dark:hover:text-[#EDEAE3]'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
                   }`}
                   aria-label="Switch to NGO account"
                   aria-pressed={selectedRole === 'ngo'}
@@ -278,7 +278,7 @@ export default function AuthSuite() {
                 {!isRegister && (
                   <button
                     type="button"
-                    className="text-xs text-[#4A6B4E] hover:text-[#2A2823] dark:hover:text-[#EDEAE3] font-medium transition-colors"
+                    className="text-xs text-blue-600 hover:underline font-semibold"
                   >
                     Forgot your password?
                   </button>
@@ -286,7 +286,7 @@ export default function AuthSuite() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-[#4A6B4E] hover:bg-[#3d5841] text-[#FAF8F4] dark:text-[#FAF8F4]"
+                  className="w-full"
                   disabled={loading}
                   aria-busy={loading}
                   onClick={clearAuthMessage}
@@ -295,17 +295,17 @@ export default function AuthSuite() {
                 </Button>
 
                 {authError && (
-                  <p className="text-xs text-[#B5653A]" role="alert">{authError}</p>
+                  <p className="text-xs text-red-600 font-medium" role="alert">{authError}</p>
                 )}
               </form>
 
               {/* Switch auth mode */}
-              <p className="text-center text-sm text-[#8A8577]">
+              <p className="text-center text-sm text-slate-500">
                 {isRegister ? "Already have an account? " : "Don't have an account yet? "}
                 <button
                   type="button"
                   onClick={() => setIsRegister(!isRegister)}
-                  className="text-[#4A6B4E] hover:text-[#2A2823] dark:hover:text-[#EDEAE3] font-medium transition-colors"
+                  className="text-blue-600 hover:underline font-semibold"
                 >
                   {isRegister ? 'Sign in' : 'Register'}
                 </button>
@@ -314,18 +314,18 @@ export default function AuthSuite() {
           )}
 
           {step === 'otp' && (
-            <div className="space-y-5 bg-white dark:bg-[#26241F] border border-[#DED6C8] dark:border-[#34322C] rounded-xl p-8 shadow-sm">
+            <div className="space-y-5 bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
               <div className="text-center space-y-3">
-                <div className="w-12 h-12 rounded-lg bg-[#4A6B4E]/10 text-[#4A6B4E] flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
                   <KeyRound className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-semibold text-[#2A2823] dark:text-[#EDEAE3]">
+                <h3 className="text-lg font-bold text-slate-900">
                   Verification Code Sent
                 </h3>
-                <p className="text-sm text-[#8A8577]">
+                <p className="text-sm text-slate-500">
                   Enter the 6-digit code sent to your email to complete sign in.
                 </p>
-                <p className="text-xs text-[#8A8577]">
+                <p className="text-xs text-slate-500 font-mono">
                   {otpExpiresAt
                     ? `Code expires in ${Math.max(0, Math.ceil((otpExpiresAt - Date.now()) / 1000))}s`
                     : 'Code expires in 600s'}
@@ -345,7 +345,7 @@ export default function AuthSuite() {
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-12 h-12 text-center text-lg font-semibold rounded-lg bg-white dark:bg-[#1C1B19] border border-[#DED6C8] dark:border-[#34322C] text-[#2A2823] dark:text-[#EDEAE3] focus:outline-none focus:ring-2 focus:ring-[#4A6B4E] focus:border-transparent transition-colors"
+                      className="w-12 h-12 text-center text-lg font-semibold rounded-md bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors"
                       aria-label={`OTP digit ${index + 1}`}
                     />
                   ))}
@@ -354,7 +354,7 @@ export default function AuthSuite() {
                 <div className="space-y-2">
                   <Button
                     type="submit"
-                    className="w-full bg-[#4A6B4E] hover:bg-[#3d5841] text-[#FAF8F4] dark:text-[#FAF8F4]"
+                    className="w-full"
                     disabled={loading}
                     aria-busy={loading}
                   >
@@ -363,24 +363,24 @@ export default function AuthSuite() {
                   <button
                     type="button"
                     onClick={() => setStep('credentials')}
-                    className="w-full py-2 text-sm font-medium text-[#4A6B4E] hover:text-[#2A2823] dark:hover:text-[#EDEAE3] transition-colors"
+                    className="w-full py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
                   >
                     Go Back
                   </button>
                 </div>
 
                 {authError && (
-                  <p className="text-xs text-[#B5653A] text-center" role="alert">{authError}</p>
+                  <p className="text-xs text-red-600 font-medium text-center" role="alert">{authError}</p>
                 )}
               </form>
 
-              <p className="text-center text-xs text-[#8A8577]">
+              <p className="text-center text-xs text-slate-500">
                 Didn't receive the code?{' '}
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={resendCooldown > 0}
-                  className="text-[#4A6B4E] hover:text-[#2A2823] disabled:opacity-50 disabled:cursor-not-allowed dark:hover:text-[#EDEAE3] font-medium transition-colors"
+                  className="text-blue-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors"
                 >
                   {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
                 </button>

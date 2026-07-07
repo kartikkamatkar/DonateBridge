@@ -8,6 +8,7 @@ import {
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { InputField } from '../components/ui/InputField';
+import Navbar from '../components/Navbar';
 
 export default function UserProfile() {
   const { user } = useAuth();
@@ -35,37 +36,31 @@ export default function UserProfile() {
   };
 
   const handleDownload = (id) => {
-    // Mock PDF download trigger
     alert(`Downloading Tax-Exempt Physical Donation Receipt: ${id}.pdf`);
   };
 
   return (
-    <div className="min-h-screen bg-slate-55 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Top Header Navigation */}
-      <nav className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0 z-10">
-        <button onClick={() => navigate(-1)} className="hover:text-primary transition-colors flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <span className="font-bold text-sm uppercase text-slate-500">Identity Panel</span>
-      </nav>
+    <div className="db-page min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+      {/* Shared Main Navbar */}
+      <Navbar />
 
       {/* Main Profile Area */}
-      <main className="flex-1 max-w-4xl mx-auto w-full p-6 space-y-6 overflow-y-auto">
+      <main className="flex-1 max-w-4xl mx-auto w-full p-6 space-y-6">
         
         {/* Profile Card Header */}
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-lg shadow-premium-sm flex flex-col sm:flex-row items-center gap-6">
+        <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm flex flex-col sm:flex-row items-center gap-6 animate-fadeInUp">
           <img
             src={user?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=donor'}
             alt="avatar"
-            className="w-20 h-20 rounded-full border-2 border-primary bg-slate-50"
+            className="w-20 h-20 rounded-full border-2 border-blue-600 bg-white"
           />
           <div className="space-y-1 text-center sm:text-left flex-1">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{profileName}</h2>
-            <p className="text-xs text-slate-500 flex items-center justify-center sm:justify-start gap-1">
+            <h2 className="font-sans font-bold text-xl text-slate-900">{profileName}</h2>
+            <p className="text-xs text-slate-500 flex items-center justify-center sm:justify-start gap-1 font-mono">
               <Mail className="w-3.5 h-3.5 text-slate-400" /> {user?.email || 'sarah@donor.org'}
             </p>
-            <p className="text-[10px] text-slate-450 uppercase font-semibold">
-              ROLE: {user?.role || 'donor'} ACCOUNT &bull; TRUST INDEX: 100%
+            <p className="text-[9px] text-slate-400 uppercase font-mono font-bold tracking-wider">
+              ROLE: {user?.role || 'donor'} &bull; TRUST INDEX: 100%
             </p>
           </div>
           <div className="flex gap-2">
@@ -76,28 +71,22 @@ export default function UserProfile() {
         </div>
 
         {/* Tab Selection */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800">
+        <div className="db-tabs animate-fadeInUp stagger-1">
           <button
             onClick={() => setActiveTab('account')}
-            className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'account' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
+            className={`db-tab ${activeTab === 'account' ? 'active' : ''}`}
           >
             Account Details
           </button>
           <button
             onClick={() => setActiveTab('receipts')}
-            className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'receipts' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
+            className={`db-tab ${activeTab === 'receipts' ? 'active' : ''}`}
           >
             Tax-Exempt Receipts ({receipts.length})
           </button>
           <button
             onClick={() => setActiveTab('achievements')}
-            className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'achievements' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
+            className={`db-tab ${activeTab === 'achievements' ? 'active' : ''}`}
           >
             Gamified Achievements
           </button>
@@ -105,11 +94,11 @@ export default function UserProfile() {
 
         {/* Tab Panels */}
         {activeTab === 'account' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeInUp stagger-2">
             {/* Account settings forms */}
             <div className="lg:col-span-2">
-              <Card className="p-6">
-                <h3 className="font-bold text-sm mb-4">Edit Profile details</h3>
+              <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm">
+                <h3 className="font-sans font-bold text-sm mb-4 text-slate-900">Edit Profile Details</h3>
                 
                 <form onSubmit={handleSaveProfile} className="space-y-4">
                   <InputField
@@ -137,74 +126,72 @@ export default function UserProfile() {
                     />
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-2">
+                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                     <Button type="submit" variant="primary" icon={isSaved ? Check : undefined}>
-                      {isSaved ? 'Details Saved' : 'Save Profiles'}
+                      {isSaved ? 'Details Saved' : 'Save Profile'}
                     </Button>
                   </div>
                 </form>
-              </Card>
+              </div>
             </div>
 
             {/* Security stats right */}
             <div>
-              <Card className="p-6 space-y-4">
-                <h3 className="font-bold text-sm">Security Controls</h3>
+              <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm space-y-4">
+                <h3 className="font-sans font-bold text-sm text-slate-900">Security Controls</h3>
                 
-                <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded space-y-2 text-xs">
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-2 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold flex items-center gap-1.5"><Lock className="w-4 h-4 text-primary" /> MFA Secure Code</span>
-                    <span className="text-[10px] text-emerald-500 font-bold">ENABLED</span>
+                    <span className="font-bold text-slate-700 flex items-center gap-1.5"><Lock className="w-4 h-4 text-blue-600" /> MFA OTP</span>
+                    <span className="text-[10px] text-emerald-600 font-mono font-bold">ENABLED</span>
                   </div>
-                  <p className="text-[10px] text-slate-500">MFA verification code requested for all profile updates.</p>
+                  <p className="text-[10px] text-slate-500 leading-relaxed">MFA verification code requested for all profile updates.</p>
                 </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded space-y-2 text-xs">
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-2 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-500" /> Identity verification</span>
-                    <span className="text-[10px] text-emerald-500 font-bold">VERIFIED</span>
+                    <span className="font-bold text-slate-700 flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-blue-600" /> Identity Validation</span>
+                    <span className="text-[10px] text-blue-600 font-mono font-bold">VERIFIED</span>
                   </div>
-                  <p className="text-[10px] text-slate-500">Tax documentation ID verified on June 01, 2026.</p>
+                  <p className="text-[10px] text-slate-500 leading-relaxed">Tax documentation ID verified on June 01, 2026.</p>
                 </div>
-              </Card>
+              </div>
             </div>
           </div>
         )}
 
         {activeTab === 'receipts' && (
-          <Card className="p-6">
-            <h3 className="font-bold text-sm mb-2">Tax-Deductible Donation Certificates</h3>
-            <p className="text-xs text-slate-500 mb-6 font-semibold text-emerald-650">
-              Only items verified by NGO digital signature ledger generate tax-exemption codes.
-            </p>
+          <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm animate-fadeInUp stagger-2">
+            <h3 className="font-sans font-bold text-sm mb-1 text-slate-900">Tax-Deductible Donation Certificates</h3>
+            <p className="text-xs text-slate-500 mb-6">Only items verified by NGO digital signature ledger generate tax-exemption codes.</p>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-350">
-                    <th className="p-3 font-semibold">Certificate ID</th>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
+                    <th className="p-3 font-mono font-semibold">Certificate ID</th>
                     <th className="p-3 font-semibold">Items</th>
-                    <th className="p-3 font-semibold">Fulfillment Date</th>
-                    <th className="p-3 font-semibold">NGO Authority</th>
-                    <th className="p-3 font-semibold">File Size</th>
+                    <th className="p-3 font-mono font-semibold">Fulfillment Date</th>
+                    <th className="p-3 font-semibold font-mono">NGO Code</th>
+                    <th className="p-3 font-mono font-semibold">File Size</th>
                     <th className="p-3 font-semibold text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {receipts.map((rec) => (
-                    <tr key={rec.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                      <td className="p-3 font-mono font-bold text-slate-700 dark:text-slate-350">{rec.id}</td>
-                      <td className="p-3 font-semibold">{rec.item}</td>
-                      <td className="p-3 font-mono">{rec.date}</td>
-                      <td className="p-3 font-semibold text-primary">{rec.code}</td>
-                      <td className="p-3 font-mono">{rec.size}</td>
+                    <tr key={rec.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
+                      <td className="p-3 font-mono font-semibold text-slate-500">{rec.id}</td>
+                      <td className="p-3 font-bold text-slate-900">{rec.item}</td>
+                      <td className="p-3 font-mono text-slate-600">{rec.date}</td>
+                      <td className="p-3 font-mono font-semibold text-blue-600">{rec.code}</td>
+                      <td className="p-3 font-mono text-slate-500">{rec.size}</td>
                       <td className="p-3 text-right">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDownload(rec.id)}
                           icon={Download}
-                          className="text-[10px] py-1 border border-slate-200 dark:border-slate-700"
+                          className="text-[10px] py-1 border border-slate-200"
                         >
                           PDF
                         </Button>
@@ -214,36 +201,36 @@ export default function UserProfile() {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </div>
         )}
 
         {activeTab === 'achievements' && (
-          <Card className="p-6 space-y-6">
+          <div className="db-card bg-white border border-slate-200 rounded-lg p-6 shadow-premium-sm space-y-6 animate-fadeInUp stagger-2">
             <div>
-              <h3 className="font-bold text-sm">Gamified Milestones & Impact Badges</h3>
+              <h3 className="font-sans font-bold text-sm text-slate-900">Gamified Milestones & Impact Badges</h3>
               <p className="text-xs text-slate-500">Your physical logistics history mapped to levels.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-center space-y-2 text-xs">
-                <Leaf className="w-8 h-8 mx-auto text-emerald-500" />
-                <h4 className="font-bold">CO2 Offset Bronze</h4>
-                <p className="text-slate-500 text-[10px]">Saved over 50kg of waste burn gas emission coordinates.</p>
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-md text-center space-y-2 text-xs">
+                <Leaf className="w-8 h-8 mx-auto text-emerald-600" />
+                <h4 className="font-bold text-sm text-slate-900">CO2 Offset Bronze</h4>
+                <p className="text-slate-500 text-[10px] leading-relaxed">Saved over 50kg of waste burn gas emission coordinates.</p>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-center space-y-2 text-xs">
-                <Heart className="w-8 h-8 mx-auto text-red-500" />
-                <h4 className="font-bold">Critical responder</h4>
-                <p className="text-slate-500 text-[10px]">Completed a shipment tagged as Critical Need in 3 hours.</p>
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-md text-center space-y-2 text-xs">
+                <Heart className="w-8 h-8 mx-auto text-red-500 animate-pulse" />
+                <h4 className="font-bold text-sm text-slate-900">Critical Responder</h4>
+                <p className="text-slate-500 text-[10px] leading-relaxed">Completed a shipment tagged as Critical Need in 3 hours.</p>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-center space-y-2 text-xs">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-md text-center space-y-2 text-xs">
                 <Star className="w-8 h-8 mx-auto text-amber-500" />
-                <h4 className="font-bold">Veteran Donor</h4>
-                <p className="text-slate-500 text-[10px]">Active account with 100% successful pickup logs.</p>
+                <h4 className="font-bold text-sm text-slate-900">Veteran Donor</h4>
+                <p className="text-slate-500 text-[10px] leading-relaxed">Active account with 100% successful pickup logs.</p>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
       </main>
