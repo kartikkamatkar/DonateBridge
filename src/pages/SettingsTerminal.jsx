@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Settings, Sun, Eye, Bell, Lock, ToggleLeft, ToggleRight, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/GlobalStateContext';
+import { Settings, Sun, Eye, Bell, Lock, ToggleLeft, ToggleRight, Check, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import Navbar from '../components/Navbar';
 
 export default function SettingsTerminal() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [textSize, setTextSize] = useState('normal'); // 'small' | 'normal' | 'large'
   const [highContrast, setHighContrast] = useState(false);
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -49,6 +54,29 @@ export default function SettingsTerminal() {
               </span>
             </div>
           </div>
+
+          {/* NGO Certification Manager shortcut if logged in user is NGO */}
+          {user?.role === 'ngo' && (
+            <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-3">
+              <h3 className="text-xs font-display font-bold flex items-center gap-2 text-slate-400 uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 text-primary" /> NGO Verification Certificate
+              </h3>
+              <div className="flex justify-between items-center text-xs">
+                <div>
+                  <p className="font-semibold text-slate-900">License & Legal Declarations</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Upload audit logs, registration certificates, and contact signatures.</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate('/ngo-register')}
+                >
+                  Edit NGO Info Wizard
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Accessibility card */}
           <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">

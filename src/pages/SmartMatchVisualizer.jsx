@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { MockMap } from '../components/ui/MockMap';
+import LeafletMap from '../components/ui/LeafletMap';
 import Navbar from '../components/Navbar';
 
 export default function SmartMatchVisualizer() {
@@ -171,8 +171,40 @@ export default function SmartMatchVisualizer() {
         </aside>
 
         {/* Right Side Map */}
-        <main className="flex-1 relative min-h-[350px] lg:min-h-0 bg-slate-50">
-          <MockMap highlightedNgoId={currentMatch.id} activeStep={mapStep} className="w-full h-full border-none rounded-none" />
+        <main className="flex-grow flex-1 relative min-h-[350px] lg:min-h-0 bg-slate-50">
+          <LeafletMap
+            center={[12.9725, 77.5950]}
+            zoom={13}
+            markers={[
+              { lat: 12.9740, lng: 77.5980, popupContent: <div><b>Donor Pickup Point</b><p className="text-[10px] text-slate-400">Residency Road, Bengaluru</p></div> },
+              {
+                lat: currentMatch.id === 2 ? 12.9801 : currentMatch.id === 3 ? 12.9634 : 12.9716,
+                lng: currentMatch.id === 2 ? 77.6012 : currentMatch.id === 3 ? 77.5878 : 77.5946,
+                popupContent: <div><b>NGO Hub: {currentMatch.ngo}</b><p className="text-[10px] text-slate-400">Nearby Matching Radius Enabled</p></div>
+              }
+            ]}
+            circles={[
+              {
+                lat: currentMatch.id === 2 ? 12.9801 : currentMatch.id === 3 ? 12.9634 : 12.9716,
+                lng: currentMatch.id === 2 ? 77.6012 : currentMatch.id === 3 ? 77.5878 : 77.5946,
+                radius: 1200,
+                color: '#2E7D32'
+              }
+            ]}
+            polylines={[
+              {
+                positions: [
+                  [12.9740, 77.5980],
+                  [
+                    currentMatch.id === 2 ? 12.9801 : currentMatch.id === 3 ? 12.9634 : 12.9716,
+                    currentMatch.id === 2 ? 77.6012 : currentMatch.id === 3 ? 77.5878 : 77.5946
+                  ]
+                ],
+                color: '#3b82f6'
+              }
+            ]}
+            className="w-full h-full"
+          />
 
           {/* Floating Detailed Overlay */}
           <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md border border-border p-5 rounded-2xl text-slate-900 max-w-md space-y-3.5 z-10 text-xs shadow-premium-lg">

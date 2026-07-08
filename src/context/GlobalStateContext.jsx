@@ -176,7 +176,7 @@ export const GlobalStateProvider = ({ children }) => {
     });
     
     socketInstance.connect();
-    setSocket(socketInstance);
+    Promise.resolve().then(() => setSocket(socketInstance));
 
     // Simulated event triggers for visualization purposes
     const interval = setInterval(() => {

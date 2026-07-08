@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Truck, MapPin, CheckCircle, Package, ArrowLeft, Calendar, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Truck, MapPin, CheckCircle, Package, ArrowLeft, Calendar, ShieldCheck, RefreshCw, Navigation } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import Navbar from '../components/Navbar';
 import L from 'leaflet';
@@ -8,12 +8,13 @@ import 'leaflet/dist/leaflet.css';
 
 const DONOR_COORDS = [12.9592, 77.5726];
 const NGO_COORDS = [12.9716, 77.5946];
+const MIDPOINT_COORDS = [12.9654, 77.5836];
 
 export default function LogisticsTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [activeStep, setActiveStep] = useState(3);
+  const [activeStep, setActiveStep] = useState(4); // default In Transit
   
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -21,12 +22,16 @@ export default function LogisticsTracking() {
   const routeLine = useRef(null);
 
   const milestones = [
-    { title: 'Donation Request Lodged', time: '10:00 AM, July 2', desc: 'Donor Sarah Jenkins logged 25 Wool Blankets.', done: true },
-    { title: 'NGO Match Approval Signed', time: '10:15 AM, July 2', desc: 'Hope Foundation accepted and validated item spec codes.', done: true },
-    { title: 'Courier Dispatched', time: '10:45 AM, July 2', desc: 'Express Cargo #DB-990 dispatched to collect cargo.', done: true },
-    { title: 'Fulfillment & Scaling', time: 'Pending', desc: 'Cargo scaling and digital signatures confirming receipt at NGO Hub.', done: false },
-    { title: 'Impact Ledger Confirmed', time: 'Pending', desc: 'Audit transaction saved to the transparency block ledger.', done: false },
+    { title: 'Requested', time: '10:00 AM, July 2', desc: 'Donation request logged by donor, pending verification.', coords: DONOR_COORDS },
+    { title: 'Approved', time: '10:15 AM, July 2', desc: 'Listing approved by Admin and matched with NGO need parameters.', coords: DONOR_COORDS },
+    { title: 'Dispatched', time: '10:45 AM, July 2', desc: 'Logistics carrier assigned and dispatched to donor pickup location.', coords: DONOR_COORDS },
+    { title: 'In Transit', time: '11:15 AM, July 2', desc: 'Shipment picked up, currently in transit to destination NGO hub.', coords: MIDPOINT_COORDS },
+    { title: 'Delivered', time: '11:40 AM, July 2', desc: 'Parcels delivered to the destination NGO Hub address.', coords: NGO_COORDS },
+    { title: 'Completed', time: '11:55 AM, July 2', desc: 'Digital receipt matching complete, transaction hashed on ledger.', coords: NGO_COORDS },
   ];
+
+  // Current active coordinates based on step
+  const currentCoords = milestones[activeStep - 1]?.coords || DONOR_COORDS;
 
   useEffect(() => {
     if (mapRef.current && !mapInstance.current) {
@@ -55,7 +60,7 @@ export default function LogisticsTracking() {
 
       routeLine.current = L.polyline([DONOR_COORDS, NGO_COORDS], {
         color: '#2E7D32',
-        weight: 2,
+        weight: 2.5,
         dashArray: '4,6',
         opacity: 0.8
       }).addTo(mapInstance.current);
@@ -80,23 +85,12 @@ export default function LogisticsTracking() {
 
   useEffect(() => {
     if (courierMarker.current) {
-      let nextPos = DONOR_COORDS;
-      if (activeStep <= 2) {
-        nextPos = DONOR_COORDS;
-      } else if (activeStep === 3) {
-        nextPos = [
-          (DONOR_COORDS[0] + NGO_COORDS[0]) / 2,
-          (DONOR_COORDS[1] + NGO_COORDS[1]) / 2
-        ];
-      } else {
-        nextPos = NGO_COORDS;
-      }
-      courierMarker.current.setLatLng(nextPos);
+      courierMarker.current.setLatLng(currentCoords);
       if (mapInstance.current) {
-        mapInstance.current.panTo(nextPos);
+        mapInstance.current.panTo(currentCoords);
       }
     }
-  }, [activeStep]);
+  }, [activeStep, currentCoords]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -117,17 +111,19 @@ export default function LogisticsTracking() {
             </div>
           </div>
 
-          <div className="bg-slate-50 border border-border p-4 rounded-xl text-xs space-y-2 font-mono">
+          {/* Coordinates log panel */}
+          <div className="bg-slate-50 border border-border p-4 rounded-xl text-xs space-y-2.5 font-mono">
             <div className="flex justify-between items-center font-bold">
               <span>Transit Status:</span>
-              <span className="text-primary">
-                {activeStep <= 2 ? 'Dispatched' : activeStep === 3 ? 'In Transit' : 'Delivered'}
+              <span className="text-primary uppercase tracking-wide">
+                {milestones[activeStep - 1]?.title}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span>Estimated Delivery:</span>
-              <span className="text-slate-800">
-                {activeStep <= 2 ? '18 mins' : activeStep === 3 ? '8 mins' : 'Arrived'}
+              <span>Current GPS Coords:</span>
+              <span className="text-slate-800 font-bold flex items-center gap-1">
+                <Navigation className="w-3 h-3 text-primary animate-pulse" />
+                {currentCoords[0].toFixed(5)}° N, {currentCoords[1].toFixed(5)}° E
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -136,7 +132,7 @@ export default function LogisticsTracking() {
             </div>
           </div>
 
-          <div className="relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100 pl-8 space-y-6 flex-1">
+          <div className="relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100 pl-8 space-y-6 flex-grow">
             {milestones.map((m, idx) => {
               const stepNum = idx + 1;
               const isCurrent = stepNum === activeStep;
@@ -162,7 +158,8 @@ export default function LogisticsTracking() {
             })}
           </div>
 
-          <div className="pt-4 border-t border-border flex gap-2">
+          {/* Stepper Controls */}
+          <div className="pt-4 border-t border-border flex gap-2 mt-auto">
             <button
               onClick={() => setActiveStep(prev => Math.max(1, prev - 1))}
               className="w-full py-2 border border-border bg-white hover:bg-slate-50 text-xs font-bold rounded-lg cursor-pointer transition-colors"
@@ -170,7 +167,7 @@ export default function LogisticsTracking() {
               PREVIOUS STEP
             </button>
             <button
-              onClick={() => setActiveStep(prev => Math.min(5, prev + 1))}
+              onClick={() => setActiveStep(prev => Math.min(6, prev + 1))}
               className="w-full py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
             >
               NEXT STEP
@@ -179,7 +176,7 @@ export default function LogisticsTracking() {
         </aside>
 
         {/* Right Side: Map */}
-        <main ref={mapRef} className="flex-1 min-h-[350px] lg:min-h-0 z-10" />
+        <main ref={mapRef} className="flex-grow min-h-[350px] lg:min-h-0 z-10" />
 
       </div>
     </div>

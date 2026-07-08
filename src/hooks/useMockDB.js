@@ -8,10 +8,49 @@ const INITIAL_DONORS = [
 ];
 
 const INITIAL_NGOS = [
-  { id: "ngo-1", name: "Hope Foundation", email: "ngo@donatebridge.org", lat: 12.9716, lng: 77.5946, address: "MG Road, Bengaluru", status: "verified" },
-  { id: "ngo-2", name: "Feeding Hand", email: "feed@hand.org", lat: 12.9801, lng: 77.6012, address: "Indiranagar, Bengaluru", status: "verified" },
-  { id: "ngo-3", name: "Care Society", email: "care@society.org", lat: 12.9634, lng: 77.5878, address: "Jayanagar, Bengaluru", status: "verified" },
-  { id: "ngo-4", name: "Tech Academy", email: "tech@academy.org", lat: 12.9550, lng: 77.6105, address: "Koramangala, Bengaluru", status: "verified" }
+  { id: "ngo-1", name: "Hope Foundation", email: "ngo@donatebridge.org", lat: 12.9716, lng: 77.5946, address: "MG Road, Bengaluru", status: "verified", verificationStatus: "approved", trustScore: 98, responseTime: "12m", successRate: "97%" },
+  { id: "ngo-2", name: "Feeding Hand", email: "feed@hand.org", lat: 12.9801, lng: 77.6012, address: "Indiranagar, Bengaluru", status: "verified", verificationStatus: "approved", trustScore: 95, responseTime: "24m", successRate: "93%" },
+  { id: "ngo-3", name: "Care Society", email: "care@society.org", lat: 12.9634, lng: 77.5878, address: "Jayanagar, Bengaluru", status: "verified", verificationStatus: "approved", trustScore: 92, responseTime: "18m", successRate: "90%" },
+  { id: "ngo-4", name: "Tech Academy", email: "tech@academy.org", lat: 12.9550, lng: 77.6105, address: "Koramangala, Bengaluru", status: "verified", verificationStatus: "approved", trustScore: 89, responseTime: "45m", successRate: "88%" },
+  {
+    id: "ngo-5",
+    name: "Youth Empowerment Initiative",
+    email: "youth@empower.org",
+    lat: 12.9680,
+    lng: 77.6120,
+    address: "Koramangala 5th Block, Bengaluru",
+    registrationNumber: "YEI-560095-2024",
+    govRegistrationNumber: "GST-NGO-YEI-0012",
+    ngoType: "Trust",
+    phone: "9876543210",
+    website: "https://youth-empower.org",
+    state: "Karnataka",
+    district: "Bengaluru Urban",
+    city: "Bengaluru",
+    pinCode: "560095",
+    description: "Empowering underprivileged youth through technical and vocational skills.",
+    mission: "To eliminate employment inequality in the local community.",
+    workingAreas: "Education, Technology, Skill Development",
+    operatingSince: "2019",
+    volunteersCount: 45,
+    verificationStatus: "pending",
+    trustScore: 75,
+    responseTime: "--",
+    successRate: "--",
+    documents: {
+      govRegCert: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=400",
+      panCard: "https://images.unsplash.com/photo-1557200134-90327ee9fafa?w=400",
+      trustRegCert: "https://images.unsplash.com/photo-1543087903-1ac2ec7aa8c5?w=400",
+      doc80G: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=400",
+      doc12A: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=400",
+      logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400",
+      officePhoto: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400",
+      authPersonPhoto: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400",
+      addressProof: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400",
+      idProof: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=400",
+      verificationLetter: "https://images.unsplash.com/photo-1554224155-6b8906924b5e?w=400"
+    }
+  }
 ];
 
 const INITIAL_NEEDS = [
@@ -303,6 +342,10 @@ export function useMockDB() {
     return newNeed;
   };
 
+  const deleteNeed = (needId) => {
+    setNeeds(prev => prev.filter(item => item.id !== needId));
+  };
+
   const getSmartMatchesForNgo = (ngoId) => {
     const ngo = ngos.find(n => n.id === ngoId);
     if (!ngo) return [];
@@ -373,6 +416,32 @@ export function useMockDB() {
     });
   };
 
+  const registerNgo = (ngoData) => {
+    const newNgo = {
+      id: `ngo-${Math.floor(10000 + Math.random() * 90000)}`,
+      verificationStatus: 'pending',
+      trustScore: 70,
+      responseTime: '--',
+      successRate: '--',
+      ...ngoData
+    };
+    setNgos(prev => [newNgo, ...prev]);
+    return newNgo;
+  };
+
+  const updateNgoStatus = (id, newStatus, reason = '') => {
+    setNgos(prev => prev.map(item => {
+      if (item.id === id) {
+        return {
+          ...item,
+          verificationStatus: newStatus,
+          rejectionReason: reason
+        };
+      }
+      return item;
+    }));
+  };
+
   return {
     donations,
     needs,
@@ -381,8 +450,11 @@ export function useMockDB() {
     addDonation,
     updateDonationStatus,
     addNeed,
+    deleteNeed,
     getSmartMatchesForNgo,
     getSmartMatchesForDonation,
-    executeMatch
+    executeMatch,
+    registerNgo,
+    updateNgoStatus
   };
 }

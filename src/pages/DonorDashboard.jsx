@@ -256,6 +256,10 @@ export default function DonorDashboard() {
               <p className="text-2xl font-display font-extrabold tracking-tight">{carbonSavedKg.toFixed(1)} kg</p>
               <p className="text-[10px] text-emerald-100 font-medium">Estimated Carbon Saved</p>
             </div>
+            <div className="text-[10px] text-emerald-100 space-y-1">
+              <p>&bull; Equivalent to <b>{(carbonSavedKg / 22).toFixed(1)}</b> trees planted</p>
+              <p>&bull; Offset <b>{(carbonSavedKg * 2.5).toFixed(1)}</b> driving miles</p>
+            </div>
             <div className="w-full bg-white/20 rounded-full h-1 overflow-hidden">
               <div className="bg-white h-full" style={{ width: `${Math.min(100, (carbonSavedKg / 50) * 100)}%` }} />
             </div>

@@ -39,6 +39,12 @@ export default function AuthSuite() {
   }, [isRegisterParam]);
 
   useEffect(() => {
+    if (isRegister && selectedRole === 'ngo') {
+      navigate('/ngo-register');
+    }
+  }, [isRegister, selectedRole, navigate]);
+
+  useEffect(() => {
     if (!resendCooldown) return undefined;
     const timer = setInterval(() => {
       setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));

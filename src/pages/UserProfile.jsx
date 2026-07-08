@@ -61,6 +61,11 @@ export default function UserProfile() {
             </p>
           </div>
           <div className="flex gap-2">
+            {user?.role === 'ngo' && (
+              <Button variant="primary" className="text-xs font-semibold" onClick={() => navigate('/ngo-register')}>
+                Manage NGO License
+              </Button>
+            )}
             <Button variant="secondary" className="text-xs font-semibold" onClick={() => navigate('/settings')}>
               System Preferences
             </Button>

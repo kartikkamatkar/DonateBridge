@@ -6,12 +6,12 @@ import Navbar from '../components/Navbar';
 import DonationCard from '../components/ui/DonationCard';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
+import { useToast } from '../components/ui/Toast';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
-import { ShieldCheck, Package, Clock, AlertTriangle, Plus, MapPin, BarChart3, Activity, Heart } from 'lucide-react';
+import { ShieldCheck, Package, Clock, AlertTriangle, Plus, MapPin, BarChart3, Activity, Heart, Trash2, ArrowRight } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Chart mock data
 const MONTHLY_DATA = [
   { month: 'Jan', received: 120, target: 100 },
   { month: 'Feb', received: 150, target: 120 },
@@ -34,6 +34,8 @@ export default function NgoConsole() {
   const { user } = useAuth();
   const db = useMockDB();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
   const [activeTab, setActiveTab] = useState('matches'); // 'matches' | 'needs' | 'geo' | 'analytics'
 
   // Need posting form states
@@ -61,7 +63,13 @@ export default function NgoConsole() {
   // Pickups/Matched items in transit
   const activeIncoming = db.donations.filter(d => d.matchedNgoId === currentNgo.id && d.status === 'MATCHED');
 
-  // Trigger leaflet map rendering
+  // Inventory stats
+  const deliveredDonations = db.donations.filter(d => d.matchedNgoId === currentNgo.id && d.status === 'DELIVERED');
+  const totalReceived = deliveredDonations.reduce((acc, curr) => acc + curr.quantity, 0);
+  const totalInTransit = activeIncoming.reduce((acc, curr) => acc + curr.quantity, 0);
+  const activeNeedsCount = ngoNeeds.length;
+
+  // Initialize leaflet map picker on tab change
   useEffect(() => {
     if (activeTab === 'geo' && geoMapRef.current && !geoMapInstance.current) {
       geoMapInstance.current = L.map(geoMapRef.current).setView([currentNgo.lat, currentNgo.lng], 13);
@@ -136,15 +144,24 @@ export default function NgoConsole() {
     setNeedItem('');
     setNeedQty('');
     setNeedDescription('');
+    toast.success('Need broadcasted successfully!');
     setActiveTab('matches');
   };
 
   const handleClaimDonation = (donationId, score) => {
     db.executeMatch(donationId, currentNgo.id, score);
+    toast.success('Logistics match claimed! Shipment scheduled.');
+  };
+
+  const handleDeleteNeed = (id) => {
+    db.deleteNeed(id);
+    toast.success('Need broadcast deleted.');
   };
 
   // Rejection/Restricted state check
-  if (user?.role === 'ngo' && user?.verificationStatus === 'rejected') {
+  const verStatus = currentNgo?.verificationStatus || 'approved';
+
+  if (verStatus === 'rejected') {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 text-slate-900">
         <div className="w-full max-w-xl bg-white border border-border p-8 rounded-2xl shadow-premium-lg text-center space-y-5">
@@ -158,7 +175,7 @@ export default function NgoConsole() {
           <div className="p-4 rounded-xl border border-border bg-slate-50 text-left text-xs space-y-1">
             <p className="font-bold text-slate-800">Rejection Reason:</p>
             <p className="text-slate-600">
-              {user?.rejectionReason || 'Invalid NGO registration license number. Please verify tax details.'}
+              {currentNgo?.rejectionReason || 'Invalid NGO registration license number. Please verify tax details.'}
             </p>
           </div>
           <div className="flex justify-center gap-3 pt-2">
@@ -174,19 +191,92 @@ export default function NgoConsole() {
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
 
-      <main className="flex-1 p-6 sm:p-8 space-y-6 max-w-7xl mx-auto w-full">
+      <main className="flex-grow p-6 sm:p-8 space-y-6 max-w-7xl mx-auto w-full">
         
-        {/* NGO Header banner */}
-        <div className="bg-white border border-border p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-2xl shadow-premium-sm">
+        {/* NGO Header banner with dynamic verification status */}
+        <div className="bg-white border border-border p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 rounded-2xl shadow-premium-sm">
           <div>
-            <h2 className="text-lg font-display font-bold text-ink">{currentNgo.name}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-display font-bold text-ink">{currentNgo.name}</h2>
+              {verStatus === 'approved' ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold uppercase">
+                  Approved
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-[10px] font-bold uppercase">
+                  Pending Audit
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-400 font-mono mt-0.5">HUB ID: #{currentNgo.id} &bull; VETTED ORGANISATION</p>
           </div>
-          <div className="flex items-center gap-2 bg-[#F1F8F5] border border-emerald-100 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-primary">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Trust Score: 98% (High Tier)</span>
+
+          {/* Verification Warning for Pending NGOs */}
+          {verStatus === 'pending' && (
+            <div className="flex-1 max-w-md bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-xs leading-relaxed flex gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Pending Administrative Review</p>
+                <p className="text-amber-700/90 text-[11px] mt-0.5">Your submitted certificates are currently in the audit queue. Complete operations will unlock once approved.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Trust Score stats block */}
+          <div className="flex gap-4 shrink-0">
+            <div className="text-center bg-slate-50 border border-border px-4 py-2 rounded-xl">
+              <span className="text-[9px] font-mono text-slate-400 block font-bold">TRUST SCORE</span>
+              <span className={`text-sm font-bold block mt-0.5 ${verStatus === 'approved' ? 'text-emerald-600' : 'text-slate-600'}`}>
+                {currentNgo.trustScore || 70}%
+              </span>
+            </div>
+            <div className="text-center bg-slate-50 border border-border px-4 py-2 rounded-xl">
+              <span className="text-[9px] font-mono text-slate-400 block font-bold">RESPONSE TIME</span>
+              <span className="text-sm font-bold text-slate-600 block mt-0.5">
+                {currentNgo.responseTime || '--'}
+              </span>
+            </div>
+            <div className="text-center bg-slate-50 border border-border px-4 py-2 rounded-xl">
+              <span className="text-[9px] font-mono text-slate-400 block font-bold">SUCCESS RATE</span>
+              <span className="text-sm font-bold text-slate-600 block mt-0.5">
+                {currentNgo.successRate || '--'}
+              </span>
+            </div>
           </div>
         </div>
+
+        {/* Inventory Counters Widgets */}
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm flex justify-between items-center">
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">ITEMS RECEIVED</span>
+              <span className="text-2xl font-display font-extrabold text-ink mt-1 block">{totalReceived} units</span>
+            </div>
+            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+              <Package className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm flex justify-between items-center">
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">CARGO IN TRANSIT</span>
+              <span className="text-2xl font-display font-extrabold text-primary mt-1 block">{totalInTransit} units</span>
+            </div>
+            <div className="w-10 h-10 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm flex justify-between items-center">
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">ACTIVE DEMAND POSTS</span>
+              <span className="text-2xl font-display font-extrabold text-secondary mt-1 block">{activeNeedsCount} requests</span>
+            </div>
+            <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+              <Activity className="w-5 h-5" />
+            </div>
+          </div>
+        </section>
 
         {/* Dashboard Tabs Navigation */}
         <div className="flex border-b border-border gap-2">
@@ -245,7 +335,15 @@ export default function NgoConsole() {
               </span>
             </div>
 
-            {rawMatches.length === 0 ? (
+            {verStatus !== 'approved' && (
+              <div className="bg-white border border-border p-12 rounded-2xl text-center space-y-3">
+                <AlertTriangle className="w-10 h-10 text-amber-600 mx-auto" />
+                <h3 className="text-sm font-display font-bold text-ink">Verification Required</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">Only approved NGOs can claim matched donations. Please wait for an administrator to audit your registration certificates.</p>
+              </div>
+            )}
+
+            {verStatus === 'approved' && rawMatches.length === 0 ? (
               <div className="bg-white border border-border rounded-2xl p-12 text-center space-y-3">
                 <Package className="w-10 h-10 text-slate-300 mx-auto" />
                 <h3 className="text-sm font-display font-bold text-ink">No Smart Matches Found</h3>
@@ -254,7 +352,7 @@ export default function NgoConsole() {
                   Broadcast Need Item
                 </Button>
               </div>
-            ) : (
+            ) : verStatus === 'approved' && (
               <div className="grid grid-cols-1 gap-6">
                 {rawMatches.map(({ donation, need, scoreBreakdown }) => (
                   <DonationCard
@@ -284,25 +382,49 @@ export default function NgoConsole() {
               {ngoNeeds.length === 0 ? (
                 <p className="p-6 text-xs text-slate-400 text-center font-mono border border-dashed border-border rounded-xl">No active inventory needs posted.</p>
               ) : (
-                <div className="grid grid-cols-1 gap-3">
-                  {ngoNeeds.map(need => (
-                    <div key={need.id} className="p-5 bg-white border border-border rounded-2xl shadow-premium-sm flex justify-between items-start text-xs">
-                      <div>
-                        <p className="font-display font-bold text-sm text-ink">{need.item}</p>
-                        <p className="text-slate-400 text-[10px] font-mono mt-1 uppercase">
-                          Category: {need.category} &bull; Qty Required: {need.quantity} units
-                        </p>
-                        {need.description && <p className="text-slate-500 mt-2 italic">"{need.description}"</p>}
-                      </div>
-                      <span className={`px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase ${
-                        need.urgency === 'High' ? 'bg-red-50 text-red-700 border-red-200' :
-                        need.urgency === 'Medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        'bg-slate-50 text-slate-700 border-slate-200'
-                      }`}>
-                        {need.urgency} Urgency
-                      </span>
-                    </div>
-                  ))}
+                <div className="overflow-hidden border border-border rounded-xl bg-white shadow-premium-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-border bg-slate-50 text-slate-600 font-semibold">
+                          <th className="p-4">Category</th>
+                          <th className="p-4">Item Needed</th>
+                          <th className="p-4 text-center">Quantity</th>
+                          <th className="p-4">Urgency</th>
+                          <th className="p-4">Description</th>
+                          <th className="p-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {ngoNeeds.map(need => (
+                          <tr key={need.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="p-4 font-bold text-primary font-mono text-[10px] uppercase">{need.category}</td>
+                            <td className="p-4 font-semibold text-slate-900">{need.item}</td>
+                            <td className="p-4 text-center font-mono">{need.quantity}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 border text-[9px] font-bold rounded-full uppercase ${
+                                need.urgency === 'High' ? 'bg-red-50 text-red-700 border-red-200' :
+                                need.urgency === 'Medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                'bg-slate-50 text-slate-700 border-slate-200'
+                              }`}>
+                                {need.urgency}
+                              </span>
+                            </td>
+                            <td className="p-4 text-slate-500 max-w-[150px] truncate" title={need.description}>{need.description || '--'}</td>
+                            <td className="p-4 text-right">
+                              <button
+                                onClick={() => handleDeleteNeed(need.id)}
+                                className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                                title="Delete broadcast"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
@@ -317,9 +439,9 @@ export default function NgoConsole() {
                   <select
                     value={needCategory}
                     onChange={(e) => setNeedCategory(e.target.value)}
-                    className="w-full bg-white border border-border p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    className="w-full bg-white border border-border p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none h-10 font-medium"
                   >
-                    {['Clothing', 'Food', 'Books', 'Furniture', 'Electronics', 'Medical', 'Other'].map(cat => (
+                    {['Clothing', 'Food', 'Books', 'Furniture', 'Electronics', 'Medical Equipment', 'School Supplies', 'Blankets', 'Sports Equipment'].map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
@@ -351,7 +473,7 @@ export default function NgoConsole() {
                     <select
                       value={needUrgency}
                       onChange={(e) => setNeedUrgency(e.target.value)}
-                      className="w-full bg-white border border-border p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                      className="w-full bg-white border border-border p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none h-10 font-medium"
                     >
                       <option value="High">High</option>
                       <option value="Medium">Medium</option>
@@ -447,38 +569,13 @@ export default function NgoConsole() {
                   {CATEGORY_DATA.map(item => (
                     <div key={item.name} className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="font-bold text-ink">{item.name}:</span>
+                      <span className="font-bold text-slate-700">{item.name}:</span>
                       <span className="text-slate-500">{item.value}%</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-
-            {/* Recharts Bar Chart: Retention metrics */}
-            <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4 lg:col-span-2">
-              <h4 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Donor Retention & Environmental Performance Metrics</h4>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={[
-                      { name: 'New Donors', count: 18, co2: 45 },
-                      { name: 'Returning Donors', count: 32, co2: 80 },
-                      { name: 'Corporate CSR Partners', count: 8, co2: 125 }
-                    ]}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fontFamily: 'monospace' }} />
-                    <YAxis tick={{ fontSize: 10, fontFamily: 'monospace' }} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#2E7D32" radius={[4, 4, 0, 0]} name="Active Providers Count" />
-                    <Bar dataKey="co2" fill="#43A047" radius={[4, 4, 0, 0]} name="CO2 Saved (kg)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
           </div>
         )}
 

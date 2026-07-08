@@ -8,7 +8,6 @@ export const MockMap = ({
   interactive = true,
   className = '',
 }) => {
-  const [courierPos, setCourierPos] = useState({ x: 250, y: 180 });
   const [pulse, setPulse] = useState(true);
 
   // Sample locations
@@ -19,36 +18,35 @@ export const MockMap = ({
     ngo3: { id: 3, x: 180, y: 320, name: 'Green Life NGO (Medium Need)', type: 'ngo', urgency: 'Medium' },
   };
 
-  // Animate courier along route from Donor (100, 150) to NGO (based on step/target)
+  let target = locations.ngo1; // default to Hope Foundation
+  if (highlightedNgoId === 2) target = locations.ngo2;
+  if (highlightedNgoId === 3) target = locations.ngo3;
+
+  let start = locations.donor;
+
+  // Simulate motion based on activeStep
+  let courierPos = { x: start.x, y: start.y };
+  if (activeStep === 2) {
+    // Dispatched: halfway to donor, or at donor
+    courierPos = { x: start.x - 20, y: start.y + 10 };
+  } else if (activeStep === 3) {
+    // In Transit: between donor and ngo
+    const dx = target.x - start.x;
+    const dy = target.y - start.y;
+    courierPos = { x: start.x + dx * 0.6, y: start.y + dy * 0.6 };
+  } else if (activeStep >= 4) {
+    // Delivered: at NGO
+    courierPos = { x: target.x, y: target.y };
+  }
+
+  // Animate pulse
   useEffect(() => {
-    let target = locations.ngo1; // default to Hope Foundation
-    if (highlightedNgoId === 2) target = locations.ngo2;
-    if (highlightedNgoId === 3) target = locations.ngo3;
-
-    let start = locations.donor;
-    
-    // Simulate motion based on activeStep
-    if (activeStep <= 1) {
-      setCourierPos({ x: start.x, y: start.y });
-    } else if (activeStep === 2) {
-      // Dispatched: halfway to donor, or at donor
-      setCourierPos({ x: start.x - 20, y: start.y + 10 });
-    } else if (activeStep === 3) {
-      // In Transit: between donor and ngo
-      const dx = target.x - start.x;
-      const dy = target.y - start.y;
-      setCourierPos({ x: start.x + dx * 0.6, y: start.y + dy * 0.6 });
-    } else {
-      // Delivered: at NGO
-      setCourierPos({ x: target.x, y: target.y });
-    }
-
     const interval = setInterval(() => {
       setPulse(p => !p);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeStep, highlightedNgoId]);
+  }, []);
 
   return (
     <div className={`relative bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex flex-col ${className}`}>

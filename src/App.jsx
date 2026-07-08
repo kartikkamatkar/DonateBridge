@@ -25,6 +25,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import BrandIdentity from './pages/BrandIdentity';
 import NotFound from './pages/NotFound';
+import NgoRegister from './pages/NgoRegister';
 
 // Role-Based Access Control Route Guard
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -52,6 +53,9 @@ export default function App() {
 
         {/* Screen 2: Authentication Core Suite */}
         <Route path="/auth" element={<AuthSuite />} />
+
+        {/* New NGO Registration Wizard */}
+        <Route path="/ngo-register" element={<NgoRegister />} />
 
         {/* Screen 6: Discover Directory */}
         <Route path="/discover" element={<SearchDirectory />} />

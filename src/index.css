@@ -153,3 +153,59 @@ textarea:focus-visible {
 .leaflet-bar a:hover {
   background-color: var(--color-bg) !important;
 }
+
+/* Global Sizing & Typography Overrides */
+h1, .page-title {
+  font-size: 36px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em;
+}
+
+h2, .section-heading {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+h3, .card-title {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+
+p, span, div, li, td, .text-normal {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.text-normal-lg {
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+/* Button & Input Sizing (48px Heights & 16px Font Sizes) */
+input, select, textarea, .input-tall {
+  font-size: 16px !important;
+  min-height: 48px !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+button, .btn-tall {
+  font-size: 16px !important;
+  min-height: 48px !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+table, th, td {
+  font-size: 16px !important;
+}
+
+/* Increase card spacings */
+.grid-gap-large {
+  gap: 24px !important;
+}
+
+.saas-card {
+  padding: 28px !important;
+  margin-bottom: 24px;
+}
+
