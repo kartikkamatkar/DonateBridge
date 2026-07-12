@@ -9,7 +9,7 @@ import { InputField } from '../components/ui/InputField';
 import { useToast } from '../components/ui/Toast';
 import {
   ShieldCheck, AlertTriangle, TrendingUp, X, RotateCcw,
-  Check, Eye, Download, ZoomIn, ZoomOut, Maximize2, MapPin, Calendar, Heart
+  Check, Eye, Download, ZoomIn, ZoomOut, Maximize2, MapPin, Calendar, Heart, ShieldAlert
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -140,44 +140,49 @@ export default function AdminDashboard() {
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 flex flex-col lg:flex-row gap-8 items-start">
         
         {/* Navigation Sidebar */}
-        <aside className="w-full lg:w-64 shrink-0 flex flex-col gap-3">
+        <aside className="w-full lg:w-72 shrink-0 space-y-4">
           <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
-            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase block tracking-wider">ADMIN CONTROL</span>
-            <h3 className="text-base font-display font-bold text-ink mt-1 truncate">{user?.name || 'Administrator'}</h3>
-            <p className="text-xs text-red-600 font-mono font-semibold uppercase tracking-wider mt-0.5">Superuser Console</p>
+            <span className="text-slate-400 font-bold uppercase tracking-wider block font-mono" style={{ fontSize: '10px' }}>ADMIN CONSOLE</span>
+            <h3 className="font-display font-black text-slate-900 mt-1 truncate" style={{ fontSize: '18px' }}>{user?.name || 'Administrator'}</h3>
+            <span className="inline-flex mt-2 px-2.5 py-0.5 rounded bg-red-50 border border-red-150 text-red-650 font-mono font-bold" style={{ fontSize: '10px' }}>
+              SUPERUSER ACCESS
+            </span>
           </div>
 
-          <div className="bg-white border border-border p-2 rounded-2xl shadow-premium-sm flex flex-col gap-1">
+          <div className="bg-white border border-border p-2.5 rounded-2xl shadow-premium-sm flex flex-col gap-1.5">
             <button
               onClick={() => setActiveTab('moderation')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-semibold transition-all cursor-pointer ${
                 activeTab === 'moderation'
-                  ? 'bg-primary text-white font-bold'
-                  : 'text-slate-600 hover:text-ink hover:bg-slate-50'
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
+              style={{ fontSize: '14px', minHeight: '46px' }}
             >
               <ShieldCheck className="w-4 h-4" /> Moderation Queue
             </button>
             <button
               onClick={() => setActiveTab('fraud')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-semibold transition-all cursor-pointer ${
                 activeTab === 'fraud'
-                  ? 'bg-primary text-white font-bold'
-                  : 'text-slate-600 hover:text-ink hover:bg-slate-50'
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
+              style={{ fontSize: '14px', minHeight: '46px' }}
             >
-              <AlertTriangle className="w-4 h-4" /> Fraud Risk Radar
+              <ShieldAlert className="w-4 h-4" /> Fraud Risk Radar
             </button>
             <button
               onClick={() => setActiveTab('metrics')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-semibold transition-all cursor-pointer ${
                 activeTab === 'metrics'
-                  ? 'bg-primary text-white font-bold'
-                  : 'text-slate-600 hover:text-ink hover:bg-slate-50'
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
+              style={{ fontSize: '14px', minHeight: '46px' }}
             >
               <TrendingUp className="w-4 h-4" /> System Metrics
             </button>
@@ -185,66 +190,65 @@ export default function AdminDashboard() {
         </aside>
 
         {/* Central Workspace */}
-        <main className="flex-1 space-y-6 min-w-0">
+        <main className="flex-1 space-y-8 min-w-0 w-full">
           
           {/* TAB 1: MODERATION QUEUE */}
           {activeTab === 'moderation' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               
               {/* Donor Submissions Section */}
-              <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
-                <h3 className="text-sm font-display font-bold text-ink uppercase tracking-wider">Donor Shipment Verifications</h3>
-                <p className="text-xs text-slate-500">Audit geocoded physical shipment tags before they become claimable by NGOs.</p>
+              <div className="bg-white border border-border p-8 rounded-2xl shadow-premium-sm space-y-6">
+                <div>
+                  <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" style={{ fontSize: '16px' }}>Donor Shipment Verifications</h3>
+                  <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>Verify geocoded physical donation listings before they are made claimable by local NGOs.</p>
+                </div>
 
                 {pendingDonations.length === 0 ? (
-                  <p className="p-8 text-xs font-mono text-slate-400 text-center border border-dashed border-border rounded-xl">No submissions pending moderation review.</p>
+                  <p className="p-12 text-slate-500 text-center font-semibold border border-dashed border-slate-200 rounded-xl bg-slate-50" style={{ fontSize: '14px' }}>No donations pending review.</p>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-6">
                     {pendingDonations.map((donation) => (
-                      <div key={donation.id} className="relative bg-slate-50 border border-border p-5 rounded-xl flex flex-col justify-between gap-4 overflow-hidden">
+                      <div key={donation.id} className="relative bg-slate-50 border border-border p-6 rounded-2xl flex flex-col gap-5 overflow-hidden">
                         
                         {/* Stamp Animation Overlay */}
                         {pendingActions[donation.id] && (
-                          <div className="absolute inset-0 bg-white/70 z-20 flex items-center justify-center pointer-events-none">
+                          <div className="absolute inset-0 bg-white/80 z-20 flex items-center justify-center pointer-events-none">
                             <StatusStamp
                               status={pendingActions[donation.id].actionType === 'approve' ? 'VERIFIED' : 'REJECTED'}
-                              className="text-sm scale-110 font-bold"
+                              className="scale-110 font-bold"
                             />
                           </div>
                         )}
 
-                        <div className="flex flex-col sm:flex-row justify-between gap-4 items-start">
-                          <div className="space-y-1 text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-primary">{donation.id}</span>
-                              <span className="text-[10px] bg-slate-200/60 text-slate-700 px-2 py-0.5 rounded-full font-semibold uppercase">{donation.category}</span>
+                        <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
+                          <div className="space-y-1.5 flex-grow">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono font-bold text-primary" style={{ fontSize: '13px' }}>{donation.id}</span>
+                              <span className="px-2.5 py-0.5 bg-slate-200/70 text-slate-700 rounded-full font-bold uppercase" style={{ fontSize: '10px' }}>{donation.category}</span>
                             </div>
-                            <p className="font-bold text-slate-900 text-sm mt-1">{donation.title || 'Donation Item'}</p>
-                            <p className="text-slate-500">Donor: {donation.donorName} ({donation.donorEmail})</p>
-                            <p className="text-slate-500">Pickup Address: {donation.location?.address}</p>
+                            <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>{donation.itemName || donation.title || 'Donation Item'}</h4>
+                            <p className="text-slate-500" style={{ fontSize: '13px' }}>Donor: <b>{donation.donorName}</b> ({donation.donorEmail})</p>
+                            <p className="text-slate-500 flex items-center gap-1" style={{ fontSize: '13px' }}>
+                              <MapPin className="w-4 h-4 text-slate-400 shrink-0" /> {donation.location?.address}
+                            </p>
                           </div>
 
-                          <div className="flex gap-2 shrink-0">
+                          <div className="flex flex-wrap gap-2.5 shrink-0 w-full md:w-auto">
                             <Button
                               variant="secondary"
-                              size="sm"
-                              className="text-[10px] py-1 h-9"
                               onClick={() => setSelectedDonation(selectedDonation?.id === donation.id ? null : donation)}
                             >
-                              {selectedDonation?.id === donation.id ? 'Hide Details' : 'View Audit Details'}
+                              {selectedDonation?.id === donation.id ? 'Hide Details' : 'Audit Details'}
                             </Button>
                             <Button
                               variant="primary"
-                              size="sm"
-                              className="text-[10px] py-1 h-9"
-                              onClick={() => queueAction(donation.id, 'approve', 'donation', donation.title || 'Donation Item')}
+                              onClick={() => queueAction(donation.id, 'approve', 'donation', donation.itemName || donation.title || 'Donation Item')}
                             >
                               Approve
                             </Button>
                             <Button
                               variant="secondary"
-                              size="sm"
-                              className="text-[10px] py-1 h-9 text-red-600 border-red-100 hover:bg-red-50"
+                              className="text-red-600 border-red-150 hover:bg-red-50 hover:border-red-200"
                               onClick={() => {
                                 setRejectType('donation');
                                 setRejectItemId(donation.id);
@@ -257,32 +261,32 @@ export default function AdminDashboard() {
 
                         {/* Collapsible Details */}
                         {selectedDonation?.id === donation.id && (
-                          <div className="mt-4 pt-4 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-3">
-                              <div className="text-xs space-y-1">
-                                <span className="font-bold text-slate-700 block">Description:</span>
-                                <p className="text-slate-500 leading-relaxed bg-white border border-border p-3 rounded-lg">{donation.description}</p>
+                          <div className="pt-6 border-t border-slate-200 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>Item Description:</span>
+                                <p className="text-slate-650 leading-relaxed bg-white border border-border p-4 rounded-xl" style={{ fontSize: '14px' }}>{donation.description}</p>
                               </div>
-                              <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div className="grid grid-cols-2 gap-4" style={{ fontSize: '13px' }}>
                                 <div>
-                                  <span className="font-bold text-slate-700">Condition:</span>
-                                  <span className="block text-slate-500 mt-0.5">{donation.condition}</span>
+                                  <span className="font-bold text-slate-450 block font-mono text-[10px] uppercase">Condition</span>
+                                  <span className="font-bold text-slate-800 block mt-0.5">{donation.condition}</span>
                                 </div>
                                 <div>
-                                  <span className="font-bold text-slate-700">Quantity:</span>
-                                  <span className="block text-slate-500 mt-0.5">{donation.quantity} units</span>
+                                  <span className="font-bold text-slate-450 block font-mono text-[10px] uppercase">Quantity</span>
+                                  <span className="font-bold text-slate-800 block mt-0.5">{donation.quantity} units</span>
                                 </div>
                               </div>
 
                               {donation.photos?.length > 0 && (
-                                <div className="space-y-1.5">
-                                  <span className="text-xs font-bold text-slate-700 block">Uploaded Photos:</span>
-                                  <div className="flex gap-2 overflow-x-auto py-1">
+                                <div className="space-y-2">
+                                  <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>Uploaded Item Photos:</span>
+                                  <div className="flex gap-3 overflow-x-auto py-1">
                                     {donation.photos.map((photo, i) => (
                                       <div
                                         key={i}
-                                        onClick={() => setActiveLightboxDoc({ label: `Item Photo ${i+1}`, url: photo })}
-                                        className="w-16 h-16 border border-border rounded-lg overflow-hidden shrink-0 bg-white cursor-zoom-in"
+                                        onClick={() => setActiveLightboxDoc({ label: `Item Photo ${i+1}`, urls: [photo], activeIndex: 0 })}
+                                        className="w-20 h-20 border border-border rounded-xl overflow-hidden shrink-0 bg-white cursor-zoom-in hover:border-primary transition-colors"
                                       >
                                         <img src={photo} alt="" className="w-full h-full object-cover" />
                                       </div>
@@ -293,13 +297,13 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Map View */}
-                            <div className="space-y-1">
-                              <span className="text-xs font-bold text-slate-700 block">Pickup Location Map:</span>
-                              <div className="h-44 rounded-xl overflow-hidden border border-border">
+                            <div className="space-y-2">
+                              <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>Pickup Coordinates Location:</span>
+                              <div className="h-56 rounded-xl overflow-hidden border border-border">
                                 <LeafletMap
                                   center={[donation.location?.lat || 12.9716, donation.location?.lng || 77.5946]}
                                   zoom={13}
-                                  markers={[{ lat: donation.location?.lat, lng: donation.location?.lng, popupContent: <div><b>Pickup Point</b></div> }]}
+                                  markers={[{ lat: donation.location?.lat, lng: donation.location?.lng, popupContent: `<strong>${donation.itemName} Pickup Point</strong>` }]}
                                 />
                               </div>
                             </div>
@@ -313,55 +317,52 @@ export default function AdminDashboard() {
               </div>
 
               {/* NGO Authority Applications */}
-              <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
-                <h3 className="text-sm font-display font-bold text-ink uppercase tracking-wider">NGO Authority Verification Queue</h3>
-                <p className="text-xs text-slate-500">Verify regulatory filings, corporate registrations and legal certificates.</p>
+              <div className="bg-white border border-border p-8 rounded-2xl shadow-premium-sm space-y-6">
+                <div>
+                  <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" style={{ fontSize: '16px' }}>NGO Authority Verification Queue</h3>
+                  <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>Verify regulatory filings, NGO registration certificate uploads, and legal status.</p>
+                </div>
 
                 {pendingNgos.length === 0 ? (
-                  <p className="p-8 text-xs font-mono text-slate-400 text-center border border-dashed border-border rounded-xl">No NGO verification requests pending.</p>
+                  <p className="p-12 text-slate-500 text-center font-semibold border border-dashed border-slate-200 rounded-xl bg-slate-50" style={{ fontSize: '14px' }}>No NGO registrations pending audit.</p>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-6">
                     {pendingNgos.map((ngo) => (
-                      <div key={ngo.id} className="relative bg-slate-50 border border-border p-5 rounded-xl flex flex-col justify-between gap-4 overflow-hidden">
+                      <div key={ngo.id} className="relative bg-slate-50 border border-border p-6 rounded-2xl flex flex-col gap-5 overflow-hidden">
                         
                         {/* Stamp Animation Overlay */}
                         {pendingActions[ngo.id] && (
-                          <div className="absolute inset-0 bg-white/70 z-20 flex items-center justify-center pointer-events-none">
+                          <div className="absolute inset-0 bg-white/80 z-20 flex items-center justify-center pointer-events-none">
                             <StatusStamp
                               status={pendingActions[ngo.id].actionType === 'approve' ? 'APPROVED' : pendingActions[ngo.id].actionType === 'request_changes' ? 'CHANGES REQ' : 'REJECTED'}
-                              className="text-sm scale-110 font-bold"
+                              className="scale-110 font-bold"
                             />
                           </div>
                         )}
 
-                        <div className="flex flex-col sm:flex-row justify-between gap-4 items-start">
-                          <div className="space-y-1 text-xs">
-                            <p className="font-bold text-sm text-slate-900">{ngo.name}</p>
-                            <p className="text-slate-500">Tax Filing Reference: <strong className="font-mono text-primary">{ngo.registrationNumber}</strong></p>
-                            <p className="text-slate-500">Website: <a href={ngo.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{ngo.website}</a></p>
+                        <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
+                          <div className="space-y-1.5 flex-grow">
+                            <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>{ngo.name}</h4>
+                            <p className="text-slate-500" style={{ fontSize: '13px' }}>Tax Filing Code: <strong className="font-mono text-primary">{ngo.registrationNumber}</strong></p>
+                            <p className="text-slate-550" style={{ fontSize: '13px' }}>Website: <a href={ngo.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">{ngo.website}</a></p>
                           </div>
 
-                          <div className="flex gap-2 shrink-0">
+                          <div className="flex flex-wrap gap-2.5 shrink-0 w-full md:w-auto">
                             <Button
                               variant="secondary"
-                              size="sm"
-                              className="text-[10px] py-1 h-9"
                               onClick={() => setSelectedNgo(selectedNgo?.id === ngo.id ? null : ngo)}
                             >
-                              {selectedNgo?.id === ngo.id ? 'Hide Filings' : 'Audit Filings'}
+                              {selectedNgo?.id === ngo.id ? 'Hide Documents' : 'Audit Documents'}
                             </Button>
                             <Button
                               variant="primary"
-                              size="sm"
-                              className="text-[10px] py-1 h-9"
                               onClick={() => queueAction(ngo.id, 'approve', 'ngo', ngo.name)}
                             >
                               Approve NGO
                             </Button>
                             <Button
                               variant="secondary"
-                              size="sm"
-                              className="text-[10px] py-1 h-9 text-amber-700 border-amber-100 hover:bg-amber-50"
+                              className="text-amber-700 border-amber-150 hover:bg-amber-50 hover:border-amber-200"
                               onClick={() => {
                                 setRejectType('ngo_changes');
                                 setRejectItemId(ngo.id);
@@ -371,8 +372,7 @@ export default function AdminDashboard() {
                             </Button>
                             <Button
                               variant="secondary"
-                              size="sm"
-                              className="text-[10px] py-1 h-9 text-red-600 border-red-100 hover:bg-red-50"
+                              className="text-red-600 border-red-150 hover:bg-red-50 hover:border-red-200"
                               onClick={() => {
                                 setRejectType('ngo');
                                 setRejectItemId(ngo.id);
@@ -385,49 +385,49 @@ export default function AdminDashboard() {
 
                         {/* Collapsible NGO Details */}
                         {selectedNgo?.id === ngo.id && (
-                          <div className="mt-4 pt-4 border-t border-border space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div className="space-y-3 text-xs">
-                                <div className="grid grid-cols-2 gap-2">
+                          <div className="pt-6 border-t border-slate-200 space-y-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-slate-700" style={{ fontSize: '13px' }}>
                                   <div>
-                                    <span className="font-bold text-slate-700">Gov ID Registration:</span>
-                                    <span className="block text-slate-500 mt-0.5">{ngo.govRegistrationNumber}</span>
+                                    <span className="font-mono text-[10px] text-slate-400 font-bold uppercase block">Gov Registration</span>
+                                    <span className="font-bold text-slate-800 block mt-0.5">{ngo.govRegistrationNumber}</span>
                                   </div>
                                   <div>
-                                    <span className="font-bold text-slate-700">NGO Type:</span>
-                                    <span className="block text-slate-500 mt-0.5">{ngo.ngoType}</span>
+                                    <span className="font-mono text-[10px] text-slate-400 font-bold uppercase block">NGO Type</span>
+                                    <span className="font-bold text-slate-800 block mt-0.5">{ngo.ngoType}</span>
                                   </div>
                                   <div>
-                                    <span className="font-bold text-slate-700">Volunteers Count:</span>
-                                    <span className="block text-slate-500 mt-0.5">{ngo.volunteersCount} active</span>
+                                    <span className="font-mono text-[10px] text-slate-400 font-bold uppercase block">Volunteers</span>
+                                    <span className="font-bold text-slate-800 block mt-0.5">{ngo.volunteersCount} active</span>
                                   </div>
                                   <div>
-                                    <span className="font-bold text-slate-700">Operating Since:</span>
-                                    <span className="block text-slate-500 mt-0.5">{ngo.operatingSince}</span>
+                                    <span className="font-mono text-[10px] text-slate-400 font-bold uppercase block">Active Since</span>
+                                    <span className="font-bold text-slate-800 block mt-0.5">{ngo.operatingSince}</span>
                                   </div>
                                 </div>
 
                                 <div className="space-y-1">
-                                  <span className="font-bold text-slate-700">Mission:</span>
-                                  <p className="text-slate-500 leading-relaxed bg-white border border-border p-2.5 rounded-lg">{ngo.mission}</p>
+                                  <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>NGO Mission Statement:</span>
+                                  <p className="text-slate-650 leading-relaxed bg-white border border-border p-4 rounded-xl" style={{ fontSize: '14px' }}>{ngo.mission}</p>
                                 </div>
 
                                 <div className="space-y-1">
-                                  <span className="font-bold text-slate-700">Description:</span>
-                                  <p className="text-slate-500 leading-relaxed bg-white border border-border p-2.5 rounded-lg">{ngo.description}</p>
+                                  <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>Core Bio:</span>
+                                  <p className="text-slate-650 leading-relaxed bg-white border border-border p-4 rounded-xl" style={{ fontSize: '14px' }}>{ngo.description}</p>
                                 </div>
                               </div>
 
                               <div className="space-y-3">
                                 <div className="text-xs">
-                                  <span className="font-bold text-slate-700">Headquarters Coordinates:</span>
-                                  <span className="block text-slate-400 font-mono mt-0.5">{ngo.lat.toFixed(5)}, {ngo.lng.toFixed(5)} ({ngo.address})</span>
+                                  <span className="font-bold text-slate-750 block mb-1" style={{ fontSize: '14px' }}>Registered Headquarters Area:</span>
+                                  <span className="font-mono text-slate-500 block bg-white border border-border p-3 rounded-xl">{ngo.lat.toFixed(5)}, {ngo.lng.toFixed(5)} ({ngo.address})</span>
                                 </div>
-                                <div className="h-44 rounded-xl overflow-hidden border border-border">
+                                <div className="h-56 rounded-xl overflow-hidden border border-border">
                                   <LeafletMap
                                     center={[ngo.lat, ngo.lng]}
                                     zoom={13}
-                                    markers={[{ lat: ngo.lat, lng: ngo.lng, popupContent: <div><b>NGO Registered Headquarters</b></div> }]}
+                                    markers={[{ lat: ngo.lat, lng: ngo.lng, popupContent: `<strong>${ngo.name} Headquarters</strong>` }]}
                                   />
                                 </div>
                               </div>
@@ -435,9 +435,9 @@ export default function AdminDashboard() {
 
                             {/* 11 Document previews grid */}
                             {ngo.documents && (
-                              <div className="space-y-2">
-                                <span className="text-xs font-bold text-slate-700 block">Uploaded Certification Filings (11 Required Slots):</span>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                              <div className="space-y-3">
+                                <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>NGO Certificates &amp; Filings (11 Slots Audit Checklist):</span>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
                                   {Object.keys(DOCUMENT_LABELS).map((docKey) => {
                                     const docData = ngo.documents[docKey];
                                     const pages = Array.isArray(docData) ? docData : docData ? [docData] : [];
@@ -453,14 +453,14 @@ export default function AdminDashboard() {
                                             setZoomLevel(1);
                                           }
                                         }}
-                                        className={`border border-border p-2 rounded-xl bg-white flex flex-col items-center justify-between text-center cursor-zoom-in group hover:border-primary transition-all aspect-square ${!hasPages ? 'opacity-40 pointer-events-none' : ''}`}
+                                        className={`border border-border p-2.5 rounded-xl bg-white flex flex-col items-center justify-between text-center cursor-zoom-in group hover:border-primary transition-all aspect-square ${!hasPages ? 'opacity-40 pointer-events-none' : ''}`}
                                       >
-                                        <div className="w-full h-16 rounded overflow-hidden bg-slate-50 border border-border relative">
+                                        <div className="w-full h-20 rounded-lg overflow-hidden bg-slate-50 border border-slate-200 relative">
                                           {hasPages ? (
                                             <>
                                               <img src={firstPageUrl} alt="" className="w-full h-full object-cover" />
                                               {pages.length > 1 && (
-                                                <span className="absolute bottom-1 right-1 bg-primary text-white text-[8px] font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
+                                                <span className="absolute bottom-1 right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
                                                   {pages.length} pgs
                                                 </span>
                                               )}
@@ -470,11 +470,11 @@ export default function AdminDashboard() {
                                           )}
                                           {hasPages && (
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                                              <Eye className="w-3.5 h-3.5 text-white" />
+                                              <Eye className="w-5 h-5 text-white" />
                                             </div>
                                           )}
                                         </div>
-                                        <span className="text-[8px] font-bold text-slate-700 leading-tight block truncate w-full mt-1.5">{label}</span>
+                                        <span className="text-[10px] font-bold text-slate-700 leading-tight block truncate w-full mt-2">{label}</span>
                                       </div>
                                     );
                                   })}
@@ -496,16 +496,16 @@ export default function AdminDashboard() {
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                   <div className="bg-white border border-border w-full max-w-md p-6 rounded-2xl shadow-premium-xl space-y-4">
                     <div>
-                      <h4 className="font-display font-bold text-sm text-ink">
+                      <h4 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>
                         {rejectType === 'donation' ? 'Shipment Rejection Feedback' : rejectType === 'ngo_changes' ? 'Request Changes Filings' : 'NGO Registration Rejection'}
                       </h4>
-                      <p className="text-xs text-slate-500 mt-1">Submit feedback detailing the reasons. This is dispatched to the provider.</p>
+                      <p className="text-slate-500 mt-1" style={{ fontSize: '13px' }}>Submit comments explaining what the NGO must update or correct.</p>
                     </div>
                     
                     <form onSubmit={(e) => {
                       e.preventDefault();
                       const itemTitle = rejectType === 'donation'
-                        ? db.donations.find(d => d.id === rejectItemId)?.title || 'Shipment'
+                        ? db.donations.find(d => d.id === rejectItemId)?.itemName || 'Shipment'
                         : db.ngos.find(n => n.id === rejectItemId)?.name || 'NGO';
                       
                       queueAction(
@@ -517,7 +517,7 @@ export default function AdminDashboard() {
                       );
                     }} className="space-y-4">
                       <InputField
-                        label="Rationale Explanation / Needed Changes"
+                        label="Rationale / Needed Corrections"
                         id="rejReason"
                         placeholder={rejectType === 'ngo_changes' ? 'e.g. Please re-upload PAN copy with visible corner stamps.' : 'e.g. Items show substantial wear.'}
                         value={rejectReason}
@@ -525,14 +525,14 @@ export default function AdminDashboard() {
                         required
                       />
 
-                      <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                      <div className="flex justify-end gap-3 pt-4 border-t border-border">
                         <Button type="button" variant="secondary" onClick={() => {
                           setRejectType(null);
                           setRejectItemId(null);
                         }}>
                           Cancel
                         </Button>
-                        <Button type="submit" variant="primary" className={rejectType === 'ngo_changes' ? 'bg-amber-600 hover:bg-amber-700 border-none' : 'bg-red-600 hover:bg-red-700 border-none'}>
+                        <Button type="submit" variant="primary" className={rejectType === 'ngo_changes' ? 'bg-amber-600 hover:bg-amber-700 border-none' : 'bg-red-650 hover:bg-red-700 border-none'}>
                           Confirm Action
                         </Button>
                       </div>
@@ -545,45 +545,48 @@ export default function AdminDashboard() {
 
           {/* TAB 2: FRAUD RISK RADAR */}
           {activeTab === 'fraud' && (
-            <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
-              <h3 className="text-sm font-display font-bold text-ink uppercase tracking-wider">Security Flag Risk Radar</h3>
-              <p className="text-xs text-slate-500">Automated system alarms detecting multiple coordinate accounts or list anomalies.</p>
+            <div className="bg-white border border-border p-8 rounded-2xl shadow-premium-sm space-y-6">
+              <div>
+                <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" style={{ fontSize: '18px' }}>Security Anomaly Detection</h3>
+                <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>Automated scans measuring multiple coordinate profiles, location discrepancies, or registration filings.</p>
+              </div>
 
               <div className="overflow-hidden border border-border rounded-xl">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
+                  <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-border bg-slate-50 text-slate-600 font-semibold">
-                        <th className="p-4">Log Stamp</th>
-                        <th className="p-4">Flagged Provider</th>
+                      <tr className="border-b border-border bg-slate-50 text-slate-600 font-bold" style={{ fontSize: '13px' }}>
+                        <th className="p-4">Alarm ID</th>
+                        <th className="p-4">Flagged Entity</th>
                         <th className="p-4">Trigger Anomaly</th>
                         <th className="p-4">Calculated Risk</th>
-                        <th className="p-4">Date</th>
+                        <th className="p-4">Logged Date</th>
                         <th className="p-4 text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border">
+                    <tbody className="divide-y divide-border" style={{ fontSize: '14px' }}>
                       {fraudLogs.map((log) => (
                         <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="p-4 font-mono font-semibold text-slate-400">{log.id}</td>
                           <td className="p-4 font-bold text-slate-900">{log.entityName}</td>
-                          <td className="p-4 text-red-600 font-medium">{log.trigger}</td>
+                          <td className="p-4 text-red-650 font-bold">{log.trigger}</td>
                           <td className="p-4">
-                            <span className={`px-2.5 py-0.5 border text-[9px] font-bold rounded-full uppercase ${
+                            <span className={`px-2.5 py-0.5 border text-[10px] font-bold rounded-full uppercase ${
                               log.riskScore.includes('Critical') ? 'bg-red-50 text-red-700 border-red-200' :
                               log.riskScore.includes('Medium') ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                              'bg-slate-50 text-slate-700 border-slate-200'
+                              'bg-slate-50 text-slate-705 border-slate-250'
                             }`}>
                               {log.riskScore}
                             </span>
                           </td>
-                          <td className="p-4 font-mono text-slate-500">{log.date}</td>
+                          <td className="p-4 font-mono text-slate-550">{log.date}</td>
                           <td className="p-4 text-right">
                             <button
                               onClick={() => dismissFraudLog(log.id)}
-                              className="px-3 py-1 bg-white hover:bg-slate-50 border border-border rounded-lg font-semibold text-xs transition-colors cursor-pointer"
+                              className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl font-bold text-xs transition-colors cursor-pointer"
+                              style={{ minHeight: '36px' }}
                             >
-                              Dismiss
+                              Dismiss Anomaly
                             </button>
                           </td>
                         </tr>
@@ -595,28 +598,27 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* TAB 3: PLATFORM KPIS */}
+          {/* TAB 3: SYSTEM METRICS */}
           {activeTab === 'metrics' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm">
-                  <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">VERIFICATION RATE</span>
-                  <span className="text-2xl font-display font-extrabold text-ink mt-1 block">94.2%</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
+                  <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>VERIFICATION RATE</span>
+                  <span className="text-3xl font-display font-black text-slate-900 mt-1 block">94.2%</span>
                 </div>
-                <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm">
-                  <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">DISPATCHED CARRIER JOBS</span>
-                  <span className="text-2xl font-display font-extrabold text-primary mt-1 block">342 runs</span>
+                <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
+                  <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>DISPATCHED RUNS</span>
+                  <span className="text-3xl font-display font-black text-primary mt-1 block">342 logs</span>
                 </div>
-                <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm">
-                  <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">TOTAL CARBON SAVED</span>
-                  <span className="text-2xl font-display font-extrabold text-secondary mt-1 block">1,492 kg</span>
+                <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
+                  <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>CARBON REDUCED</span>
+                  <span className="text-3xl font-display font-black text-emerald-650 mt-1 block">1,492 kg</span>
                 </div>
               </div>
 
-              {/* Area chart of platform actions */}
               <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
-                <h4 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Weekly Dispatched Cargo Trends</h4>
-                <div className="h-64">
+                <h4 className="font-display font-bold text-slate-400 uppercase tracking-wider" style={{ fontSize: '12px' }}>Weekly Dispatched Cargo Trends</h4>
+                <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={[
@@ -631,8 +633,8 @@ export default function AdminDashboard() {
                       margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="name" tick={{ fontSize: 10, fontFamily: 'monospace' }} />
-                      <YAxis tick={{ fontSize: 10, fontFamily: 'monospace' }} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fontFamily: 'monospace' }} />
+                      <YAxis tick={{ fontSize: 11, fontFamily: 'monospace' }} />
                       <Tooltip />
                       <Area type="monotone" dataKey="total" stroke="#2E7D32" fill="#2E7D32" fillOpacity={0.1} name="Total Cargo Dispatched" />
                       <Area type="monotone" dataKey="active" stroke="#4CAF50" fill="#4CAF50" fillOpacity={0.05} name="Active Route Shipments" />
@@ -651,8 +653,8 @@ export default function AdminDashboard() {
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
           <div className="bg-slate-900 text-white p-4 rounded-xl shadow-premium-xl flex justify-between items-center gap-4 animate-fadeInUp border border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center animate-spin">
-                <RotateCcw className="w-3.5 h-3.5 text-white" />
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center animate-spin shrink-0">
+                <RotateCcw className="w-4 h-4 text-white" />
               </div>
               <div className="text-xs">
                 <p className="font-bold">{undoBanner.message}</p>
@@ -662,7 +664,8 @@ export default function AdminDashboard() {
 
             <button
               onClick={handleUndo}
-              className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+              className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+              style={{ minHeight: '32px' }}
             >
               Undo Action
             </button>

@@ -152,9 +152,9 @@ export default function AuthSuite() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col lg:grid lg:grid-cols-2">
+    <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] text-slate-900 flex flex-col lg:grid lg:grid-cols-2">
       {/* Left panel: Info & brand spotlight */}
-      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 bg-white border-r border-border min-h-screen">
+      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 bg-white border-r border-border h-full overflow-y-auto">
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors w-fit font-medium cursor-pointer"
@@ -203,8 +203,8 @@ export default function AuthSuite() {
       </div>
 
       {/* Right panel: Wizard auth form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 lg:p-20 bg-slate-50">
-        <div className="w-full max-w-md bg-white border border-border rounded-2xl p-8 shadow-premium-lg">
+      <div className="flex-1 h-full overflow-y-auto bg-slate-50 flex flex-col justify-center py-8 px-6 sm:px-12 lg:px-20">
+        <div className="w-full max-w-md mx-auto bg-white border border-border rounded-2xl p-6 sm:p-8 shadow-premium-lg">
           <AnimatePresence mode="wait">
             
             {/* STEP 1: Credentials Form */}
