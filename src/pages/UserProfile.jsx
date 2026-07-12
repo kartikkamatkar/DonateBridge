@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/GlobalStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ui/Toast';
-import { Download, ShieldCheck, Lock, Mail, Star, Heart, Leaf, Check } from 'lucide-react';
+import { Download, ShieldCheck, Lock, Mail, Star, Heart, Leaf, Check, Calendar, Activity, Sparkles, Award } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
 import Navbar from '../components/Navbar';
@@ -38,74 +38,92 @@ export default function UserProfile() {
     toast.info(`Downloading Tax-Exempt Physical Donation Receipt: ${id}.pdf`);
   };
 
+  // Simulated contributions heatmap grid data (Github style)
+  const contributionGrid = Array.from({ length: 52 }, (_, i) => {
+    const weights = [0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 1, 0, 0, 2, 0, 0, 0, 4, 0, 1];
+    return weights[i % weights.length];
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full p-6 sm:p-8 space-y-6">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10 space-y-8">
         
         {/* Profile Card Header */}
-        <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm flex flex-col sm:flex-row items-center gap-6">
+        <div className="bg-white border border-border p-8 rounded-2xl shadow-premium-sm flex flex-col md:flex-row items-center gap-8">
           <img
             src={user?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=donor'}
             alt="avatar"
-            className="w-20 h-20 rounded-full border border-border bg-slate-50"
+            className="w-24 h-24 rounded-full border border-border bg-slate-50 shrink-0"
           />
-          <div className="space-y-1 text-center sm:text-left flex-1">
-            <h2 className="text-xl font-display font-bold text-ink">{profileName}</h2>
-            <p className="text-xs text-slate-500 flex items-center justify-center sm:justify-start gap-1 font-mono">
-              <Mail className="w-3.5 h-3.5 text-slate-400" /> {user?.email || 'sarah@donor.org'}
+          <div className="space-y-2 text-center md:text-left flex-1 min-w-0">
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
+              <h2 className="font-display font-black text-slate-900 leading-tight" style={{ fontSize: '24px' }}>{profileName}</h2>
+              <span className="inline-flex self-center px-3 py-1 bg-emerald-50 text-primary border border-emerald-100 rounded-full font-bold uppercase" style={{ fontSize: '11px' }}>
+                Level 4 Donor
+              </span>
+            </div>
+            <p className="text-slate-500 flex items-center justify-center md:justify-start gap-1.5" style={{ fontSize: '15px' }}>
+              <Mail className="w-4 h-4 text-slate-400 shrink-0" /> {user?.email || 'sarah@donor.org'}
             </p>
-            <p className="text-[10px] text-slate-400 uppercase font-mono mt-1 font-bold tracking-wider">
-              ROLE: {user?.role || 'donor'} &bull; TRUST VALUE: 100%
-            </p>
+            <div className="flex flex-wrap justify-center md:justify-start gap-2.5 pt-1 text-slate-550" style={{ fontSize: '13px' }}>
+              <span><b>12</b> Dispatches</span>
+              <span>&bull;</span>
+              <span><b>1.2k</b> Eco-Points</span>
+              <span>&bull;</span>
+              <span><b>100%</b> Delivery Score</span>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
             {user?.role === 'ngo' && (
-              <Button variant="primary" className="text-xs font-semibold" onClick={() => navigate('/ngo-register')}>
+              <Button variant="primary" onClick={() => navigate('/ngo-register')} className="w-full sm:w-auto">
                 Manage NGO License
               </Button>
             )}
-            <Button variant="secondary" className="text-xs font-semibold" onClick={() => navigate('/settings')}>
-              System Preferences
+            <Button variant="secondary" onClick={() => navigate('/settings')} className="w-full sm:w-auto">
+              Preferences
             </Button>
           </div>
         </div>
 
         {/* Tab Selection */}
-        <div className="flex border-b border-border gap-2">
+        <div className="flex border-b border-slate-200 gap-3">
           {['account', 'receipts', 'achievements'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              className={`px-4 py-3 font-semibold border-b-2 transition-all cursor-pointer ${
                 activeTab === tab
                   ? 'border-primary text-primary font-bold'
-                  : 'border-transparent text-slate-500 hover:text-ink'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
+              style={{ fontSize: '15px' }}
             >
-              {tab === 'account' ? 'Account details' : tab === 'receipts' ? `Tax Receipts (${receipts.length})` : 'Achievements'}
+              {tab === 'account' ? 'Account Profile' : tab === 'receipts' ? `Tax Exemption Receipts (${receipts.length})` : 'Badges & Achievements'}
             </button>
           ))}
         </div>
 
         {/* Tab Panels */}
         {activeTab === 'account' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
-                <h3 className="text-sm font-display font-bold mb-4 text-ink">Edit Profile Details</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left: Input Details Form */}
+            <div className="lg:col-span-8 space-y-8">
+              <div className="bg-white border border-border p-8 rounded-2xl shadow-premium-sm">
+                <h3 className="font-display font-bold text-slate-900 mb-6" style={{ fontSize: '18px' }}>Edit Profile Details</h3>
                 
-                <form onSubmit={handleSaveProfile} className="space-y-4">
+                <form onSubmit={handleSaveProfile} className="space-y-6">
                   <InputField
-                    label="Full Name / Display Title"
+                    label="Full Name / Brand Title"
                     id="profileName"
                     value={profileName}
                     onChange={(e) => setProfileName(e.target.value)}
                     required
                   />
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <InputField
                       label="Contact Telephone"
                       id="profilePhone"
@@ -122,73 +140,142 @@ export default function UserProfile() {
                     />
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                    <Button type="submit" variant="primary" className="text-xs font-bold" icon={isSaved ? Check : undefined}>
-                      {isSaved ? 'Saved' : 'Save Profile'}
+                  <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
+                    <Button type="submit" variant="primary" icon={isSaved ? Check : undefined}>
+                      {isSaved ? 'Details Saved' : 'Update Profile'}
                     </Button>
                   </div>
                 </form>
               </div>
-            </div>
 
-            {/* Security stats right */}
-            <div>
-              <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
-                <h3 className="text-sm font-display font-bold text-ink">Security Compliance</h3>
-                
-                <div className="p-4 bg-slate-50 border border-border rounded-xl space-y-2 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-slate-800 flex items-center gap-1.5"><Lock className="w-4 h-4 text-primary" /> OTP Bypass</span>
-                    <span className="text-[10px] text-primary font-mono font-bold">ENABLED</span>
+              {/* INNOVATIVE GRAPH: Weekly Dispatch Heatmap Grid */}
+              <div className="bg-white border border-border p-8 rounded-2xl shadow-premium-sm space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h4 className="font-display font-bold text-slate-900 flex items-center gap-2" style={{ fontSize: '16px' }}>
+                      <Activity className="w-5 h-5 text-primary" /> Donation Dispatch Heatmap
+                    </h4>
+                    <p className="text-slate-500 mt-0.5" style={{ fontSize: '13px' }}>Your logistics contribution frequency mapped across the past 52 weeks.</p>
                   </div>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">OTP authentication codes enabled for secure updates validation.</p>
+                  <span className="font-mono text-slate-400" style={{ fontSize: '12px' }}>Total: 12 active weeks</span>
                 </div>
 
-                <div className="p-4 bg-slate-50 border border-border rounded-xl space-y-2 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-slate-800 flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-primary" /> ID Verified</span>
-                    <span className="text-[10px] text-primary font-mono font-bold">VERIFIED</span>
+                <div className="border border-slate-100 p-4 rounded-xl bg-slate-50/50">
+                  <div className="grid grid-cols-13 gap-2">
+                    {contributionGrid.map((level, idx) => (
+                      <div
+                        key={idx}
+                        className={`aspect-square rounded-md transition-all ${
+                          level === 0 ? 'bg-slate-200' :
+                          level === 1 ? 'bg-emerald-100' :
+                          level === 2 ? 'bg-emerald-300' :
+                          level === 3 ? 'bg-emerald-500' : 'bg-primary'
+                        }`}
+                        title={`Week ${idx + 1}: ${level} donations`}
+                      />
+                    ))}
                   </div>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">System documentation files validated by Admin on June 01, 2026.</p>
+                  <div className="flex justify-between items-center text-slate-400 mt-3" style={{ fontSize: '11px' }}>
+                    <span>52 Weeks Ago</span>
+                    <div className="flex items-center gap-1">
+                      <span>Less</span>
+                      <span className="w-2.5 h-2.5 bg-slate-200 rounded-sm" />
+                      <span className="w-2.5 h-2.5 bg-emerald-100 rounded-sm" />
+                      <span className="w-2.5 h-2.5 bg-emerald-300 rounded-sm" />
+                      <span className="w-2.5 h-2.5 bg-emerald-500 rounded-sm" />
+                      <span className="w-2.5 h-2.5 bg-primary rounded-sm" />
+                      <span>More</span>
+                    </div>
+                    <span>Today</span>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            {/* Right: Security & Stats widgets (No more gaps!) */}
+            <div className="lg:col-span-4 space-y-6">
+              
+              {/* Gamified Achievements Progress */}
+              <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider font-mono" style={{ fontSize: '10px' }}>Tier Progression</span>
+                  <Sparkles className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-slate-900 font-bold" style={{ fontSize: '14px' }}>
+                    <span>Carbon Hero Level 5</span>
+                    <span>75%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div className="bg-primary h-full rounded-full" style={{ width: '75%' }} />
+                  </div>
+                  <p className="text-slate-500 mt-1" style={{ fontSize: '12px' }}>Fulfill <b>2 more critical items</b> to achieve the Gold Badge milestone!</p>
+                </div>
+              </div>
+
+              {/* Security Controls */}
+              <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-5">
+                <h3 className="font-display font-bold text-slate-900" style={{ fontSize: '16px' }}>Credentials</h3>
+                
+                <div className="space-y-3.5">
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-slate-800 flex items-center gap-1.5" style={{ fontSize: '13px' }}><Lock className="w-4 h-4 text-primary shrink-0" /> MFA Login</span>
+                      <span className="font-bold text-primary" style={{ fontSize: '11px' }}>ACTIVE</span>
+                    </div>
+                    <p className="text-slate-500 leading-relaxed" style={{ fontSize: '12px' }}>OTP validation verification codes enabled.</p>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-slate-800 flex items-center gap-1.5" style={{ fontSize: '13px' }}><ShieldCheck className="w-4 h-4 text-primary shrink-0" /> License Badge</span>
+                      <span className="font-bold text-primary" style={{ fontSize: '11px' }}>VERIFIED</span>
+                    </div>
+                    <p className="text-slate-500 leading-relaxed" style={{ fontSize: '12px' }}>Identity details verified by DonateBridge on June 01, 2026.</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         )}
 
         {/* Tab Receipts */}
         {activeTab === 'receipts' && (
-          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
-            <h3 className="text-sm font-display font-bold mb-1 text-ink uppercase tracking-wider">Tax Exemption Certificates</h3>
-            <p className="text-xs text-slate-500 mb-6">Only items verified by NGO digital signature ledger generate tax-exemption codes.</p>
+          <div className="bg-white border border-border p-8 rounded-2xl shadow-premium-sm space-y-6">
+            <div>
+              <h3 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>Tax Exemption Certificates</h3>
+              <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>Every successfully claimed and delivered donation triggers a tax receipt token.</p>
+            </div>
 
             <div className="overflow-hidden border border-border rounded-xl">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-slate-50 text-slate-600 font-semibold">
+                    <tr className="border-b border-border bg-slate-50 text-slate-600 font-bold" style={{ fontSize: '13px' }}>
                       <th className="p-4">Certificate ID</th>
                       <th className="p-4">Items Summary</th>
-                      <th className="p-4">Fulfillment Date</th>
-                      <th className="p-4">NGO Code</th>
-                      <th className="p-4">File Size</th>
+                      <th className="p-4">Date Approved</th>
+                      <th className="p-4">NGO Stamp</th>
+                      <th className="p-4">Size</th>
                       <th className="p-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border">
+                  <tbody className="divide-y divide-border" style={{ fontSize: '14px' }}>
                     {receipts.map((rec) => (
                       <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-4 font-mono font-semibold text-slate-500">{rec.id}</td>
-                        <td className="p-4 font-bold text-ink">{rec.item}</td>
+                        <td className="p-4 font-mono font-semibold text-slate-400">{rec.id}</td>
+                        <td className="p-4 font-bold text-slate-800">{rec.item}</td>
                         <td className="p-4 font-mono text-slate-500">{rec.date}</td>
                         <td className="p-4 font-mono font-bold text-primary">{rec.code}</td>
                         <td className="p-4 font-mono text-slate-500">{rec.size}</td>
                         <td className="p-4 text-right">
                           <button
                             onClick={() => handleDownload(rec.id)}
-                            className="px-3 py-1.5 border border-border bg-white hover:bg-slate-50 text-xs font-semibold rounded-lg cursor-pointer transition-colors"
+                            className="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold rounded-lg cursor-pointer transition-colors"
+                            style={{ minHeight: '36px' }}
                           >
-                            PDF Download
+                            Download PDF
                           </button>
                         </td>
                       </tr>
@@ -202,29 +289,29 @@ export default function UserProfile() {
 
         {/* Tab Achievements */}
         {activeTab === 'achievements' && (
-          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-6">
+          <div className="bg-white border border-border p-8 rounded-2xl shadow-premium-sm space-y-6">
             <div>
-              <h3 className="text-sm font-display font-bold text-ink uppercase tracking-wider">Eco Achievements</h3>
-              <p className="text-xs text-slate-500">Your physical logistics history mapped to levels.</p>
+              <h3 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>Eco Achievements</h3>
+              <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>Gamified eco highlights indicating your environmental contributions.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-5 bg-slate-50 border border-border rounded-xl text-center space-y-2 text-xs">
-                <Leaf className="w-8 h-8 mx-auto text-[#2E7D32]" />
-                <h4 className="font-display font-bold text-sm text-slate-800">CO2 Offset Bronze</h4>
-                <p className="text-slate-500 text-[10px] leading-relaxed mt-1">Saved over 50kg of carbon gas emission coordinates.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-3">
+                <Leaf className="w-10 h-10 mx-auto text-[#2E7D32]" />
+                <h4 className="font-display font-bold text-slate-800" style={{ fontSize: '15px' }}>Carbon Savior</h4>
+                <p className="text-slate-500 leading-relaxed" style={{ fontSize: '12px' }}>Prevented over 50kg of CO₂ from waste streams.</p>
               </div>
 
-              <div className="p-5 bg-slate-50 border border-border rounded-xl text-center space-y-2 text-xs">
-                <Heart className="w-8 h-8 mx-auto text-red-500" />
-                <h4 className="font-display font-bold text-sm text-slate-800">Critical Responder</h4>
-                <p className="text-slate-500 text-[10px] leading-relaxed mt-1">Completed a shipment tagged as Critical Need in 3 hours.</p>
+              <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-3">
+                <Heart className="w-10 h-10 mx-auto text-red-500" />
+                <h4 className="font-display font-bold text-slate-800" style={{ fontSize: '15px' }}>Critical Responder</h4>
+                <p className="text-slate-500 leading-relaxed" style={{ fontSize: '12px' }}>Helped fulfill an urgent medical demand listing under 3 hours.</p>
               </div>
 
-              <div className="p-5 bg-slate-50 border border-border rounded-xl text-center space-y-2 text-xs">
-                <Star className="w-8 h-8 mx-auto text-amber-500" />
-                <h4 className="font-display font-bold text-sm text-slate-800">Veteran Donor</h4>
-                <p className="text-slate-500 text-[10px] leading-relaxed mt-1">Active account with 100% successful pickup logs.</p>
+              <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-3">
+                <Star className="w-10 h-10 mx-auto text-amber-500" />
+                <h4 className="font-display font-bold text-slate-800" style={{ fontSize: '15px' }}>Fulfillment Star</h4>
+                <p className="text-slate-500 leading-relaxed" style={{ fontSize: '12px' }}>Maintain a perfect 100% completed donation record.</p>
               </div>
             </div>
           </div>

@@ -1,260 +1,387 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Upload, ShieldAlert, Globe, Compass, CheckCircle, Clock,
-  Truck, BarChart3, ArrowRight, Heart, Users, ShieldCheck, ChevronRight
+  Upload, Globe, Compass, CheckCircle, Clock,
+  Truck, BarChart3, ShieldCheck, ChevronRight, ArrowRight
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+
+const STEPS = [
+  {
+    num: 1,
+    title: 'Donor Uploads Items',
+    desc: 'The donor registers item details — category, condition, photos, and pickup address — to create a verified listing on the platform.',
+    icon: Upload,
+    color: 'bg-emerald-500',
+    details: [
+      'Define item category and condition',
+      'Upload photos for verification',
+      'Set pickup address coordinates'
+    ],
+    mockup: (
+      <div className="space-y-3">
+        <div className="bg-slate-50 border border-border p-4 rounded-xl flex items-center justify-between">
+          <span className="text-slate-500 font-medium">Donation Title</span>
+          <span className="font-semibold text-slate-800">50 School Textbooks</span>
+        </div>
+        <div className="bg-slate-50 border border-border p-4 rounded-xl flex items-center justify-between">
+          <span className="text-slate-500 font-medium">Verification File</span>
+          <span className="font-semibold text-primary">cargo_manifest.pdf</span>
+        </div>
+        <div className="flex justify-between items-center px-1 text-slate-500">
+          <span>Weight: 18 kg</span>
+          <span className="text-primary font-semibold flex items-center gap-1.5">
+            <CheckCircle className="w-4 h-4" /> Ready for upload
+          </span>
+        </div>
+      </div>
+    )
+  },
+  {
+    num: 2,
+    title: 'Admin Verifies Listing',
+    desc: 'A platform supervisor reviews the item details, verifies authenticity through uploaded documents, and approves the listing.',
+    icon: ShieldCheck,
+    color: 'bg-emerald-600',
+    details: [
+      'Cross-reference donor registration',
+      'Validate location coordinates',
+      'Approve listing for public catalog'
+    ],
+    mockup: (
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-slate-500 font-medium">Integrity Audit</span>
+          <span className="text-primary font-bold bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">PASSED</span>
+        </div>
+        <div className="bg-slate-50 border border-border p-4 rounded-xl font-mono text-slate-600 space-y-1.5">
+          <div>&gt; Matching headquarters coords...</div>
+          <div className="text-slate-900 font-bold">MATCH: 12.9716, 77.5946 [OK]</div>
+          <div>&gt; Updating trust flags... DONE</div>
+        </div>
+        <div className="text-slate-400 text-center">Audit signed · SHA-256 block updated</div>
+      </div>
+    )
+  },
+  {
+    num: 3,
+    title: 'Item Goes Public',
+    desc: 'The approved donation becomes visible in the public Discover directory, where verified NGOs can browse and filter available items.',
+    icon: Globe,
+    color: 'bg-emerald-700',
+    details: [
+      'Published to the active Discover feed',
+      'Indexed by category, proximity, and urgency',
+      'Open for NGO match requests'
+    ],
+    mockup: (
+      <div className="space-y-3">
+        <div className="bg-white border border-border p-4 rounded-xl shadow-premium-sm flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">BK</div>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-bold text-slate-900 truncate">50 Textbooks & Stationary Kits</h4>
+            <p className="text-slate-400">Bengaluru East Hub · Available</p>
+          </div>
+          <span className="px-3 py-1 bg-emerald-50 text-primary rounded-lg font-bold shrink-0 border border-emerald-100">
+            PUBLIC
+          </span>
+        </div>
+        <p className="text-slate-500 text-center italic">Listed on active directories. Ready for NGO matching.</p>
+      </div>
+    )
+  },
+  {
+    num: 4,
+    title: 'NGO Requests Item',
+    desc: 'A registered NGO identifies the donation as matching their community needs and submits an allocation request through the platform.',
+    icon: Compass,
+    color: 'bg-teal-500',
+    details: [
+      'Identify local community demands',
+      'Auto-verify NGO eligibility',
+      'Generate proximity match scores'
+    ],
+    mockup: (
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-slate-500 font-medium">Suggested NGO Partner</span>
+          <span className="text-primary font-bold">98.4% Proximity Match</span>
+        </div>
+        <div className="bg-slate-50 border border-border p-4 rounded-xl flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-primary font-bold">EH</div>
+          <div>
+            <p className="font-bold text-slate-900">Education Hub NGO</p>
+            <p className="text-slate-400">Demands matched: Educational books</p>
+          </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    num: 5,
+    title: 'Donor Accepts Match',
+    desc: 'The donor reviews the NGO match, approves the recipient suggestion, and locks the allocation — triggering the logistics flow.',
+    icon: CheckCircle,
+    color: 'bg-teal-600',
+    details: [
+      'Review recipient organization profile',
+      'Accept optimized logistics route',
+      'Generate electronic manifest'
+    ],
+    mockup: (
+      <div className="space-y-3">
+        <div className="border border-emerald-100 bg-emerald-50/30 p-4 rounded-xl space-y-2">
+          <p className="font-bold text-slate-900">Route Matching Accepted</p>
+          <p className="text-slate-500">Donor approved recipient suggestion. Allocation manifest locked.</p>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-slate-400">Manifest: #M-902-L</span>
+          <span className="text-primary bg-emerald-100/50 px-3 py-1 rounded-lg font-bold border border-emerald-200/40">LOCKED</span>
+        </div>
+      </div>
+    )
+  },
+  {
+    num: 6,
+    title: 'Pickup Scheduled',
+    desc: 'A logistics courier is dispatched to the donor\'s location to collect the items. Real-time tracking is enabled for both parties.',
+    icon: Clock,
+    color: 'bg-teal-700',
+    details: [
+      'Deploy regional courier unit',
+      'Sync schedule with donor availability',
+      'Enable real-time parcel tracking'
+    ],
+    mockup: (
+      <div className="space-y-3">
+        <div className="bg-slate-50 border border-border p-4 rounded-xl space-y-2">
+          <div className="flex justify-between font-bold">
+            <span>Express Unit: DB-LOGISTICS</span>
+            <span className="text-primary">En Route</span>
+          </div>
+          <div className="flex justify-between text-slate-400">
+            <span>Driver: Ramesh K.</span>
+            <span>ETA: 14 mins</span>
+          </div>
+        </div>
+        <p className="text-slate-400 text-center">GPS tracking active · Transmit rate: 1Hz</p>
+      </div>
+    )
+  },
+  {
+    num: 7,
+    title: 'Delivery Completed',
+    desc: 'Items are delivered to the NGO hub and verified through electronic signature. Custody transfer is recorded in the audit log.',
+    icon: Truck,
+    color: 'bg-green-600',
+    details: [
+      'Courier delivers items to NGO hub',
+      'NGO confirms with digital signature',
+      'Release custody transfer logs'
+    ],
+    mockup: (
+      <div className="space-y-3">
+        <div className="bg-slate-50 border border-border p-4 rounded-xl flex items-center justify-between">
+          <span className="text-slate-500 font-medium">Custody Transfer</span>
+          <span className="text-primary font-bold flex items-center gap-1.5">
+            <CheckCircle className="w-4 h-4" /> SIGNED
+          </span>
+        </div>
+        <div className="bg-slate-50 border border-border p-4 rounded-xl font-mono text-slate-600 space-y-1.5">
+          <div>&gt; Matching GPS location logs...</div>
+          <div>NGO HQ REGION MATCH: 100% [VALID]</div>
+          <div>STATUS: COMPLETED DISPATCH</div>
+        </div>
+      </div>
+    )
+  },
+  {
+    num: 8,
+    title: 'Impact Ledger Updated',
+    desc: 'CO₂ savings, item metrics, and beneficiary impact data are synced to the transparency ledger — completing the donation lifecycle.',
+    icon: BarChart3,
+    color: 'bg-green-700',
+    details: [
+      'Calculate carbon emissions saved',
+      'Append data to transparency log',
+      'Credit donor profile with impact points'
+    ],
+    mockup: (
+      <div className="space-y-3">
+        <div className="bg-emerald-950 text-emerald-100 p-5 rounded-xl text-center space-y-1">
+          <p className="font-mono uppercase tracking-wider text-emerald-400">CO₂ Emissions Saved</p>
+          <p className="text-2xl font-display font-extrabold">+0.15 Tons Offset</p>
+        </div>
+        <div className="flex justify-between items-center text-slate-400 px-1">
+          <span>Block Index: #5812902</span>
+          <span>Status: SYNCED</span>
+        </div>
+      </div>
+    )
+  },
+];
 
 export default function Bridge() {
   const [activeStep, setActiveStep] = useState(1);
 
-  const steps = [
-    {
-      num: 1,
-      title: 'Donor uploads items',
-      desc: 'Donor registers item specs, categories, package weights, and verification files.',
-      icon: Upload,
-      color: 'bg-emerald-500',
-    },
-    {
-      num: 2,
-      title: 'Admin verifies listing',
-      desc: 'Superuser checks coordinates, files, and updates trust flags to avoid coordinates duplicates.',
-      icon: ShieldCheck,
-      color: 'bg-[#43A047]',
-    },
-    {
-      num: 3,
-      title: 'Item becomes public',
-      desc: 'Approved donation becomes visible on the public faceted search marketplace directory.',
-      icon: Globe,
-      color: 'bg-[#4CAF50]',
-    },
-    {
-      num: 4,
-      title: 'NGO requests item',
-      desc: 'Registered NGOs match item categories based on local community request demands.',
-      icon: Compass,
-      color: 'bg-teal-500',
-    },
-    {
-      num: 5,
-      title: 'Donor accepts match',
-      desc: 'Donor reviews matches and clicks to accept the optimal routing suggestion.',
-      icon: CheckCircle,
-      color: 'bg-emerald-600',
-    },
-    {
-      num: 6,
-      title: 'Pickup scheduled',
-      desc: 'Express logistics carrier unit dispatched to retrieve shipment.',
-      icon: Clock,
-      color: 'bg-[#2E7D32]',
-    },
-    {
-      num: 7,
-      title: 'Delivery completed',
-      desc: 'Cargo is delivered to the NGO Hub coordinates and verified by electronic signature logs.',
-      icon: Truck,
-      color: 'bg-green-700',
-    },
-    {
-      num: 8,
-      title: 'Impact ledger updated',
-      desc: 'Total CO2 emissions saved and item metrics sync to transparency logs.',
-      icon: BarChart3,
-      color: 'bg-green-800',
-    },
-  ];
+  const currentStep = STEPS.find(s => s.num === activeStep);
+  const StepIcon = currentStep.icon;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
 
-      <main className="flex-grow max-w-7xl mx-auto w-full p-6 sm:p-8 space-y-16">
-        
-        {/* Hero Section */}
-        <section className="text-center max-w-3xl mx-auto space-y-4 pt-4">
-          <span className="px-3 py-1 bg-[#F1F8F5] text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
-            HOW IT WORKS
+      {/* Page Header */}
+      <section className="bg-white border-b border-border">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center space-y-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-primary border border-emerald-200/60 font-semibold uppercase tracking-wider">
+            How It Works
           </span>
-          <h1 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-slate-900 leading-tight">
-            Connecting Donors with NGOs, One Donation at a Time
+          <h1 className="font-display font-extrabold text-slate-900 tracking-tight">
+            The Donation Bridge
           </h1>
-          <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-            DonateBridge simplifies resource sharing, replacing complex shipping processes with verified logs and smart routes.
+          <p className="text-slate-500 max-w-xl mx-auto leading-relaxed">
+            From uploading an item to delivering it to an NGO — here's the complete journey of every donation on DonateBridge.
           </p>
-        </section>
+        </div>
+      </section>
 
-        {/* 8-Step Interactive Workflow */}
-        <section className="bg-white border border-border p-6 sm:p-8 rounded-2xl shadow-premium-sm space-y-8">
-          <div>
-            <h2 className="text-sm font-display font-bold text-slate-400 uppercase tracking-wider">The Donation Journey Workflow</h2>
-            <p className="text-xs text-slate-500 mt-1">Click steps to visualize the automated transaction lifecycle.</p>
-          </div>
-
+      {/* Main Content */}
+      <section className="flex-1 py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-8">
-            
-            {/* Timeline Steps Sidebar */}
-            <div className="w-full lg:w-96 space-y-2">
-              {steps.map((st) => {
-                const StepIcon = st.icon;
-                const isActive = activeStep === st.num;
 
+            {/* Left: Step Navigation */}
+            <div className="w-full lg:w-80 shrink-0 space-y-2">
+              {STEPS.map((step) => {
+                const Icon = step.icon;
+                const isActive = activeStep === step.num;
+                const isPast = activeStep > step.num;
                 return (
                   <button
-                    key={st.num}
-                    onClick={() => setActiveStep(st.num)}
-                    className={`w-full flex items-center gap-4 p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    key={step.num}
+                    onClick={() => setActiveStep(step.num)}
+                    className={`w-full flex items-center gap-4 p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                       isActive
-                        ? 'border-primary bg-[#F1F8F5]/50 ring-2 ring-primary/5'
-                        : 'border-transparent hover:bg-slate-50'
+                        ? 'border-primary bg-emerald-50/40 shadow-premium-sm'
+                        : 'border-transparent hover:bg-slate-50 hover:border-slate-100'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold shrink-0 ${st.color}`}>
-                      <StepIcon className="w-4 h-4" />
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                      isActive ? 'bg-primary text-white' :
+                      isPast ? 'bg-emerald-100 text-primary' :
+                      'bg-slate-100 text-slate-400'
+                    }`}>
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <div className="text-xs">
-                      <p className={`font-bold ${isActive ? 'text-primary' : 'text-slate-700'}`}>
-                        Step {st.num}: {st.title}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-slate-400 font-semibold uppercase tracking-wider ${isActive ? 'text-primary' : ''}`} style={{ fontSize: '11px' }}>
+                        Step {step.num}
+                      </p>
+                      <p className={`font-semibold truncate ${isActive ? 'text-slate-900 font-bold' : 'text-slate-600'}`} style={{ fontSize: '14px' }}>
+                        {step.title}
                       </p>
                     </div>
+                    {isActive && <ChevronRight className="w-4 h-4 text-primary shrink-0" />}
                   </button>
                 );
               })}
             </div>
 
-            {/* Visualizer Display Panel */}
-            <div className="flex-grow bg-slate-50 border border-border p-6 rounded-xl flex flex-col justify-between min-h-[300px]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeStep}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-4"
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">
-                      STAGES & LOGISTICS / PHASE {activeStep}
-                    </span>
-                    <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
-                      {activeStep}
-                    </span>
-                  </div>
-
-                  <h3 className="text-lg font-display font-bold text-slate-900">
-                    {steps[activeStep - 1].title}
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed max-w-md">
-                    {steps[activeStep - 1].desc}
-                  </p>
-
-                  <div className="bg-white border border-border p-4 rounded-lg flex items-center gap-3 text-xs max-w-sm mt-4">
-                    <div className="w-8 h-8 rounded-full bg-[#F1F8F5] flex items-center justify-center text-primary">
-                      <Heart className="w-4 h-4" />
+            {/* Right: Step Detail Card */}
+            <div className="flex-1">
+              <div className="bg-white border border-border rounded-2xl shadow-premium-sm overflow-hidden">
+                
+                {/* Step Header */}
+                <div className="p-6 lg:p-8 border-b border-border bg-slate-50/50">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white ${currentStep.color}`}>
+                      <StepIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800">Anti-Fraud Protection Enabled</p>
-                      <p className="text-[10px] text-slate-400">Ledger details are signed under secure coordinates protocols.</p>
+                      <p className="text-primary font-semibold uppercase tracking-wider" style={{ fontSize: '12px' }}>
+                        Step {currentStep.num} of {STEPS.length}
+                      </p>
+                      <h2 className="font-display font-bold text-slate-900" style={{ fontSize: '22px' }}>
+                        {currentStep.title}
+                      </h2>
                     </div>
                   </div>
-                </motion.div>
-              </AnimatePresence>
-
-              <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-border">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setActiveStep(prev => Math.max(1, prev - 1))}
-                  disabled={activeStep === 1}
-                >
-                  Back
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setActiveStep(prev => Math.min(8, prev + 1))}
-                  disabled={activeStep === 8}
-                  icon={ChevronRight}
-                >
-                  Next Stage
-                </Button>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        {/* Growth Stats Section */}
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm text-center space-y-1">
-            <Users className="w-6 h-6 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-display font-extrabold text-slate-900">1,240+</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase">Active Donors</p>
-          </div>
-          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm text-center space-y-1">
-            <Heart className="w-6 h-6 text-[#4CAF50] mx-auto mb-2" />
-            <p className="text-2xl font-display font-extrabold text-slate-900">340+</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase">Verified NGO Hubs</p>
-          </div>
-          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm text-center space-y-1">
-            <Truck className="w-6 h-6 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-display font-extrabold text-slate-900">8,904</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase">Completed Dispatches</p>
-          </div>
-          <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm text-center space-y-1">
-            <BarChart3 className="w-6 h-6 text-[#4CAF50] mx-auto mb-2" />
-            <p className="text-2xl font-display font-extrabold text-slate-900">1.4 tons</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase">CO2 Emissions Saved</p>
-          </div>
-        </section>
-
-        {/* Success Stories */}
-        <section className="space-y-6">
-          <div>
-            <h2 className="text-sm font-display font-bold text-slate-400 uppercase tracking-wider">Success Stories</h2>
-            <p className="text-xs text-slate-500 mt-1">Real impact updates delivered via coordinates routing matching.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
-              <p className="text-xs text-slate-500 italic">
-                "Our school received 40 books and notebooks within a day. The coordinate matching program saved us days of phone calls."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-xs text-primary">
-                  ED
+                  <p className="text-slate-500 mt-3 leading-relaxed max-w-2xl" style={{ fontSize: '15px' }}>
+                    {currentStep.desc}
+                  </p>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Education Hub</h4>
-                  <p className="text-[10px] text-slate-400">NGO Partner &bull; Sector 4</p>
+
+                {/* Step Body */}
+                <div className="p-6 lg:p-8 space-y-6">
+                  
+                  {/* Checklist */}
+                  <div className="space-y-2.5">
+                    <h3 className="font-semibold text-slate-400 uppercase tracking-wider" style={{ fontSize: '12px' }}>
+                      What happens at this step
+                    </h3>
+                    <ul className="space-y-2">
+                      {currentStep.details.map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 text-slate-700" style={{ fontSize: '15px' }}>
+                          <CheckCircle className="w-4 h-4 text-primary shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Live Preview Mockup */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-slate-400 uppercase tracking-wider" style={{ fontSize: '12px' }}>
+                      Preview
+                    </h3>
+                    <div className="border border-border rounded-xl p-5 bg-slate-50/30" style={{ fontSize: '14px' }}>
+                      {currentStep.mockup}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step Navigation Footer */}
+                <div className="p-6 lg:p-8 border-t border-border bg-slate-50/30 flex items-center justify-between">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
+                    isDisabled={activeStep === 1}
+                  >
+                    Previous Step
+                  </Button>
+                  
+                  {/* Progress indicator */}
+                  <div className="hidden sm:flex items-center gap-1.5">
+                    {STEPS.map(s => (
+                      <div
+                        key={s.num}
+                        className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${
+                          s.num === activeStep ? 'bg-primary' :
+                          s.num < activeStep ? 'bg-emerald-200' :
+                          'bg-slate-200'
+                        }`}
+                        onClick={() => setActiveStep(s.num)}
+                      />
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="primary"
+                    onClick={() => setActiveStep(Math.min(STEPS.length, activeStep + 1))}
+                    isDisabled={activeStep === STEPS.length}
+                    icon={ArrowRight}
+                  >
+                    Next Step
+                  </Button>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
-              <p className="text-xs text-slate-500 italic">
-                "DonateBridge allowed us to clear our store warehouse of extra winter coats and blankets. Direct tracking feels incredibly secure."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-xs text-primary">
-                  SJ
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Sarah Jenkins</h4>
-                  <p className="text-[10px] text-slate-400">Platform Donor &bull; Bangalore East</p>
-                </div>
-              </div>
-            </div>
           </div>
-        </section>
-
-      </main>
+        </div>
+      </section>
 
       <Footer />
     </div>
