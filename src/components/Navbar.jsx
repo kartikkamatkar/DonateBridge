@@ -44,8 +44,24 @@ export default function Navbar() {
   const navLinks = getNavLinks();
 
   return (
-    <header className="bg-white border-b border-border sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-white border-b border-border sticky top-0 z-50 w-full">
+      {/* Top Banner Ribbon like Top Government Portals */}
+      <div className="bg-slate-900 text-slate-300 text-[10px] sm:text-xs py-1.5 px-4 sm:px-8 lg:px-12 flex justify-between items-center border-b border-slate-850 font-sans tracking-wide">
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-semibold text-slate-200">Official National NGO Aid &amp; Donor Match Platform</span>
+        </div>
+        <div className="hidden md:flex items-center gap-4 text-slate-400">
+          <span>Toll-Free Logistics Help: 1800-DB-HELP</span>
+          <span className="text-slate-700">|</span>
+          <span className="hover:text-white cursor-pointer transition-colors">Screen Reader Access</span>
+          <span className="text-slate-700">|</span>
+          <span className="hover:text-white cursor-pointer transition-colors">English (EN)</span>
+        </div>
+      </div>
+
+      {/* Main Wide Navigation Container (No gaps on left/right most) */}
+      <div className="w-full px-4 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between h-16">
           
           {/* Left: Brand logo */}

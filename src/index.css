@@ -189,6 +189,12 @@ input, select, textarea, .input-tall {
   border-radius: var(--radius-lg) !important;
 }
 
+input[type="range"] {
+  min-height: auto !important;
+  height: auto !important;
+  background: transparent !important;
+}
+
 button, .btn-tall {
   font-size: 16px !important;
   min-height: 48px !important;
