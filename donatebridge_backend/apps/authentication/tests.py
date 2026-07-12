@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.test import APIClient
 from rest_framework import status
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from authentication.models import Profile
 from ngo.models import NGO, Need, VerificationStatus, EmergencyCampaign, VolunteerEvent, VolunteerRegistration
@@ -321,3 +322,48 @@ class DonateBridgeBackendTests(TestCase):
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(VolunteerRegistration.objects.count(), 1)
+
+    def test_forgot_password_and_reset_password(self):
+        # 1. Forgot password request
+        response = self.client.post('/api/auth/forgot-password/', {
+            'email': 'donor@test.com'
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('otp_preview', response.data)
+        otp_code = response.data['otp_preview']
+
+        # 2. Reset password using the code
+        response = self.client.post('/api/auth/reset-password/', {
+            'email': 'donor@test.com',
+            'code': otp_code,
+            'new_password': 'newpassword123'
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # 3. Try to login with new password
+        response = self.client.post('/api/auth/login/', {
+            'email': 'donor@test.com',
+            'password': 'newpassword123'
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+
+    def test_secure_file_upload(self):
+        self.client.force_authenticate(user=self.donor_user)
+
+        # 1. Valid image file
+        dummy_file = SimpleUploadedFile("picture.png", b"file_content", content_type="image/png")
+        response = self.client.post('/api/upload/', {'file': dummy_file}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('url', response.data)
+        self.assertTrue(response.data['url'].endswith('.png'))
+
+        # 2. Invalid file type (e.g. php/executable)
+        invalid_file = SimpleUploadedFile("script.py", b"print('hack')", content_type="text/plain")
+        response = self.client.post('/api/upload/', {'file': invalid_file}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 3. Double extension check
+        double_ext_file = SimpleUploadedFile("script.php.png", b"file_content", content_type="image/png")
+        response = self.client.post('/api/upload/', {'file': double_ext_file}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

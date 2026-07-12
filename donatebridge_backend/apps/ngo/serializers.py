@@ -49,13 +49,22 @@ class NGORegistrationSerializer(serializers.ModelSerializer):
             **validated_data
         )
         
-        # Save documents if provided
-        for doc_key, doc_url in documents_data.items():
-            NGODocument.objects.create(
-                ngo=ngo,
-                doc_type=doc_key,
-                file_url=doc_url
-            )
+        # Save documents if provided (handles both string URLs and list of page URLs)
+        for doc_key, doc_val in documents_data.items():
+            if isinstance(doc_val, list):
+                for page_url in doc_val:
+                    if page_url:
+                        NGODocument.objects.create(
+                            ngo=ngo,
+                            doc_type=doc_key,
+                            file_url=page_url
+                        )
+            elif doc_val:
+                NGODocument.objects.create(
+                    ngo=ngo,
+                    doc_type=doc_key,
+                    file_url=doc_val
+                )
             
         return ngo
 
@@ -78,7 +87,12 @@ class NGODetailsSerializer(serializers.ModelSerializer):
 
     def get_documents(self, obj):
         docs = obj.documents.all()
-        return {doc.doc_type: doc.file_url for doc in docs}
+        result = {}
+        for doc in docs:
+            if doc.doc_type not in result:
+                result[doc.doc_type] = []
+            result[doc.doc_type].append(doc.file_url)
+        return result
 
 class VolunteerEventSerializer(serializers.ModelSerializer):
     ngo_name = serializers.CharField(source='ngo.name', read_only=True)

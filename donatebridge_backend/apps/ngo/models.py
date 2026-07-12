@@ -63,9 +63,6 @@ class NGODocument(models.Model):
     file_url = models.URLField(max_length=500)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('ngo', 'doc_type')
-
     def __str__(self):
         return f"{self.ngo.name} - {self.doc_type}"
 
