@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import { useToast } from '../components/ui/Toast';
 
 // Create isolated contexts
 const ThemeContext = createContext();
@@ -28,28 +29,17 @@ const getNgoVerificationSnapshot = (email) => {
 };
 
 export const GlobalStateProvider = ({ children }) => {
+  const { toast } = useToast();
   // --- THEME CONTEXT STATE ---
-  const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  });
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
+  const theme = 'light';
+  const toggleTheme = () => {};
 
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.style.colorScheme = 'dark';
-    } else {
-      root.classList.remove('dark');
-      root.style.colorScheme = 'light';
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
+    localStorage.setItem('theme', 'light');
+  }, []);
 
   // --- AUTH CONTEXT STATE ---
   const [user, setUser] = useState(() => {
@@ -73,6 +63,7 @@ export const GlobalStateProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('tokenExpiresAt');
+    toast.error(msg);
   };
 
   const login = (role, email, name = '', options = {}) => {
@@ -101,6 +92,7 @@ export const GlobalStateProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(mockUser));
     localStorage.setItem('token', mockToken);
     localStorage.setItem('tokenExpiresAt', String(expiresAt));
+    toast.success(`Logged in as ${mockUser.name}`);
   };
 
   const logout = () => {
@@ -109,6 +101,7 @@ export const GlobalStateProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('tokenExpiresAt');
+    toast.info('Signed out successfully.');
   };
 
   useEffect(() => {
@@ -183,7 +176,7 @@ export const GlobalStateProvider = ({ children }) => {
     });
     
     socketInstance.connect();
-    setSocket(socketInstance);
+    Promise.resolve().then(() => setSocket(socketInstance));
 
     // Simulated event triggers for visualization purposes
     const interval = setInterval(() => {
@@ -206,6 +199,7 @@ export const GlobalStateProvider = ({ children }) => {
           ...prev
         ]);
         setUnreadCount(prev => prev + 1);
+        toast.info(newMsg);
       }
     }, 45000); // Trigger occasionally for preview
 
@@ -213,7 +207,7 @@ export const GlobalStateProvider = ({ children }) => {
       socketInstance.disconnect();
       clearInterval(interval);
     };
-  }, []);
+  }, [toast]);
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -230,6 +224,7 @@ export const GlobalStateProvider = ({ children }) => {
       <AuthContext.Provider
         value={{
           user,
+          setUser,
           token,
           isAuthenticated: !!token,
           login,

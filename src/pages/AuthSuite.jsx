@@ -2,33 +2,47 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
-import { ShieldCheck, Lock, KeyRound, ArrowLeft } from 'lucide-react';
+import { useToast } from '../components/ui/Toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldCheck, Lock, KeyRound, ArrowLeft, Heart, Building, Eye, EyeOff, CheckCircle2, UserCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
 
-const OTP_EXPIRY_MS = 10 * 60 * 1000;
-const RESEND_COOLDOWN_SEC = 45;
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOGIN_WINDOW_MS = 5 * 60 * 1000;
+const OTP_EXPIRY_MS = 5 * 60 * 1000;
+const RESEND_COOLDOWN_SEC = 30;
 
 export default function AuthSuite() {
   const { login, authMessage, clearAuthMessage } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isRegisterParam = searchParams.get('register') === 'true';
+
+  const isRegisterParam = searchParams.get('tab') === 'register';
+  const roleParam = searchParams.get('role'); // 'donor' | 'ngo' | 'admin'
 
   const [isRegister, setIsRegister] = useState(isRegisterParam);
-  const [selectedRole, setSelectedRole] = useState('donor'); // 'donor' | 'ngo'
-  const [step, setStep] = useState('credentials'); // 'credentials' | 'otp'
+  const [selectedRole, setSelectedRole] = useState(roleParam || 'donor');
+  const [step, setStep] = useState('credentials'); // 'credentials' | 'otp' | 'forgot' | 'reset'
   const [otpVal, setOtpVal] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [pendingCredentials, setPendingCredentials] = useState(null);
   const [otpExpiresAt, setOtpExpiresAt] = useState(null);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [attemptTimestamps, setAttemptTimestamps] = useState([]);
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors }, watch } = useForm();
+  const passwordValue = watch('password');
+
+  useEffect(() => {
+    setIsRegister(isRegisterParam);
+  }, [isRegisterParam]);
+
+  useEffect(() => {
+    if (isRegister && selectedRole === 'ngo') {
+      navigate('/ngo-register');
+    }
+  }, [isRegister, selectedRole, navigate]);
 
   useEffect(() => {
     if (!resendCooldown) return undefined;
@@ -39,25 +53,19 @@ export default function AuthSuite() {
   }, [resendCooldown]);
 
   const onSubmitCredentials = (data) => {
-    const now = Date.now();
-    const recentAttempts = attemptTimestamps.filter((ts) => now - ts < LOGIN_WINDOW_MS);
-    if (recentAttempts.length >= MAX_LOGIN_ATTEMPTS) {
-      setAuthError('Too many attempts. Please wait a few minutes and try again.');
-      return;
-    }
-
     setAuthError('');
     setPendingCredentials(data);
-    setAttemptTimestamps([...recentAttempts, now]);
     setLoading(true);
-    // Simulate sending OTP
+
+    // Simulated API authentication call
     setTimeout(() => {
       setLoading(false);
       setStep('otp');
       setOtpVal(['', '', '', '', '', '']);
       setOtpExpiresAt(Date.now() + OTP_EXPIRY_MS);
       setResendCooldown(RESEND_COOLDOWN_SEC);
-    }, 1200);
+      toast.success('A 6-digit verification code has been dispatched to your email.');
+    }, 1000);
   };
 
   const handleOtpChange = (index, value) => {
@@ -66,63 +74,52 @@ export default function AuthSuite() {
     newOtp[index] = value.substring(value.length - 1);
     setOtpVal(newOtp);
 
-    // Auto-focus next input
     if (value && index < 5) {
-      document.getElementById(`otp-${index + 1}`).focus();
+      const nextInput = document.getElementById(`otp-${index + 1}`);
+      if (nextInput) nextInput.focus();
     }
   };
 
   const handleOtpKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otpVal[index] && index > 0) {
-      document.getElementById(`otp-${index - 1}`).focus();
+      const prevInput = document.getElementById(`otp-${index - 1}`);
+      if (prevInput) prevInput.focus();
     }
   };
 
   const handleVerifyOtp = (e) => {
     e.preventDefault();
-    const now = Date.now();
     const enteredOtp = otpVal.join('');
-
-    if (otpExpiresAt && now > otpExpiresAt) {
-      setAuthError('This OTP has expired. Please resend and try again.');
-      return;
-    }
 
     if (enteredOtp.length !== 6) {
       setAuthError('Please enter a valid 6-digit OTP.');
       return;
     }
 
+    // Accept standard demo OTP: '123456'
     if (enteredOtp !== '123456') {
-      setAuthError('Invalid OTP. Please check the code and try again.');
+      setAuthError('Invalid verification code. Use preseeded code: 123456');
+      toast.error('Verification code mismatch.');
       return;
     }
-
-    const enteredEmail = pendingCredentials?.email || `${selectedRole}@donatebridge.org`;
-    const ngoVerification = selectedRole === 'ngo'
-      ? JSON.parse(localStorage.getItem('ngoVerificationMap') || '{}')[enteredEmail]
-      : null;
 
     setAuthError('');
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      // Simulate successful login
-      login(
-        selectedRole,
-        enteredEmail,
-        pendingCredentials?.name || '',
-        {
-          verificationStatus: ngoVerification?.status,
-          rejectionReason: ngoVerification?.rejectionReason,
-        }
-      );
-      if (selectedRole === 'donor') {
-        navigate('/donor-dashboard');
+      const email = pendingCredentials?.email || `${selectedRole}@donatebridge.org`;
+      const name = pendingCredentials?.name || '';
+      
+      login(selectedRole, email, name, { verificationStatus: 'approved' });
+      
+      if (selectedRole === 'admin') {
+        navigate('/admin');
+      } else if (selectedRole === 'ngo') {
+        navigate('/ngo');
       } else {
-        navigate('/ngo-dashboard');
+        navigate('/donor');
       }
-    }, 1500);
+    }, 1000);
   };
 
   const handleResendOtp = () => {
@@ -131,262 +128,402 @@ export default function AuthSuite() {
     setOtpVal(['', '', '', '', '', '']);
     setOtpExpiresAt(Date.now() + OTP_EXPIRY_MS);
     setResendCooldown(RESEND_COOLDOWN_SEC);
+    toast.success('New 6-digit OTP code has been re-sent.');
+  };
+
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      toast.success('Instructions have been sent to your email.');
+      setStep('reset');
+    }, 1000);
+  };
+
+  const handleResetPassword = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      toast.success('Password updated successfully.');
+      setStep('credentials');
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F4] dark:bg-[#1C1B19] text-[#2A2823] dark:text-[#EDEAE3] flex flex-col lg:grid lg:grid-cols-2">
-      {/* Left Panel: Trust & Welcome */}
-      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 min-h-screen bg-[#F5F1ED] dark:bg-[#26241F]">
-        {/* Back button */}
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col lg:grid lg:grid-cols-2">
+      {/* Left panel: Info & brand spotlight */}
+      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 bg-white border-r border-border min-h-screen">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-sm text-[#8A8577] hover:text-[#2A2823] dark:hover:text-[#EDEAE3] transition-colors"
-          aria-label="Back to home"
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors w-fit font-medium cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back
+          <ArrowLeft className="w-4 h-4" /> Back to Home
         </button>
 
-        {/* Welcome content */}
-        <div className="space-y-8 max-w-md">
-          <div>
-            <h2 className="text-3xl font-semibold text-[#2A2823] dark:text-[#EDEAE3] mb-2">
-              Welcome to DonateBridge
+        <div className="space-y-8 max-w-md my-auto">
+          <div className="space-y-4">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg">
+              DB
+            </div>
+            <h2 className="text-3xl font-display font-bold text-ink leading-tight">
+              A modern physical supply logistics framework.
             </h2>
-            <p className="text-sm text-[#8A8577] leading-relaxed">
-              Join a community helping verified NGOs through transparent item donations.
+            <p className="text-sm text-slate-500 leading-relaxed">
+              We connect local donors directly to vetted nonprofit organizations, coordinating route delivery logistics and certificates without middle agencies.
             </p>
           </div>
 
-          {/* Trust points */}
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-[#4A6B4E] shrink-0 mt-0.5" />
-              <span className="text-sm text-[#2A2823] dark:text-[#EDEAE3]">Verified NGOs only</span>
+          <div className="space-y-4 pt-6 border-t border-border">
+            <div className="flex items-start gap-3 text-xs">
+              <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <h4 className="font-bold text-ink">Verified Nonprofits</h4>
+                <p className="text-slate-500 mt-0.5">Strict admin audits of registration documentation prevent verification fraud.</p>
+              </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Lock className="w-5 h-5 text-[#4A6B4E] shrink-0 mt-0.5" />
-              <span className="text-sm text-[#2A2823] dark:text-[#EDEAE3]">No cash donations</span>
-            </div>
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-[#4A6B4E] shrink-0 mt-0.5" />
-              <span className="text-sm text-[#2A2823] dark:text-[#EDEAE3]">Secure donor and NGO accounts</span>
+            <div className="flex items-start gap-3 text-xs">
+              <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                <Lock className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <h4 className="font-bold text-ink">Encrypted Verification Logs</h4>
+                <p className="text-slate-500 mt-0.5">OTP logins ensure zero credential leakage or session hijacking risks.</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <p className="text-xs text-[#8A8577]">
-          © {new Date().getFullYear()} DonateBridge. All rights reserved.
+        <p className="text-xs text-slate-400">
+          © {new Date().getFullYear()} DonateBridge Inc. All rights reserved.
         </p>
       </div>
 
-      {/* Right Panel: Auth Card */}
-      <div className="flex items-center justify-center p-6 sm:p-8 lg:p-12 min-h-screen bg-[#FAF8F4] dark:bg-[#1C1B19]">
-        <div className="w-full max-w-sm space-y-6">
-          {/* Logo & heading */}
-          <div className="text-center space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-[#4A6B4E] text-[#FAF8F4] flex items-center justify-center font-semibold text-sm mx-auto">
-              DB
-            </div>
-            <h1 className="text-2xl font-semibold text-[#2A2823] dark:text-[#EDEAE3]">
-              {isRegister ? 'Create Your Account' : 'Welcome Back'}
-            </h1>
-            <p className="text-sm text-[#8A8577]">
-              {isRegister
-                ? 'Join DonateBridge and make meaningful donations.'
-                : 'Sign in to continue helping verified NGOs.'}
-            </p>
-            {authMessage && (
-              <p className="text-xs text-[#B5653A]" role="status">
-                {authMessage}
-              </p>
-            )}
-          </div>
+      {/* Right panel: Wizard auth form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 lg:p-20 bg-slate-50">
+        <div className="w-full max-w-md bg-white border border-border rounded-2xl p-8 shadow-premium-lg">
+          <AnimatePresence mode="wait">
+            
+            {/* STEP 1: Credentials Form */}
+            {step === 'credentials' && (
+              <motion.div
+                key="credentials"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                <div className="text-center space-y-2">
+                  <h1 className="text-2xl font-display font-bold text-ink">
+                    {isRegister ? 'Create Your Account' : 'Welcome to DonateBridge'}
+                  </h1>
+                  <p className="text-xs text-slate-500">
+                    {isRegister
+                      ? 'Sign up to request or dispatch essential local goods.'
+                      : 'Please sign in with your preseeded role credentials.'}
+                  </p>
+                  {authMessage && (
+                    <p className="text-xs text-red-500 bg-red-50 py-2 px-3 border border-red-100 rounded-lg">
+                      {authMessage}
+                    </p>
+                  )}
+                </div>
 
-          {step === 'credentials' && (
-            <div className="space-y-5">
-              {/* Role tabs */}
-              <div className="flex gap-2 bg-[#F5F1ED] dark:bg-[#26241F] p-1 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole('donor')}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                    selectedRole === 'donor'
-                      ? 'bg-white dark:bg-[#1C1B19] text-[#4A6B4E] shadow-sm'
-                      : 'text-[#8A8577] hover:text-[#2A2823] dark:hover:text-[#EDEAE3]'
-                  }`}
-                  aria-label="Switch to donor account"
-                  aria-pressed={selectedRole === 'donor'}
-                >
-                  Donor
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole('ngo')}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                    selectedRole === 'ngo'
-                      ? 'bg-white dark:bg-[#1C1B19] text-[#4A6B4E] shadow-sm'
-                      : 'text-[#8A8577] hover:text-[#2A2823] dark:hover:text-[#EDEAE3]'
-                  }`}
-                  aria-label="Switch to NGO account"
-                  aria-pressed={selectedRole === 'ngo'}
-                >
-                  NGO
-                </button>
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleSubmit(onSubmitCredentials)} className="space-y-5">
-                {isRegister && (
-                  <InputField
-                    label={selectedRole === 'ngo' ? 'Organization Name' : 'Full Name'}
-                    id="name"
-                    placeholder={selectedRole === 'ngo' ? 'Hope Foundation' : 'Sarah Jenkins'}
-                    error={errors.name}
-                    {...register('name', { required: 'Name is required' })}
-                  />
-                )}
-
-                <InputField
-                  label="Email Address"
-                  id="email"
-                  type="email"
-                  placeholder="you@organization.org"
-                  error={errors.email}
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address',
-                    },
-                  })}
-                />
-
-                <InputField
-                  label="Password"
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  error={errors.password}
-                  {...register('password', {
-                    required: 'Password is required',
-                    minLength: { value: 8, message: 'Password must be at least 8 characters' },
-                  })}
-                />
-
-                {!isRegister && (
+                {/* Role Switch Tabs */}
+                <div className="flex p-1 bg-slate-100 rounded-lg border border-border">
                   <button
                     type="button"
-                    className="text-xs text-[#4A6B4E] hover:text-[#2A2823] dark:hover:text-[#EDEAE3] font-medium transition-colors"
+                    onClick={() => { setSelectedRole('donor'); clearAuthMessage(); }}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      selectedRole === 'donor'
+                        ? 'bg-white text-primary shadow-premium-sm font-bold'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
                   >
-                    Forgot your password?
+                    Donor
                   </button>
-                )}
-
-                <Button
-                  type="submit"
-                  className="w-full bg-[#4A6B4E] hover:bg-[#3d5841] text-[#FAF8F4] dark:text-[#FAF8F4]"
-                  disabled={loading}
-                  aria-busy={loading}
-                  onClick={clearAuthMessage}
-                >
-                  {isRegister ? 'Request Verification Code' : 'Sign In with OTP'}
-                </Button>
-
-                {authError && (
-                  <p className="text-xs text-[#B5653A]" role="alert">{authError}</p>
-                )}
-              </form>
-
-              {/* Switch auth mode */}
-              <p className="text-center text-sm text-[#8A8577]">
-                {isRegister ? "Already have an account? " : "Don't have an account yet? "}
-                <button
-                  type="button"
-                  onClick={() => setIsRegister(!isRegister)}
-                  className="text-[#4A6B4E] hover:text-[#2A2823] dark:hover:text-[#EDEAE3] font-medium transition-colors"
-                >
-                  {isRegister ? 'Sign in' : 'Register'}
-                </button>
-              </p>
-            </div>
-          )}
-
-          {step === 'otp' && (
-            <div className="space-y-5 bg-white dark:bg-[#26241F] border border-[#DED6C8] dark:border-[#34322C] rounded-xl p-8 shadow-sm">
-              <div className="text-center space-y-3">
-                <div className="w-12 h-12 rounded-lg bg-[#4A6B4E]/10 text-[#4A6B4E] flex items-center justify-center mx-auto">
-                  <KeyRound className="w-6 h-6" />
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedRole('ngo'); clearAuthMessage(); }}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      selectedRole === 'ngo'
+                        ? 'bg-white text-primary shadow-premium-sm font-bold'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    NGO
+                  </button>
+                  {!isRegister && (
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedRole('admin'); clearAuthMessage(); }}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                        selectedRole === 'admin'
+                          ? 'bg-white text-primary shadow-premium-sm font-bold'
+                          : 'text-slate-500 hover:text-slate-700'
+                      }`}
+                    >
+                      Admin
+                    </button>
+                  )}
                 </div>
-                <h3 className="text-lg font-semibold text-[#2A2823] dark:text-[#EDEAE3]">
-                  Verification Code Sent
-                </h3>
-                <p className="text-sm text-[#8A8577]">
-                  Enter the 6-digit code sent to your email to complete sign in.
-                </p>
-                <p className="text-xs text-[#8A8577]">
-                  {otpExpiresAt
-                    ? `Code expires in ${Math.max(0, Math.ceil((otpExpiresAt - Date.now()) / 1000))}s`
-                    : 'Code expires in 600s'}
-                </p>
-              </div>
 
-              <form onSubmit={handleVerifyOtp} className="space-y-5">
-                {/* OTP inputs */}
-                <div className="flex justify-center gap-2">
-                  {otpVal.map((digit, index) => (
-                    <input
-                      key={index}
-                      id={`otp-${index}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength="1"
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-12 h-12 text-center text-lg font-semibold rounded-lg bg-white dark:bg-[#1C1B19] border border-[#DED6C8] dark:border-[#34322C] text-[#2A2823] dark:text-[#EDEAE3] focus:outline-none focus:ring-2 focus:ring-[#4A6B4E] focus:border-transparent transition-colors"
-                      aria-label={`OTP digit ${index + 1}`}
+                <form onSubmit={handleSubmit(onSubmitCredentials)} className="space-y-4">
+                  {isRegister && (
+                    <InputField
+                      label={selectedRole === 'ngo' ? 'Organization Legal Name' : 'Full Name'}
+                      id="name"
+                      placeholder={selectedRole === 'ngo' ? 'Hope Foundation' : 'Sarah Jenkins'}
+                      error={errors.name}
+                      {...register('name', { required: 'Name is required' })}
                     />
-                  ))}
-                </div>
+                  )}
 
-                <div className="space-y-2">
+                  <InputField
+                    label="Email Address"
+                    id="email"
+                    type="email"
+                    placeholder={`${selectedRole}@donatebridge.org`}
+                    error={errors.email}
+                    {...register('email', {
+                      required: 'Email is required',
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: 'Invalid email address',
+                      },
+                    })}
+                  />
+
+                  <div className="relative">
+                    <InputField
+                      label="Password"
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      error={errors.password}
+                      {...register('password', {
+                        required: 'Password is required',
+                        minLength: { value: 8, message: 'Password must be at least 8 characters' }
+                      })}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {!isRegister && (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setStep('forgot')}
+                        className="text-xs text-primary hover:underline font-semibold"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
-                    className="w-full bg-[#4A6B4E] hover:bg-[#3d5841] text-[#FAF8F4] dark:text-[#FAF8F4]"
+                    className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
                     disabled={loading}
-                    aria-busy={loading}
                   >
-                    Verify & Sign In
+                    {isRegister ? 'Submit Registration' : 'Sign In'}
                   </Button>
+
+                  {authError && (
+                    <p className="text-xs text-red-500 font-semibold text-center mt-2">{authError}</p>
+                  )}
+                </form>
+
+                <div className="pt-4 border-t border-border text-center text-xs text-slate-500">
+                  {isRegister ? 'Already have an account? ' : "Don't have an account yet? "}
+                  <button
+                    type="button"
+                    onClick={() => { setIsRegister(!isRegister); setAuthError(''); }}
+                    className="text-primary hover:underline font-bold"
+                  >
+                    {isRegister ? 'Sign in' : 'Register Now'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 2: OTP View */}
+            {step === 'otp' && (
+              <motion.div
+                key="otp"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                <div className="text-center space-y-2">
+                  <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto text-primary">
+                    <KeyRound className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-xl font-display font-bold text-ink">Two-Factor OTP Security</h2>
+                  <p className="text-xs text-slate-500">
+                    We've emailed a verification OTP code. Use preseeded code <strong className="text-ink">123456</strong> for testing.
+                  </p>
+                </div>
+
+                <form onSubmit={handleVerifyOtp} className="space-y-6">
+                  <div className="flex justify-center gap-2">
+                    {otpVal.map((digit, index) => (
+                      <input
+                        key={index}
+                        id={`otp-${index}`}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength="1"
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                        className="w-12 h-12 text-center text-lg font-bold rounded-lg border border-border bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white font-mono"
+                      />
+                    ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Button
+                      type="submit"
+                      className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
+                      disabled={loading}
+                    >
+                      Verify Code
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setStep('credentials')}
+                      className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+                    >
+                      Go Back
+                    </button>
+                  </div>
+
+                  {authError && (
+                    <p className="text-xs text-red-500 font-semibold text-center">{authError}</p>
+                  )}
+                </form>
+
+                <p className="text-center text-xs text-slate-500">
+                  Didn't receive email code?{' '}
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendCooldown > 0}
+                    className="text-primary hover:underline font-bold disabled:opacity-50"
+                  >
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
+                  </button>
+                </p>
+              </motion.div>
+            )}
+
+            {/* STEP 3: Forgot Password */}
+            {step === 'forgot' && (
+              <motion.div
+                key="forgot"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                <div className="text-center space-y-2">
+                  <h1 className="text-xl font-display font-bold text-ink">Reset Password Instructions</h1>
+                  <p className="text-xs text-slate-500">Provide your registered email and we'll dispatch password reset guidelines.</p>
+                </div>
+
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <InputField
+                    label="Email Address"
+                    id="forgot-email"
+                    type="email"
+                    placeholder="name@organization.org"
+                    required
+                  />
+
+                  <Button
+                    type="submit"
+                    className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
+                    disabled={loading}
+                  >
+                    Send Instructions
+                  </Button>
+
                   <button
                     type="button"
                     onClick={() => setStep('credentials')}
-                    className="w-full py-2 text-sm font-medium text-[#4A6B4E] hover:text-[#2A2823] dark:hover:text-[#EDEAE3] transition-colors"
+                    className="w-full py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
                   >
-                    Go Back
+                    Back to Sign In
                   </button>
+                </form>
+              </motion.div>
+            )}
+
+            {/* STEP 4: Reset Password */}
+            {step === 'reset' && (
+              <motion.div
+                key="reset"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                <div className="text-center space-y-2">
+                  <h1 className="text-xl font-display font-bold text-ink">Set New Password</h1>
+                  <p className="text-xs text-slate-500">Establish a secure password for your account.</p>
                 </div>
 
-                {authError && (
-                  <p className="text-xs text-[#B5653A] text-center" role="alert">{authError}</p>
-                )}
-              </form>
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <InputField
+                    label="New Password"
+                    id="new-pass"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <InputField
+                    label="Confirm New Password"
+                    id="confirm-new-pass"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                  />
 
-              <p className="text-center text-xs text-[#8A8577]">
-                Didn't receive the code?{' '}
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={resendCooldown > 0}
-                  className="text-[#4A6B4E] hover:text-[#2A2823] disabled:opacity-50 disabled:cursor-not-allowed dark:hover:text-[#EDEAE3] font-medium transition-colors"
-                >
-                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
-                </button>
-              </p>
-            </div>
-          )}
+                  <Button
+                    type="submit"
+                    className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
+                    disabled={loading}
+                  >
+                    Update Password
+                  </Button>
+
+                  <button
+                    type="button"
+                    onClick={() => setStep('credentials')}
+                    className="w-full py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
         </div>
       </div>
     </div>

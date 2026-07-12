@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/GlobalStateContext';
 
-// Import All 15 Master Screens
+// Import All Master Screens
 import LandingPage from './pages/LandingPage';
 import AuthSuite from './pages/AuthSuite';
 import DonorDashboard from './pages/DonorDashboard';
@@ -19,6 +19,14 @@ import NotificationCenter from './pages/NotificationCenter';
 import UserProfile from './pages/UserProfile';
 import SettingsTerminal from './pages/SettingsTerminal';
 
+// New Informational Pages
+import Bridge from './pages/Bridge';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import BrandIdentity from './pages/BrandIdentity';
+import NotFound from './pages/NotFound';
+import NgoRegister from './pages/NgoRegister';
+
 // Role-Based Access Control Route Guard
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuth();
@@ -28,10 +36,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // If authenticated but role not allowed, redirect to correct landing/dashboard
-    if (user.role === 'admin') return <Navigate to="/admin-dashboard" replace />;
-    if (user.role === 'ngo') return <Navigate to="/ngo-dashboard" replace />;
-    return <Navigate to="/donor-dashboard" replace />;
+    if (user.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user.role === 'ngo') return <Navigate to="/ngo" replace />;
+    return <Navigate to="/donor" replace />;
   }
 
   return children;
@@ -47,10 +54,14 @@ export default function App() {
         {/* Screen 2: Authentication Core Suite */}
         <Route path="/auth" element={<AuthSuite />} />
 
-        {/* Screen 6: Dynamic Faceted Search & NGO Directory */}
-        <Route path="/search" element={<SearchDirectory />} />
+        {/* New NGO Registration Wizard */}
+        <Route path="/ngo-register" element={<NgoRegister />} />
 
-        {/* Screen 7: NGO Portfolio & Public Verification Profile */}
+        {/* Screen 6: Discover Directory */}
+        <Route path="/discover" element={<SearchDirectory />} />
+        <Route path="/search" element={<Navigate to="/discover" replace />} />
+
+        {/* Screen 7: NGO Public Profile */}
         <Route path="/ngo/:id" element={<NgoProfile />} />
 
         {/* Screen 12: Public Impact Analytics Dashboard */}
@@ -59,37 +70,46 @@ export default function App() {
         {/* Screen 11: End-to-End Logistical Tracking Stream */}
         <Route path="/tracking/:id" element={<LogisticsTracking />} />
 
+        {/* New Public Pages */}
+        <Route path="/bridge" element={<Bridge />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/brand" element={<BrandIdentity />} />
+
         {/* --- PROTECTED ROUTES --- */}
 
         {/* Screen 3: The Donor Dashboard Workspace (Donor Only) */}
         <Route
-          path="/donor-dashboard"
+          path="/donor"
           element={
             <ProtectedRoute allowedRoles={['donor']}>
               <DonorDashboard />
             </ProtectedRoute>
           }
         />
+        <Route path="/donor-dashboard" element={<Navigate to="/donor" replace />} />
 
-        {/* Screen 4: Inbound Logistics NGO Control Console (NGO Only) */}
+        {/* Screen 4: NGO Control Console (NGO Only) */}
         <Route
-          path="/ngo-dashboard"
+          path="/ngo"
           element={
             <ProtectedRoute allowedRoles={['ngo']}>
               <NgoConsole />
             </ProtectedRoute>
           }
         />
+        <Route path="/ngo-dashboard" element={<Navigate to="/ngo" replace />} />
 
         {/* Screen 5: Platform Integrity Control Center (Admin Only) */}
         <Route
-          path="/admin-dashboard"
+          path="/admin"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
             </ProtectedRoute>
           }
         />
+        <Route path="/admin-dashboard" element={<Navigate to="/admin" replace />} />
 
         {/* Screen 8: Donation Request Logistics Wizard (Donor Only) */}
         <Route
@@ -101,7 +121,7 @@ export default function App() {
           }
         />
 
-        {/* Screen 9: Smart Matching Recommendation Visualizer (Donor, NGO, Admin) */}
+        {/* Screen 9: Smart Matching Recommendation Visualizer */}
         <Route
           path="/smart-match"
           element={
@@ -111,7 +131,7 @@ export default function App() {
           }
         />
 
-        {/* Screen 10: Reactive Communication Core (Chat Terminal - Any Auth User) */}
+        {/* Screen 10: Reactive Communication Core */}
         <Route
           path="/chat"
           element={
@@ -121,7 +141,7 @@ export default function App() {
           }
         />
 
-        {/* Screen 13: System Notification Center (Any Auth User) */}
+        {/* Screen 13: System Notification Center */}
         <Route
           path="/notifications"
           element={
@@ -131,7 +151,7 @@ export default function App() {
           }
         />
 
-        {/* Screen 14: User Identity Profile Node & Ledger Sheet (Any Auth User) */}
+        {/* Screen 14: User Identity Profile */}
         <Route
           path="/profile"
           element={
@@ -141,11 +161,11 @@ export default function App() {
           }
         />
 
-        {/* Screen 15: Global Application System Settings Configuration Terminal */}
+        {/* Screen 15: Global settings */}
         <Route path="/settings" element={<SettingsTerminal />} />
 
-        {/* Fallback Catch-all redirect to Home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Custom 404 Wildcard Page */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

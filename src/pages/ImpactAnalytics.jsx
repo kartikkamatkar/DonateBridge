@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import Navbar from '../components/Navbar';
 
-// Import and Register ChartJS
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -45,11 +45,11 @@ export default function ImpactAnalytics() {
       {
         data: [35, 25, 20, 12, 8],
         backgroundColor: [
-          '#2E7D32', // primary accent
-          '#43A047', // forest green
-          '#81C784', // light emerald
-          '#3b82f6', // blue
-          '#eab308', // yellow
+          '#2E7D32', // Forest green
+          '#43A047', // Light green
+          '#4CAF50', // Accent green
+          '#10B981', // Emerald
+          '#E2E8F0', // Border grey
         ],
         borderWidth: 1,
       },
@@ -64,7 +64,7 @@ export default function ImpactAnalytics() {
         label: 'CO2 Diverted (kg)',
         data: [120, 240, 480, 720, 1100, 1420],
         borderColor: '#2E7D32',
-        backgroundColor: 'rgba(46, 125, 50, 0.1)',
+        backgroundColor: 'rgba(46, 125, 50, 0.05)',
         tension: 0.3,
         fill: true,
       },
@@ -78,37 +78,32 @@ export default function ImpactAnalytics() {
       {
         label: 'Items Transferred',
         data: [420, 680, 890, 1100, 1450, 1930],
-        backgroundColor: '#43A047',
+        backgroundColor: '#2E7D32',
+        borderRadius: 4,
       },
     ],
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Sticky header */}
-      <nav className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0 z-10">
-        <button onClick={() => navigate('/')} className="hover:text-primary transition-colors flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
-          <ArrowLeft className="w-4 h-4" /> Back to Home
-        </button>
-        <span className="font-bold text-sm uppercase text-slate-550 dark:text-slate-350">Platform Impact Dashboard</span>
-      </nav>
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+      <Navbar />
 
-      {/* Main Workspace Layout */}
-      <main className="flex-1 max-w-7xl mx-auto w-full p-6 space-y-6 overflow-y-auto">
-        
-        {/* Intro Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <main className="flex-1 max-w-5xl mx-auto w-full p-6 sm:p-8 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Environmental & Logistical Transparency</h1>
-            <p className="text-xs text-slate-500">Live physical item tracking logs, carbon offsets, and categorical distributions.</p>
+            <h1 className="text-xl font-display font-bold tracking-tight text-slate-900">Environmental & Logistics Analytics</h1>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Physical items matching logs, carbon reductions, and categories.</p>
           </div>
 
-          <div className="flex gap-1 bg-slate-200 dark:bg-slate-800 p-1 rounded">
+          <div className="flex gap-1 bg-white p-1 rounded-xl border border-border shadow-premium-sm">
             {['1M', '6M', '1Y'].map(t => (
               <button
                 key={t}
                 onClick={() => setTimeframe(t)}
-                className={`px-3 py-1 text-xs font-bold rounded ${timeframe === t ? 'bg-primary text-white' : 'hover:bg-slate-300 dark:hover:bg-slate-700'}`}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  timeframe === t ? 'bg-primary text-white font-bold' : 'text-slate-500 hover:bg-slate-50'
+                }`}
               >
                 {t}
               </button>
@@ -116,84 +111,80 @@ export default function ImpactAnalytics() {
           </div>
         </div>
 
-        {/* Global Impact Metrics Cards */}
+        {/* Stats metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-4 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] font-bold text-slate-550 uppercase">Total Items Routed</span>
-              <p className="text-2xl font-black text-primary">14,204</p>
-              <span className="text-[9px] text-slate-450 block">+24% growth since last month</span>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Total Items Routed</span>
+              <p className="text-3xl font-display font-extrabold text-primary">14,204</p>
+              <span className="text-[9px] text-slate-500 block font-medium">+24% growth since last month</span>
             </div>
-            <BarChart2 className="w-8 h-8 text-primary opacity-60" />
-          </Card>
+            <BarChart2 className="w-8 h-8 text-primary opacity-20" />
+          </div>
 
-          <Card className="p-4 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] font-bold text-slate-555 uppercase">Carbon Footprint Saved</span>
-              <p className="text-2xl font-black text-emerald-555">1,420 kg CO2</p>
-              <span className="text-[9px] text-slate-450 block">Diverted from waste burn lines</span>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Carbon Savings</span>
+              <p className="text-3xl font-display font-extrabold text-[#4CAF50]">1,420 kg</p>
+              <span className="text-[9px] text-slate-500 block font-medium">CO2 emissions diverted from waste</span>
             </div>
-            <Leaf className="w-8 h-8 text-emerald-500 opacity-60" />
-          </Card>
+            <Leaf className="w-8 h-8 text-[#4CAF50] opacity-20" />
+          </div>
 
-          <Card className="p-4 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] font-bold text-slate-550 uppercase">Verified NGO Hubs</span>
-              <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">340 Organizations</p>
-              <span className="text-[9px] text-slate-450 block">Audit score rating &gt; 94%</span>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Verified NGO Hubs</span>
+              <p className="text-3xl font-display font-extrabold text-slate-900">340 Hubs</p>
+              <span className="text-[9px] text-slate-500 block font-medium">Audit safety scores above 94%</span>
             </div>
-            <ShieldCheck className="w-8 h-8 text-indigo-500 opacity-60" />
-          </Card>
+            <ShieldCheck className="w-8 h-8 text-primary opacity-20" />
+          </div>
         </div>
 
-        {/* Data Dense Charts Grid */}
+        {/* Charts area */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Carbon line chart */}
-          <Card className="lg:col-span-2 p-5 border border-slate-200 dark:border-slate-750 flex flex-col justify-between">
-            <div className="mb-4">
-              <h3 className="font-bold text-sm">Environmental CO2 Savings (kg)</h3>
+          <div className="lg:col-span-2 bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex flex-col justify-between h-80">
+            <div className="mb-2">
+              <h3 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Environmental CO2 Savings Log (kg)</h3>
               <p className="text-[10px] text-slate-500">Accumulated carbon footprint diverted via direct courier logistics channels.</p>
             </div>
-            <div className="h-64 flex items-center justify-center">
-              <Line data={lineData} options={{ responsive: true, maintainAspectRatio: false }} />
+            <div className="flex-1 min-h-0 pt-4">
+              <Line data={lineData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
             </div>
-          </Card>
+          </div>
 
-          {/* Categorical breakdown pie chart */}
-          <Card className="p-5 border border-slate-200 dark:border-slate-750 flex flex-col justify-between">
-            <div className="mb-4">
-              <h3 className="font-bold text-sm">Material Categories (Share %)</h3>
+          <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex flex-col justify-between h-80">
+            <div className="mb-2">
+              <h3 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Material Categories (Share %)</h3>
               <p className="text-[10px] text-slate-500">Distribution of items delivered by category.</p>
             </div>
-            <div className="h-64 flex items-center justify-center">
+            <div className="flex-1 min-h-0 pt-4">
               <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false }} />
             </div>
-          </Card>
+          </div>
 
-          {/* Monthly logistics volume bar chart */}
-          <Card className="lg:col-span-3 p-5 border border-slate-200 dark:border-slate-750 flex flex-col justify-between">
-            <div className="mb-4">
-              <h3 className="font-bold text-sm">Monthly Logistical Donation Volume</h3>
+          <div className="lg:col-span-3 bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex flex-col justify-between h-80">
+            <div className="mb-2">
+              <h3 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Monthly Logistical Donation Volume</h3>
               <p className="text-[10px] text-slate-500">Physical resources transferred and ledger confirmed monthly.</p>
             </div>
-            <div className="h-64 flex items-center justify-center">
-              <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false }} />
+            <div className="flex-1 min-h-0 pt-4">
+              <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
             </div>
-          </Card>
+          </div>
         </div>
 
-        {/* Accountability Statement Alert */}
-        <div className="text-[10px] text-slate-500 flex items-start gap-2 bg-emerald-50 dark:bg-emerald-950/20 p-4 border border-emerald-200 dark:border-emerald-900 rounded">
-          <HelpCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold text-slate-800 dark:text-slate-250">Anti-Fraud & Environmental Audit Process</p>
-            <p className="leading-relaxed mt-0.5">
+        {/* Anti-Fraud Audit Note */}
+        <div className="text-[11px] text-slate-600 flex items-start gap-3 bg-[#F1F8F5] border border-emerald-100 p-4 rounded-xl">
+          <HelpCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-bold text-primary">Anti-Fraud & Environmental Audit Process</p>
+            <p className="leading-relaxed">
               Donate Bridge carbon saving metrics are calculated by multiplying physical packaging weights by shipping distance, subtracting the standard waste processing footprint, and verified via spatial auditing protocols. Transaction records are strictly non-monetary.
             </p>
           </div>
         </div>
-
       </main>
     </div>
   );

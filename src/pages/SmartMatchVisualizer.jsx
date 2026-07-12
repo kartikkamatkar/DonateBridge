@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles, RefreshCw, MapPin, Star, AlertTriangle, ArrowRight,
@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { MockMap } from '../components/ui/MockMap';
+import LeafletMap from '../components/ui/LeafletMap';
+import Navbar from '../components/Navbar';
 
 export default function SmartMatchVisualizer() {
   const navigate = useNavigate();
@@ -14,13 +15,13 @@ export default function SmartMatchVisualizer() {
   const [selectedMatch, setSelectedMatch] = useState(1);
   const [mapStep, setMapStep] = useState(3);
 
-  // Recommendations calculated by Spring Boot simulator
+  // Recommendations calculated simulator
   const [matches, setMatches] = useState([
     {
       id: 1,
       ngo: 'Hope Foundation',
       score: 97.4,
-      proximity: 1.4, // miles
+      proximity: 1.4,
       proximityScore: 98,
       urgency: 'Critical',
       urgencyScore: 99,
@@ -33,7 +34,7 @@ export default function SmartMatchVisualizer() {
       id: 2,
       ngo: 'Red Cross Depot',
       score: 86.8,
-      proximity: 3.8, // miles
+      proximity: 3.8,
       proximityScore: 88,
       urgency: 'High',
       urgencyScore: 84,
@@ -46,7 +47,7 @@ export default function SmartMatchVisualizer() {
       id: 3,
       ngo: 'Green Life NGO',
       score: 74.2,
-      proximity: 6.2, // miles
+      proximity: 6.2,
       proximityScore: 78,
       urgency: 'Medium',
       urgencyScore: 68,
@@ -59,10 +60,8 @@ export default function SmartMatchVisualizer() {
 
   const handleReoptimize = () => {
     setIsOptimizing(true);
-    // Simulate API delay
     setTimeout(() => {
       setIsOptimizing(false);
-      // Randomize scores slightly to show calculations are dynamic
       setMatches(prev =>
         prev.map(m => {
           const delta = (Math.random() - 0.5) * 4;
@@ -70,34 +69,23 @@ export default function SmartMatchVisualizer() {
           return { ...m, score: newScore };
         }).sort((a, b) => b.score - a.score)
       );
-    }, 1500);
+    }, 1200);
   };
 
   const currentMatch = matches.find(m => m.id === selectedMatch) || matches[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Top sticky nav */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0 z-10">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-emerald-500 animate-pulse" />
-          <div>
-            <span className="font-bold text-base block">Smart Match Optimizer</span>
-            <span className="text-[9px] text-slate-500 block -mt-1">Spring Boot Dispatch Calculus</span>
-          </div>
-        </div>
-        <Button variant="secondary" size="sm" onClick={() => navigate(-1)}>Back</Button>
-      </header>
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+      <Navbar />
 
-      {/* Main Workspace split */}
       <div className="flex-1 flex flex-col lg:flex-row min-h-0">
         
-        {/* Left Side: Calculations list */}
-        <aside className="w-full lg:w-[460px] bg-white dark:bg-slate-850 border-r border-slate-200 dark:border-slate-800 flex flex-col min-h-0 overflow-y-auto p-6 space-y-6">
-          <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
+        {/* Left Side: Rankings */}
+        <aside className="w-full lg:w-[460px] bg-white border-r border-border flex flex-col min-h-0 overflow-y-auto p-6 space-y-6 shrink-0 shadow-premium-sm">
+          <div className="flex justify-between items-center pb-4 border-b border-border">
             <div>
-              <h3 className="font-bold text-sm">Matching Rankings</h3>
-              <p className="text-xs text-slate-500">Ranked by logistics proximity and urgency indices.</p>
+              <h3 className="text-sm font-display font-bold text-slate-900">Computed NGO Match Rankings</h3>
+              <p className="text-xs text-slate-500">Sorted by geolocation proximity and urgency ratings.</p>
             </div>
             <Button
               variant="secondary"
@@ -110,105 +98,135 @@ export default function SmartMatchVisualizer() {
             </Button>
           </div>
 
-          {/* Matches List */}
           <div className="space-y-4">
             {matches.map((match, idx) => (
-              <Card
+              <div
                 key={match.id}
-                isHoverable
                 onClick={() => setSelectedMatch(match.id)}
-                className={`p-4 border transition-all ${
+                className={`border rounded-2xl p-5 shadow-premium-sm transition-all duration-200 cursor-pointer bg-white ${
                   selectedMatch === match.id
-                    ? 'border-primary ring-1 ring-primary/45 bg-emerald-50/10 dark:bg-slate-800'
-                    : 'border-slate-200 dark:border-slate-800'
+                    ? 'border-primary ring-2 ring-primary/5 bg-[#F1F8F5]/30'
+                    : 'border-border hover:border-primary/50'
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-450 block">Rank #{idx + 1} Recommendation</span>
-                    <h4 className="font-bold text-sm">{match.ngo}</h4>
+                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-primary block">Rank #{idx + 1} Match Option</span>
+                    <h4 className="font-display font-bold text-sm text-slate-950">{match.ngo}</h4>
                     <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-slate-450" /> {match.proximity} miles away &bull; ETA {match.eta}
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" /> {match.proximity} miles &bull; ETA {match.eta}
                     </p>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-xl font-black text-primary block">{match.score}</span>
-                    <span className="text-[9px] text-slate-400 block -mt-1 font-semibold uppercase">Match Score</span>
+                    <span className="text-xl font-bold font-mono text-primary block">{match.score}%</span>
+                    <span className="text-[8px] text-slate-400 block -mt-1 font-bold uppercase font-mono">Affinity Score</span>
                   </div>
                 </div>
 
-                {/* Score Breakdown weights visualizer */}
-                <div className="space-y-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                {/* Score weights */}
+                <div className="space-y-2.5 mt-4 pt-3 border-t border-border">
                   <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500 font-semibold">Proximity Weight (40%):</span>
-                    <span className="font-mono font-bold text-slate-850 dark:text-slate-200">{match.proximityScore}/100</span>
+                    <span className="text-slate-500 font-semibold">Proximity Index (40%):</span>
+                    <span className="font-mono font-bold text-slate-900">{match.proximityScore}/100</span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-900 h-1 rounded-full overflow-hidden">
-                    <div className="bg-blue-500 h-full" style={{ width: `${match.proximityScore}%` }} />
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-primary h-full" style={{ width: `${match.proximityScore}%` }} />
                   </div>
 
                   <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500 font-semibold">Urgency priority Index (35%):</span>
-                    <span className="font-mono font-bold text-red-500">{match.urgencyScore}/100</span>
+                    <span className="text-slate-500 font-semibold">Need Urgency Index (35%):</span>
+                    <span className="font-mono font-bold text-red-600">{match.urgencyScore}/100</span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-900 h-1 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                     <div className="bg-red-500 h-full" style={{ width: `${match.urgencyScore}%` }} />
                   </div>
 
                   <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500 font-semibold">NGO Trust Rating (25%):</span>
-                    <span className="font-mono font-bold text-emerald-500">{match.trustScore}/100</span>
+                    <span className="text-slate-500 font-semibold">Trust Integrity Index (25%):</span>
+                    <span className="font-mono font-bold text-secondary">{match.trustScore}/100</span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-900 h-1 rounded-full overflow-hidden">
-                    <div className="bg-emerald-500 h-full" style={{ width: `${match.trustScore}%` }} />
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-secondary h-full" style={{ width: `${match.trustScore}%` }} />
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-3 mt-3 border-t border-slate-100 dark:border-slate-850">
+                <div className="flex justify-end pt-3 mt-4 border-t border-border">
                   <Button
                     variant="primary"
                     size="sm"
-                    className="text-[10px] py-1"
+                    className="text-[10px] py-1.5 font-bold"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/request-wizard?ngo=${match.id}&category=${match.item}`);
                     }}
                     icon={ArrowRight}
                   >
-                    Confirm Dispatch Route
+                    Select Match Route
                   </Button>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </aside>
 
-        {/* Right Side: Map showing computed route */}
-        <main className="flex-1 relative min-h-[350px] lg:min-h-0">
-          <MockMap highlightedNgoId={currentMatch.id} activeStep={mapStep} className="w-full h-full border-none rounded-none" />
+        {/* Right Side Map */}
+        <main className="flex-grow flex-1 relative min-h-[350px] lg:min-h-0 bg-slate-50">
+          <LeafletMap
+            center={[12.9725, 77.5950]}
+            zoom={13}
+            markers={[
+              { lat: 12.9740, lng: 77.5980, popupContent: <div><b>Donor Pickup Point</b><p className="text-[10px] text-slate-400">Residency Road, Bengaluru</p></div> },
+              {
+                lat: currentMatch.id === 2 ? 12.9801 : currentMatch.id === 3 ? 12.9634 : 12.9716,
+                lng: currentMatch.id === 2 ? 77.6012 : currentMatch.id === 3 ? 77.5878 : 77.5946,
+                popupContent: <div><b>NGO Hub: {currentMatch.ngo}</b><p className="text-[10px] text-slate-400">Nearby Matching Radius Enabled</p></div>
+              }
+            ]}
+            circles={[
+              {
+                lat: currentMatch.id === 2 ? 12.9801 : currentMatch.id === 3 ? 12.9634 : 12.9716,
+                lng: currentMatch.id === 2 ? 77.6012 : currentMatch.id === 3 ? 77.5878 : 77.5946,
+                radius: 1200,
+                color: '#2E7D32'
+              }
+            ]}
+            polylines={[
+              {
+                positions: [
+                  [12.9740, 77.5980],
+                  [
+                    currentMatch.id === 2 ? 12.9801 : currentMatch.id === 3 ? 12.9634 : 12.9716,
+                    currentMatch.id === 2 ? 77.6012 : currentMatch.id === 3 ? 77.5878 : 77.5946
+                  ]
+                ],
+                color: '#3b82f6'
+              }
+            ]}
+            className="w-full h-full"
+          />
 
-          {/* floating detailed overlay */}
-          <div className="absolute bottom-4 left-4 right-4 bg-slate-950/90 backdrop-blur-md border border-slate-800 p-4 rounded-lg text-white max-w-md space-y-3 z-10 text-xs">
+          {/* Floating Detailed Overlay */}
+          <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md border border-border p-5 rounded-2xl text-slate-900 max-w-md space-y-3.5 z-10 text-xs shadow-premium-lg">
             <div className="flex justify-between items-center font-bold">
-              <span className="flex items-center gap-1.5"><Navigation className="w-4 h-4 text-emerald-400 animate-pulse" /> Computed Optimization Route</span>
-              <span className="font-mono text-emerald-400">ETA {currentMatch.eta}</span>
+              <span className="flex items-center gap-1.5 text-primary"><Navigation className="w-4 h-4 text-primary animate-pulse" /> Computed Optimization Route</span>
+              <span className="font-mono text-primary bg-[#F1F8F5] px-2 py-0.5 rounded text-[10px]">ETA {currentMatch.eta}</span>
             </div>
-            <p className="text-[11px] text-slate-400">
-              The routing engine selected <strong className="text-slate-200">{currentMatch.ngo}</strong> due to a high urgency need for <strong className="text-slate-200">{currentMatch.item}</strong> and close coordinates proximity.
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Routing engine suggests dispatching to <strong className="text-slate-800">{currentMatch.ngo}</strong> due to critical demand for <strong className="text-slate-800">{currentMatch.item}</strong> and close coordinates mapping.
             </p>
-            <div className="grid grid-cols-3 gap-2 text-[10px] text-center pt-2 border-t border-slate-800">
+            <div className="grid grid-cols-3 gap-2 text-[10px] text-center pt-2 border-t border-border font-mono">
               <div>
-                <span className="text-slate-500 block">DISTANCE</span>
-                <span className="font-bold">{currentMatch.proximity} miles</span>
+                <span className="text-slate-400 block">TOTAL DISTANCE</span>
+                <span className="font-bold text-slate-900">{currentMatch.proximity} miles</span>
               </div>
               <div>
-                <span className="text-slate-500 block">FUEL USAGE</span>
-                <span className="font-bold text-emerald-400">0.2 gal equivalent</span>
+                <span className="text-slate-400 block">FUEL EQUIVALENT</span>
+                <span className="font-bold text-emerald-600">0.2 gal eq</span>
               </div>
               <div>
-                <span className="text-slate-500 block">CO2 REDUCTION</span>
-                <span className="font-bold text-emerald-400">4.2 kg saved</span>
+                <span className="text-slate-400 block">CO2 REDUCTION</span>
+                <span className="font-bold text-primary">4.2 kg saved</span>
               </div>
             </div>
           </div>

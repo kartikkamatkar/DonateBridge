@@ -1,77 +1,138 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Truck, MapPin, CheckCircle, Package, ArrowLeft,
-  Calendar, ShieldCheck, User, RefreshCw, AlertCircle
-} from 'lucide-react';
+import { Truck, MapPin, CheckCircle, Package, ArrowLeft, Calendar, ShieldCheck, RefreshCw, Navigation } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { MockMap } from '../components/ui/MockMap';
+import Navbar from '../components/Navbar';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const DONOR_COORDS = [12.9592, 77.5726];
+const NGO_COORDS = [12.9716, 77.5946];
+const MIDPOINT_COORDS = [12.9654, 77.5836];
 
 export default function LogisticsTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [activeStep, setActiveStep] = useState(3); // 1: Requested, 2: Approved, 3: Dispatched, 4: Delivered
-  const [pulse, setPulse] = useState(true);
+  const [activeStep, setActiveStep] = useState(4); // default In Transit
+  
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const courierMarker = useRef(null);
+  const routeLine = useRef(null);
 
-  // Milestones list
   const milestones = [
-    { title: 'Donation Request Lodged', time: '10:00 AM, July 2', desc: 'Donor Sarah Jenkins logged 25 Wool Blankets.', done: true },
-    { title: 'NGO Match Approval Signed', time: '10:15 AM, July 2', desc: 'Hope Foundation accepted and validated item spec codes.', done: true },
-    { title: 'Courier Dispatched', time: '10:45 AM, July 2', desc: 'Express Cargo #DB-990 dispatched to collect cargo.', done: true },
-    { title: 'Fulfillment & Scaling', time: 'Pending', desc: 'Cargo scaling and digital signatures confirming receipt at NGO Hub.', done: false },
-    { title: 'Impact Ledger Confirmed', time: 'Pending', desc: 'Audit transaction saved to the transparency block ledger.', done: false },
+    { title: 'Requested', time: '10:00 AM, July 2', desc: 'Donation request logged by donor, pending verification.', coords: DONOR_COORDS },
+    { title: 'Approved', time: '10:15 AM, July 2', desc: 'Listing approved by Admin and matched with NGO need parameters.', coords: DONOR_COORDS },
+    { title: 'Dispatched', time: '10:45 AM, July 2', desc: 'Logistics carrier assigned and dispatched to donor pickup location.', coords: DONOR_COORDS },
+    { title: 'In Transit', time: '11:15 AM, July 2', desc: 'Shipment picked up, currently in transit to destination NGO hub.', coords: MIDPOINT_COORDS },
+    { title: 'Delivered', time: '11:40 AM, July 2', desc: 'Parcels delivered to the destination NGO Hub address.', coords: NGO_COORDS },
+    { title: 'Completed', time: '11:55 AM, July 2', desc: 'Digital receipt matching complete, transaction hashed on ledger.', coords: NGO_COORDS },
   ];
 
+  // Current active coordinates based on step
+  const currentCoords = milestones[activeStep - 1]?.coords || DONOR_COORDS;
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setPulse(p => !p);
-    }, 1200);
-    return () => clearInterval(timer);
+    if (mapRef.current && !mapInstance.current) {
+      mapInstance.current = L.map(mapRef.current).setView([12.9654, 77.5836], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(mapInstance.current);
+
+      const donorIcon = L.divIcon({
+        html: `<div class="w-6 h-6 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center text-white font-extrabold text-[8px] shadow-premium-md">DON</div>`,
+        className: 'custom-donor-icon',
+        iconSize: [24, 24]
+      });
+      L.marker(DONOR_COORDS, { icon: donorIcon })
+        .addTo(mapInstance.current)
+        .bindPopup('<b>Donor Pickup:</b> Sarah Jenkins<br/>Bengaluru City Center');
+
+      const ngoIcon = L.divIcon({
+        html: `<div class="w-6 h-6 rounded-full bg-[#2E7D32] border-2 border-white flex items-center justify-center text-white font-extrabold text-[8px] shadow-premium-md">NGO</div>`,
+        className: 'custom-ngo-icon',
+        iconSize: [24, 24]
+      });
+      L.marker(NGO_COORDS, { icon: ngoIcon })
+        .addTo(mapInstance.current)
+        .bindPopup('<b>NGO Destination Hub:</b> Hope Foundation');
+
+      routeLine.current = L.polyline([DONOR_COORDS, NGO_COORDS], {
+        color: '#2E7D32',
+        weight: 2.5,
+        dashArray: '4,6',
+        opacity: 0.8
+      }).addTo(mapInstance.current);
+
+      const truckIcon = L.divIcon({
+        html: `<div class="w-7 h-7 rounded-lg bg-[#2E7D32] border border-white flex items-center justify-center text-white shadow-premium-lg animate-pulse"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></div>`,
+        className: 'custom-truck-icon',
+        iconSize: [28, 28]
+      });
+      courierMarker.current = L.marker(DONOR_COORDS, { icon: truckIcon }).addTo(mapInstance.current);
+    }
+
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+        courierMarker.current = null;
+        routeLine.current = null;
+      }
+    };
   }, []);
 
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Header bar */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0 z-10">
-        <button onClick={() => navigate(-1)} className="hover:text-primary transition-colors flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
-          <ArrowLeft className="w-4 h-4" /> Back to Logs
-        </button>
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-xs uppercase text-slate-400">Shipment Code:</span>
-          <span className="font-mono text-xs font-bold text-primary">DB-{id || '1042'}</span>
-        </div>
-      </header>
+  useEffect(() => {
+    if (courierMarker.current) {
+      courierMarker.current.setLatLng(currentCoords);
+      if (mapInstance.current) {
+        mapInstance.current.panTo(currentCoords);
+      }
+    }
+  }, [activeStep, currentCoords]);
 
-      {/* Main split grid */}
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+  return (
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+      <Navbar />
+
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 border-t border-border">
         
-        {/* Left Side: high precision vertical timeline tracker */}
-        <aside className="w-full lg:w-[480px] bg-white dark:bg-slate-850 border-r border-slate-200 dark:border-slate-800 p-6 flex flex-col min-h-0 overflow-y-auto space-y-6">
-          <div>
-            <h3 className="font-bold text-base">Cargo Milestone Tracker</h3>
-            <p className="text-xs text-slate-500">End-to-End logistics accountability signatures.</p>
+        {/* Left Side: Milestones */}
+        <aside className="w-full lg:w-[460px] bg-white border-r border-border p-6 flex flex-col min-h-0 overflow-y-auto space-y-6 shrink-0 shadow-premium-sm">
+          <div className="flex justify-between items-center pb-4 border-b border-border">
+            <div>
+              <h3 className="text-sm font-display font-bold text-slate-900">Milestone Courier Tracker</h3>
+              <p className="text-[10px] text-slate-400 font-mono">PARCEL TIMELINE PATH</p>
+            </div>
+            <div className="text-right">
+              <span className="text-[9px] font-mono text-slate-400 block">PARCEL ID</span>
+              <span className="text-xs font-mono font-bold text-primary">DB-{id || '1042'}</span>
+            </div>
           </div>
 
-          {/* Stepper Summary card */}
-          <Card className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500">Transit Status:</span>
-              <span className="font-bold text-emerald-500">In Transit to NGO</span>
+          {/* Coordinates log panel */}
+          <div className="bg-slate-50 border border-border p-4 rounded-xl text-xs space-y-2.5 font-mono">
+            <div className="flex justify-between items-center font-bold">
+              <span>Transit Status:</span>
+              <span className="text-primary uppercase tracking-wide">
+                {milestones[activeStep - 1]?.title}
+              </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-500">Estimated Delivery:</span>
-              <span className="font-mono font-bold">14 mins</span>
+              <span>Current GPS Coords:</span>
+              <span className="text-slate-800 font-bold flex items-center gap-1">
+                <Navigation className="w-3 h-3 text-primary animate-pulse" />
+                {currentCoords[0].toFixed(5)}° N, {currentCoords[1].toFixed(5)}° E
+              </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-500">Allocated Carrier:</span>
-              <span className="font-semibold">Express Cargo (#DB-990)</span>
+              <span>Carrier Unit:</span>
+              <span className="text-slate-800">Express Cargo #DB-990</span>
             </div>
-          </Card>
+          </div>
 
-          {/* Vertical milestones path */}
-          <div className="relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800 pl-8 space-y-8 flex-1">
+          <div className="relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100 pl-8 space-y-6 flex-grow">
             {milestones.map((m, idx) => {
               const stepNum = idx + 1;
               const isCurrent = stepNum === activeStep;
@@ -79,47 +140,43 @@ export default function LogisticsTracking() {
 
               return (
                 <div key={idx} className="relative text-xs">
-                  {/* Bubble marker */}
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center absolute -left-[38px] -top-1 font-bold text-[10px] border transition-all ${
-                    isCurrent ? 'bg-primary text-white border-primary ring-4 ring-emerald-500/20' :
-                    isPassed ? 'bg-primary text-white border-primary' :
-                    'bg-slate-200 dark:bg-slate-800 text-slate-450 border-slate-300 dark:border-slate-700'
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center absolute -left-[38px] -top-1 font-mono font-bold text-[9px] border transition-all ${
+                    isCurrent ? 'bg-primary text-white border-primary ring-4 ring-primary/10' :
+                    isPassed ? 'bg-[#F1F8F5] text-primary border-emerald-200' :
+                    'bg-white text-slate-400 border-border'
                   }`}>
-                    {isPassed ? <CheckCircle className="w-3.5 h-3.5" /> : stepNum}
+                    {isPassed ? '✓' : stepNum}
                   </div>
 
                   <div className="space-y-0.5">
-                    <p className={`font-bold ${isCurrent ? 'text-primary' : 'text-slate-800 dark:text-slate-250'}`}>{m.title}</p>
-                    <p className="text-[10px] text-slate-400 font-semibold">{m.time}</p>
-                    <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">{m.desc}</p>
+                    <p className={`font-semibold ${isCurrent ? 'text-primary font-bold' : 'text-slate-900'}`}>{m.title}</p>
+                    <p className="text-[9px] text-slate-400 font-mono">{m.time}</p>
+                    <p className="text-[11px] text-slate-500 leading-relaxed mt-1">{m.desc}</p>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-2">
-            <Button
-              variant="secondary"
-              className="w-full text-xs"
+          {/* Stepper Controls */}
+          <div className="pt-4 border-t border-border flex gap-2 mt-auto">
+            <button
               onClick={() => setActiveStep(prev => Math.max(1, prev - 1))}
+              className="w-full py-2 border border-border bg-white hover:bg-slate-50 text-xs font-bold rounded-lg cursor-pointer transition-colors"
             >
-              Previous Step
-            </Button>
-            <Button
-              variant="primary"
-              className="w-full text-xs"
-              onClick={() => setActiveStep(prev => Math.min(5, prev + 1))}
+              PREVIOUS STEP
+            </button>
+            <button
+              onClick={() => setActiveStep(prev => Math.min(6, prev + 1))}
+              className="w-full py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
             >
-              Advance Delivery
-            </Button>
+              NEXT STEP
+            </button>
           </div>
         </aside>
 
-        {/* Right Side: Map Coordinates */}
-        <main className="flex-1 relative min-h-[300px] lg:min-h-0">
-          <MockMap highlightedNgoId={1} activeStep={activeStep} className="w-full h-full border-none rounded-none" />
-        </main>
+        {/* Right Side: Map */}
+        <main ref={mapRef} className="flex-grow min-h-[350px] lg:min-h-0 z-10" />
 
       </div>
     </div>

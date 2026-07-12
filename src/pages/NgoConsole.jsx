@@ -1,343 +1,584 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/GlobalStateContext';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ShieldCheck, Package, Clock, AlertTriangle, Search, Filter,
-  Settings, CheckCircle, ArrowUpRight, Plus, RefreshCw, Star
-} from 'lucide-react';
+import { useAuth } from '../context/GlobalStateContext';
+import { useMockDB } from '../hooks/useMockDB';
+import Navbar from '../components/Navbar';
+import DonationCard from '../components/ui/DonationCard';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
 import { InputField } from '../components/ui/InputField';
+import { useToast } from '../components/ui/Toast';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
+import { ShieldCheck, Package, Clock, AlertTriangle, Plus, MapPin, BarChart3, Activity, Heart, Trash2, ArrowRight } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const MONTHLY_DATA = [
+  { month: 'Jan', received: 120, target: 100 },
+  { month: 'Feb', received: 150, target: 120 },
+  { month: 'Mar', received: 220, target: 150 },
+  { month: 'Apr', received: 190, target: 150 },
+  { month: 'May', received: 310, target: 200 },
+  { month: 'Jun', received: 280, target: 200 },
+  { month: 'Jul', received: 340, target: 250 }
+];
+
+const CATEGORY_DATA = [
+  { name: 'Clothing', value: 40, color: '#2E7D32' },
+  { name: 'Food', value: 30, color: '#43A047' },
+  { name: 'Books', value: 15, color: '#4CAF50' },
+  { name: 'Medical', value: 10, color: '#10B981' },
+  { name: 'Other', value: 5, color: '#EF4444' }
+];
 
 export default function NgoConsole() {
   const { user } = useAuth();
+  const db = useMockDB();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [activeTab, setActiveTab] = useState('matches'); // 'matches' | 'needs' | 'geo' | 'analytics'
 
-  // NGO Inventory Needs state
-  const [inventoryNeeds, setInventoryNeeds] = useState([
-    { id: 1, item: 'Winter Blankets', category: 'Blankets', urgency: 'Critical', minQty: '50 units' },
-    { id: 2, item: 'School Notebooks', category: 'School Supplies', urgency: 'High', minQty: '200 books' },
-    { id: 3, item: 'Daily Staples (Flour/Rice)', category: 'Food', urgency: 'Medium', minQty: '100 kg' },
-    { id: 4, item: 'Children Toy Packs', category: 'Toys', urgency: 'Low', minQty: '30 packs' },
-  ]);
+  // Need posting form states
+  const [needCategory, setNeedCategory] = useState('Clothing');
+  const [needItem, setNeedItem] = useState('');
+  const [needQty, setNeedQty] = useState('');
+  const [needUrgency, setNeedUrgency] = useState('Medium');
+  const [needDescription, setNeedDescription] = useState('');
 
-  // Inbound logistics requests state
-  const [inboundShipments, setInboundShipments] = useState([
-    { id: 'DB-2101', donor: 'Sarah Jenkins', material: '25 Wool Blankets', status: 'Dispatched', eta: '12m', date: '2026-07-02' },
-    { id: 'DB-2098', donor: 'Microsoft Corp', material: '10 Laptops (Refurbished)', status: 'Approved', eta: '2h', date: '2026-07-01' },
-    { id: 'DB-2081', donor: 'Green Valley Grocers', material: '80kg Fresh Produce', status: 'Transit Delay', eta: 'Delayed', date: '2026-06-30' },
-    { id: 'DB-2070', donor: 'Dr. Alan Vance', material: '1x Wheelchair', status: 'Delivered', eta: 'Arrived', date: '2026-06-28' },
-  ]);
+  // Map references
+  const geoMapRef = useRef(null);
+  const geoMapInstance = useRef(null);
+  const geoCircleInstance = useRef(null);
+  const geoMarkersGroup = useRef(null);
 
-  // Handle urgency level changes
-  const handleUrgencyChange = (id, newUrgency) => {
-    setInventoryNeeds(prev =>
-      prev.map(need => (need.id === id ? { ...need, urgency: newUrgency } : need))
-    );
-  };
+  // Active NGO Hub Info
+  const currentNgo = db.ngos.find(n => n.email === (user?.email || 'ngo@donatebridge.org')) || db.ngos[0];
 
-  const handleAddNeed = (e) => {
+  // Dynamic Matches
+  const rawMatches = db.getSmartMatchesForNgo(currentNgo.id);
+  
+  // Needs registered by this NGO
+  const ngoNeeds = db.needs.filter(n => n.ngoId === currentNgo.id);
+
+  // Pickups/Matched items in transit
+  const activeIncoming = db.donations.filter(d => d.matchedNgoId === currentNgo.id && d.status === 'MATCHED');
+
+  // Inventory stats
+  const deliveredDonations = db.donations.filter(d => d.matchedNgoId === currentNgo.id && d.status === 'DELIVERED');
+  const totalReceived = deliveredDonations.reduce((acc, curr) => acc + curr.quantity, 0);
+  const totalInTransit = activeIncoming.reduce((acc, curr) => acc + curr.quantity, 0);
+  const activeNeedsCount = ngoNeeds.length;
+
+  // Initialize leaflet map picker on tab change
+  useEffect(() => {
+    if (activeTab === 'geo' && geoMapRef.current && !geoMapInstance.current) {
+      geoMapInstance.current = L.map(geoMapRef.current).setView([currentNgo.lat, currentNgo.lng], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(geoMapInstance.current);
+
+      // NGO Hub Icon marker
+      const hubIcon = L.divIcon({
+        html: `<div class="w-7 h-7 rounded-full bg-[#2E7D32] border-2 border-white flex items-center justify-center text-white font-extrabold text-[9px] shadow-premium-md">HUB</div>`,
+        className: 'custom-hub-icon',
+        iconSize: [28, 28]
+      });
+      L.marker([currentNgo.lat, currentNgo.lng], { icon: hubIcon })
+        .addTo(geoMapInstance.current)
+        .bindPopup(`<b>${currentNgo.name} (Hub)</b><br/>${currentNgo.address}`)
+        .openPopup();
+
+      // Search matching radius circle (4km)
+      geoCircleInstance.current = L.circle([currentNgo.lat, currentNgo.lng], {
+        radius: 4000,
+        color: '#2E7D32',
+        fillColor: '#2E7D32',
+        fillOpacity: 0.05,
+        weight: 1.5,
+        dashArray: '3,3'
+      }).addTo(geoMapInstance.current);
+
+      geoMarkersGroup.current = L.layerGroup().addTo(geoMapInstance.current);
+
+      // Render incoming parcels pins
+      activeIncoming.forEach(item => {
+        if (item.location && item.location.lat && item.location.lng) {
+          L.marker([item.location.lat, item.location.lng])
+            .addTo(geoMarkersGroup.current)
+            .bindPopup(`
+              <div style="font-family: Inter, sans-serif; font-size:11px; padding:2px;">
+                <b style="color:#2E7D32;">${item.id}</b><br/>
+                <b>Item:</b> ${item.itemName || item.category}<br/>
+                <b>Qty:</b> ${item.quantity}<br/>
+                <b>Status:</b> IN TRANSIT
+              </div>
+            `);
+        }
+      });
+    }
+
+    return () => {
+      if (geoMapInstance.current) {
+        geoMapInstance.current.remove();
+        geoMapInstance.current = null;
+        geoCircleInstance.current = null;
+        geoMarkersGroup.current = null;
+      }
+    };
+  }, [activeTab, activeIncoming, currentNgo]);
+
+  const handlePostNeed = (e) => {
     e.preventDefault();
-    const data = new FormData(e.target);
-    const item = data.get('item');
-    const category = data.get('category');
-    const urgency = data.get('urgency');
-    const minQty = data.get('minQty');
+    db.addNeed({
+      ngoId: currentNgo.id,
+      ngoName: currentNgo.name,
+      category: needCategory,
+      item: needItem,
+      quantity: parseInt(needQty),
+      urgency: needUrgency,
+      description: needDescription,
+      lat: currentNgo.lat,
+      lng: currentNgo.lng
+    });
 
-    if (!item || !minQty) return;
-
-    setInventoryNeeds(prev => [
-      ...prev,
-      { id: Date.now(), item, category, urgency, minQty }
-    ]);
-    e.target.reset();
+    setNeedItem('');
+    setNeedQty('');
+    setNeedDescription('');
+    toast.success('Need broadcasted successfully!');
+    setActiveTab('matches');
   };
 
-  const filteredShipments = inboundShipments.filter(ship => {
-    const matchesSearch = ship.donor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          ship.material.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          ship.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filterStatus === 'All' || ship.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
+  const handleClaimDonation = (donationId, score) => {
+    db.executeMatch(donationId, currentNgo.id, score);
+    toast.success('Logistics match claimed! Shipment scheduled.');
+  };
 
-  if (user?.role === 'ngo' && user?.verificationStatus === 'rejected') {
+  const handleDeleteNeed = (id) => {
+    db.deleteNeed(id);
+    toast.success('Need broadcast deleted.');
+  };
+
+  // Rejection/Restricted state check
+  const verStatus = currentNgo?.verificationStatus || 'approved';
+
+  if (verStatus === 'rejected') {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center p-6">
-        <Card className="w-full max-w-2xl p-8 border border-slate-200 dark:border-slate-800">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-xs font-semibold uppercase tracking-wide">
-              <AlertTriangle className="w-4 h-4" />
-              Verification Rejected
-            </div>
-            <h1 className="text-2xl font-bold">Your NGO verification was not approved</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Your dashboard access is restricted until your verification documents are accepted.
-            </p>
-            <div className="p-4 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm">
-              <p className="font-semibold mb-1">Rejection reason</p>
-              <p className="text-slate-600 dark:text-slate-400">
-                {user?.rejectionReason || 'No rejection reason was provided by admin.'}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Button variant="primary" onClick={() => navigate('/settings')}>Resubmit Documents</Button>
-              <Button variant="secondary" onClick={() => navigate('/chat')}>Contact Support</Button>
-            </div>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 text-slate-900">
+        <div className="w-full max-w-xl bg-white border border-border p-8 rounded-2xl shadow-premium-lg text-center space-y-5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 text-xs font-semibold uppercase">
+            <AlertTriangle className="w-4 h-4" /> Verification Denied
           </div>
-        </Card>
+          <h1 className="text-xl font-display font-bold text-ink">NGO Access Restricted</h1>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            Your NGO status requires manual verification of legal filings before you can claim matches.
+          </p>
+          <div className="p-4 rounded-xl border border-border bg-slate-50 text-left text-xs space-y-1">
+            <p className="font-bold text-slate-800">Rejection Reason:</p>
+            <p className="text-slate-600">
+              {currentNgo?.rejectionReason || 'Invalid NGO registration license number. Please verify tax details.'}
+            </p>
+          </div>
+          <div className="flex justify-center gap-3 pt-2">
+            <Button variant="primary" onClick={() => navigate('/settings')}>Update Profile License</Button>
+            <Button variant="secondary" onClick={() => navigate('/chat')}>Contact Admin Chat</Button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col">
-      {/* Dashboard Top bar */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-6 h-6 text-primary" />
-          <span className="font-bold text-lg">NGO Control Console</span>
-          <span className="ml-2 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-350 flex items-center gap-1">
-            <CheckCircle className="w-3 h-3" /> VERIFIED ORGANISATION
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button variant="secondary" size="sm" onClick={() => navigate('/')}>Home</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/chat')}>Direct Messages</Button>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+      <Navbar />
 
-      {/* Main Grid workspace */}
-      <main className="flex-1 p-6 space-y-6 overflow-y-auto max-w-7xl mx-auto w-full">
+      <main className="flex-grow p-6 sm:p-8 space-y-6 max-w-7xl mx-auto w-full">
         
-        {/* NGO Info and Trust Banner */}
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-premium-sm">
+        {/* NGO Header banner with dynamic verification status */}
+        <div className="bg-white border border-border p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 rounded-2xl shadow-premium-sm">
           <div>
-            <h2 className="text-lg font-bold">Hope Foundation</h2>
-            <p className="text-xs text-slate-500">Established 2018 | Primary Hub: District 4 East</p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-display font-bold text-ink">{currentNgo.name}</h2>
+              {verStatus === 'approved' ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold uppercase">
+                  Approved
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-[10px] font-bold uppercase">
+                  Pending Audit
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 font-mono mt-0.5">HUB ID: #{currentNgo.id} &bull; VETTED ORGANISATION</p>
           </div>
-          <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-250 dark:border-emerald-900 px-3.5 py-1.5 rounded">
-            <Star className="w-4 h-4 text-emerald-600 fill-current" />
-            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-450">Trust Score Rating: 98% (High Tier)</span>
+
+          {/* Verification Warning for Pending NGOs */}
+          {verStatus === 'pending' && (
+            <div className="flex-1 max-w-md bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-xs leading-relaxed flex gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Pending Administrative Review</p>
+                <p className="text-amber-700/90 text-[11px] mt-0.5">Your submitted certificates are currently in the audit queue. Complete operations will unlock once approved.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Trust Score stats block */}
+          <div className="flex gap-4 shrink-0">
+            <div className="text-center bg-slate-50 border border-border px-4 py-2 rounded-xl">
+              <span className="text-[9px] font-mono text-slate-400 block font-bold">TRUST SCORE</span>
+              <span className={`text-sm font-bold block mt-0.5 ${verStatus === 'approved' ? 'text-emerald-600' : 'text-slate-600'}`}>
+                {currentNgo.trustScore || 70}%
+              </span>
+            </div>
+            <div className="text-center bg-slate-50 border border-border px-4 py-2 rounded-xl">
+              <span className="text-[9px] font-mono text-slate-400 block font-bold">RESPONSE TIME</span>
+              <span className="text-sm font-bold text-slate-600 block mt-0.5">
+                {currentNgo.responseTime || '--'}
+              </span>
+            </div>
+            <div className="text-center bg-slate-50 border border-border px-4 py-2 rounded-xl">
+              <span className="text-[9px] font-mono text-slate-400 block font-bold">SUCCESS RATE</span>
+              <span className="text-sm font-bold text-slate-600 block mt-0.5">
+                {currentNgo.successRate || '--'}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Live KPI Metric Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-750 p-4">
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Pending Pickups</span>
-              <Package className="w-5 h-5 text-emerald-500" />
+        {/* Inventory Counters Widgets */}
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm flex justify-between items-center">
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">ITEMS RECEIVED</span>
+              <span className="text-2xl font-display font-extrabold text-ink mt-1 block">{totalReceived} units</span>
             </div>
-            <p className="text-2xl font-bold mt-2">6 Active</p>
-            <span className="text-[10px] text-slate-450 block mt-1">2 scheduled for today</span>
-          </Card>
-
-          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-750 p-4">
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Transit Delays</span>
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
+            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+              <Package className="w-5 h-5" />
             </div>
-            <p className="text-2xl font-bold mt-2">1 Alert</p>
-            <span className="text-[10px] text-red-500 font-semibold block mt-1">Delayed due to traffic (DB-2081)</span>
-          </Card>
-
-          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-750 p-4">
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Fulfilled Items</span>
-              <CheckCircle className="w-5 h-5 text-indigo-500" />
-            </div>
-            <p className="text-2xl font-bold mt-2">1,248 Units</p>
-            <span className="text-[10px] text-slate-450 block mt-1">Cumulative logistics verified</span>
-          </Card>
-
-          <Card className="bg-white dark:bg-slate-800 border border-slate-255 p-4 bg-gradient-to-br from-emerald-50 to-white dark:from-slate-800 dark:to-slate-850">
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Carbon Saved</span>
-              <Star className="w-5 h-5 text-green-500" />
-            </div>
-            <p className="text-2xl font-bold mt-2">492 kg</p>
-            <span className="text-[10px] text-emerald-650 font-bold block mt-1">Verified Environmental Ledger</span>
-          </Card>
-        </div>
-
-        {/* Searchable Inbound Logistics & Urgent Needs Split Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Left/Center: Searchable Logistics Grid */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6">
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
-                <div>
-                  <h3 className="font-bold text-base">Inbound Donation Shipments</h3>
-                  <p className="text-xs text-slate-500">Live shipping nodes matches and ETA logs.</p>
-                </div>
-
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2.5" />
-                    <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-7 pr-3 py-1.5 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:ring-1 focus:ring-primary focus:outline-none w-40"
-                    />
-                  </div>
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="px-2 py-1.5 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-                  >
-                    <option value="All">All Statuses</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Dispatched">Dispatched</option>
-                    <option value="Transit Delay">Delays</option>
-                    <option value="Delivered">Delivered</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Table Grid */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-350">
-                      <th className="p-3 font-semibold">Shipment ID</th>
-                      <th className="p-3 font-semibold">Donor Entity</th>
-                      <th className="p-3 font-semibold">Items</th>
-                      <th className="p-3 font-semibold">Est. Arrival</th>
-                      <th className="p-3 font-semibold">Status</th>
-                      <th className="p-3 font-semibold text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredShipments.map((ship) => (
-                      <tr key={ship.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                        <td className="p-3 font-mono font-bold">{ship.id}</td>
-                        <td className="p-3 font-semibold">{ship.donor}</td>
-                        <td className="p-3">{ship.material}</td>
-                        <td className="p-3 font-mono">{ship.eta}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded font-bold text-[9px] ${
-                            ship.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' :
-                            ship.status === 'Transit Delay' ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300' :
-                            ship.status === 'Dispatched' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300' :
-                            'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300'
-                          }`}>
-                            {ship.status}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/tracking/${ship.id.replace('DB-', '')}`)}
-                            className="text-primary hover:underline font-bold text-[10px]"
-                          >
-                            Track <ArrowUpRight className="w-3 h-3 ml-1 inline" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
           </div>
 
-          {/* Right Column: Active Inventory Needs Manager */}
+          <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm flex justify-between items-center">
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">CARGO IN TRANSIT</span>
+              <span className="text-2xl font-display font-extrabold text-primary mt-1 block">{totalInTransit} units</span>
+            </div>
+            <div className="w-10 h-10 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm flex justify-between items-center">
+            <div>
+              <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider block">ACTIVE DEMAND POSTS</span>
+              <span className="text-2xl font-display font-extrabold text-secondary mt-1 block">{activeNeedsCount} requests</span>
+            </div>
+            <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+              <Activity className="w-5 h-5" />
+            </div>
+          </div>
+        </section>
+
+        {/* Dashboard Tabs Navigation */}
+        <div className="flex border-b border-border gap-2">
+          <button
+            onClick={() => setActiveTab('matches')}
+            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'matches'
+                ? 'border-primary text-primary font-bold'
+                : 'border-transparent text-slate-500 hover:text-ink'
+            }`}
+          >
+            Smart Matches ({rawMatches.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('needs')}
+            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'needs'
+                ? 'border-primary text-primary font-bold'
+                : 'border-transparent text-slate-500 hover:text-ink'
+            }`}
+          >
+            Broadcast Needs ({ngoNeeds.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('geo')}
+            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'geo'
+                ? 'border-primary text-primary font-bold'
+                : 'border-transparent text-slate-500 hover:text-ink'
+            }`}
+          >
+            Dispatch Radius Map ({activeIncoming.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              activeTab === 'analytics'
+                ? 'border-primary text-primary font-bold'
+                : 'border-transparent text-slate-500 hover:text-ink'
+            }`}
+          >
+            Analytics & Reports
+          </button>
+        </div>
+
+        {/* TAB 1: SMART MATCHES */}
+        {activeTab === 'matches' && (
           <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="font-bold text-base mb-2">Inventory Necessity Index</h3>
-              <p className="text-xs text-slate-500 mb-4">Set priorities that direct our matchmaking algorithm rankings.</p>
+            <div className="p-4 bg-white border border-border rounded-2xl shadow-premium-sm flex justify-between items-center text-xs">
+              <div>
+                <p className="font-semibold text-ink">Smart Match Algorithm Recommendation Queue</p>
+                <p className="text-slate-500">Matching nearby verified shipments with your registered need parameters.</p>
+              </div>
+              <span className="font-mono bg-primary text-white px-2.5 py-1 rounded-lg font-bold text-[10px]">
+                {rawMatches.length} RECOMMENDATIONS
+              </span>
+            </div>
 
-              <div className="space-y-4">
-                {inventoryNeeds.map((need) => (
-                  <div key={need.id} className="p-3 bg-slate-55 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded space-y-2 text-xs">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-bold text-slate-850 dark:text-slate-200">{need.item}</p>
-                        <p className="text-slate-500 text-[10px]">Category: {need.category} | Threshold: {need.minQty}</p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded font-bold text-[9px] ${
-                        need.urgency === 'Critical' ? 'bg-red-650 text-white' :
-                        need.urgency === 'High' ? 'bg-amber-500 text-white' :
-                        need.urgency === 'Medium' ? 'bg-blue-500 text-white' :
-                        'bg-slate-500 text-white'
-                      }`}>
-                        {need.urgency}
+            {verStatus !== 'approved' && (
+              <div className="bg-white border border-border p-12 rounded-2xl text-center space-y-3">
+                <AlertTriangle className="w-10 h-10 text-amber-600 mx-auto" />
+                <h3 className="text-sm font-display font-bold text-ink">Verification Required</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">Only approved NGOs can claim matched donations. Please wait for an administrator to audit your registration certificates.</p>
+              </div>
+            )}
+
+            {verStatus === 'approved' && rawMatches.length === 0 ? (
+              <div className="bg-white border border-border rounded-2xl p-12 text-center space-y-3">
+                <Package className="w-10 h-10 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-display font-bold text-ink">No Smart Matches Found</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">No verified donations fit your active inventory needs. Broadcast a new need requirement to trigger matching suggestions.</p>
+                <Button variant="primary" size="sm" onClick={() => setActiveTab('needs')}>
+                  Broadcast Need Item
+                </Button>
+              </div>
+            ) : verStatus === 'approved' && (
+              <div className="grid grid-cols-1 gap-6">
+                {rawMatches.map(({ donation, need, scoreBreakdown }) => (
+                  <DonationCard
+                    key={donation.id}
+                    donation={donation}
+                    matchScoreDetails={scoreBreakdown}
+                    onClaim={() => handleClaimDonation(donation.id, scoreBreakdown.total)}
+                    actions={
+                      <span className="text-[10px] font-mono text-slate-400">
+                        Match Basis: <strong className="text-slate-600">{need.item}</strong>
                       </span>
-                    </div>
-
-                    {/* Radio Urgency Toggles */}
-                    <div className="flex gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
-                      {['Critical', 'High', 'Medium', 'Low'].map((urg) => (
-                        <button
-                          key={urg}
-                          type="button"
-                          onClick={() => handleUrgencyChange(need.id, urg)}
-                          className={`flex-1 py-1 text-[9px] font-bold rounded text-center transition-all ${
-                            need.urgency === urg
-                              ? 'bg-slate-800 dark:bg-slate-700 text-white'
-                              : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'
-                          }`}
-                        >
-                          {urg[0]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                    }
+                  />
                 ))}
               </div>
-            </Card>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: BROADCAST NEEDS */}
+        {activeTab === 'needs' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Needs List */}
+            <div className="lg:col-span-2 space-y-4">
+              <h3 className="text-sm font-display font-bold text-ink">Current Demand Ledger</h3>
+              
+              {ngoNeeds.length === 0 ? (
+                <p className="p-6 text-xs text-slate-400 text-center font-mono border border-dashed border-border rounded-xl">No active inventory needs posted.</p>
+              ) : (
+                <div className="overflow-hidden border border-border rounded-xl bg-white shadow-premium-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-border bg-slate-50 text-slate-600 font-semibold">
+                          <th className="p-4">Category</th>
+                          <th className="p-4">Item Needed</th>
+                          <th className="p-4 text-center">Quantity</th>
+                          <th className="p-4">Urgency</th>
+                          <th className="p-4">Description</th>
+                          <th className="p-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {ngoNeeds.map(need => (
+                          <tr key={need.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="p-4 font-bold text-primary font-mono text-[10px] uppercase">{need.category}</td>
+                            <td className="p-4 font-semibold text-slate-900">{need.item}</td>
+                            <td className="p-4 text-center font-mono">{need.quantity}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 border text-[9px] font-bold rounded-full uppercase ${
+                                need.urgency === 'High' ? 'bg-red-50 text-red-700 border-red-200' :
+                                need.urgency === 'Medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                'bg-slate-50 text-slate-700 border-slate-200'
+                              }`}>
+                                {need.urgency}
+                              </span>
+                            </td>
+                            <td className="p-4 text-slate-500 max-w-[150px] truncate" title={need.description}>{need.description || '--'}</td>
+                            <td className="p-4 text-right">
+                              <button
+                                onClick={() => handleDeleteNeed(need.id)}
+                                className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                                title="Delete broadcast"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Quick Add Need Form */}
-            <Card className="p-4">
-              <h4 className="font-bold text-xs mb-3">Add Urgent Essential Necessity</h4>
-              <form onSubmit={handleAddNeed} className="space-y-3">
+            <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm h-fit">
+              <h3 className="text-sm font-display font-bold mb-4 text-ink">Broadcast Essential Need</h3>
+              
+              <form onSubmit={handlePostNeed} className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Category</label>
+                  <select
+                    value={needCategory}
+                    onChange={(e) => setNeedCategory(e.target.value)}
+                    className="w-full bg-white border border-border p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none h-10 font-medium"
+                  >
+                    {['Clothing', 'Food', 'Books', 'Furniture', 'Electronics', 'Medical Equipment', 'School Supplies', 'Blankets', 'Sports Equipment'].map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <InputField
-                  label="Item Name"
-                  id="item"
-                  name="item"
-                  placeholder="e.g. Pediatric Oxygen Monitors"
+                  label="Specific Item Needed"
+                  id="item-name"
+                  placeholder="e.g. Winter blankets, Canned beans"
+                  value={needItem}
+                  onChange={(e) => setNeedItem(e.target.value)}
                   required
                 />
-                <div className="grid grid-cols-2 gap-2">
+
+                <div className="grid grid-cols-2 gap-3">
+                  <InputField
+                    label="Quantity Needed"
+                    id="qty"
+                    type="number"
+                    min="1"
+                    placeholder="50"
+                    value={needQty}
+                    onChange={(e) => setNeedQty(e.target.value)}
+                    required
+                  />
+
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1">
-                      Urgency
-                    </label>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">Urgency</label>
                     <select
-                      id="urgency"
-                      name="urgency"
-                      className="w-full px-2 py-1.5 text-xs rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-none"
+                      value={needUrgency}
+                      onChange={(e) => setNeedUrgency(e.target.value)}
+                      className="w-full bg-white border border-border p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none h-10 font-medium"
                     >
-                      <option value="Critical">Critical</option>
                       <option value="High">High</option>
                       <option value="Medium">Medium</option>
                       <option value="Low">Low</option>
                     </select>
                   </div>
-                  <InputField
-                    label="Min Target Qty"
-                    id="minQty"
-                    name="minQty"
-                    placeholder="e.g. 5 units"
-                    required
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">Brief Description Notes</label>
+                  <textarea
+                    rows="3"
+                    placeholder="Provide compliance details (sizes, shelf lives)..."
+                    value={needDescription}
+                    onChange={(e) => setNeedDescription(e.target.value)}
+                    className="w-full bg-white border border-border p-2.5 rounded-lg text-xs focus:ring-1 focus:ring-primary focus:outline-none placeholder-slate-400"
                   />
                 </div>
-                <Button type="submit" variant="primary" className="w-full text-xs py-1.5" icon={Plus}>
-                  Register Essential Needs
+
+                <Button type="submit" variant="primary" className="w-full py-2.5 font-bold" icon={Plus}>
+                  Post Need Broadcaster
                 </Button>
               </form>
-            </Card>
+            </div>
           </div>
+        )}
 
-        </div>
+        {/* TAB 3: RADIUS MAP */}
+        {activeTab === 'geo' && (
+          <div className="space-y-4">
+            <div className="p-4 bg-white border border-border rounded-2xl shadow-premium-sm text-xs">
+              <p className="font-semibold flex items-center gap-1.5 text-primary">
+                <MapPin className="w-4 h-4 text-primary" /> Georadial Logistics coverage
+              </p>
+              <p className="text-slate-500 mt-1">
+                Displaying incoming claimed shipments coordinates within your registered 4km matching radius.
+              </p>
+            </div>
+
+            <div ref={geoMapRef} className="h-96 w-full border border-border rounded-2xl z-10 shadow-premium-sm" />
+          </div>
+        )}
+
+        {/* TAB 4: IMPACT ANALYTICS */}
+        {activeTab === 'analytics' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Recharts Line Chart: Monthly Inbound */}
+            <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
+              <h4 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Monthly Inbound Logistics</h4>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={MONTHLY_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fontFamily: 'monospace' }} />
+                    <YAxis tick={{ fontSize: 10, fontFamily: 'monospace' }} />
+                    <Tooltip contentStyle={{ fontSize: 11, fontFamily: 'Inter' }} />
+                    <Legend wrapperStyle={{ fontSize: 10, fontFamily: 'monospace' }} />
+                    <Line type="monotone" dataKey="received" stroke="#2E7D32" strokeWidth={2.5} name="Received Units" />
+                    <Line type="monotone" dataKey="target" stroke="#4CAF50" strokeWidth={1.5} strokeDasharray="3 3" name="Target Demand" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Recharts Pie Chart: Category shares */}
+            <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm space-y-4">
+              <h4 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Donations Share by Category</h4>
+              <div className="h-64 flex flex-col sm:flex-row items-center justify-around gap-4">
+                <div className="w-40 h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={CATEGORY_DATA}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={70}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {CATEGORY_DATA.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => `${value}%`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Legend list */}
+                <div className="space-y-1.5 text-[11px] font-mono">
+                  {CATEGORY_DATA.map(item => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="font-bold text-slate-700">{item.name}:</span>
+                      <span className="text-slate-500">{item.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );
