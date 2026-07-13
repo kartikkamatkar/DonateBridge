@@ -31,7 +31,8 @@ class NGO(models.Model):
     verification_status = models.CharField(
         max_length=20, 
         choices=VerificationStatus.choices, 
-        default=VerificationStatus.PENDING
+        default=VerificationStatus.PENDING,
+        db_index=True
     )
     rejection_reason = models.TextField(blank=True, null=True)
     trust_score = models.IntegerField(default=70) # out of 100
@@ -88,7 +89,7 @@ class EmergencyCampaign(models.Model):
 
 class Need(models.Model):
     ngo = models.ForeignKey(NGO, on_delete=models.CASCADE, related_name='needs')
-    category = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, db_index=True)
     item = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField()
     fulfilled_quantity = models.PositiveIntegerField(default=0)

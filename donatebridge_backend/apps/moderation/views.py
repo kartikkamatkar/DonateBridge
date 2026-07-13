@@ -23,7 +23,7 @@ class PendingNGOQueueView(generics.ListAPIView):
     permission_classes = (IsAdminUser,)
 
     def get_queryset(self):
-        return NGO.objects.filter(verification_status=VerificationStatus.PENDING)
+        return NGO.objects.prefetch_related('documents', 'reviews', 'needs').filter(verification_status=VerificationStatus.PENDING)
 
 class AuditNGOView(APIView):
     permission_classes = (IsAdminUser,)
@@ -67,7 +67,7 @@ class PendingDonationQueueView(generics.ListAPIView):
     permission_classes = (IsAdminUser,)
 
     def get_queryset(self):
-        return Donation.objects.filter(status=DonationStatus.PENDING)
+        return Donation.objects.select_related('donor', 'matched_ngo').prefetch_related('photos').filter(status=DonationStatus.PENDING)
 
 class AuditDonationView(APIView):
     permission_classes = (IsAdminUser,)

@@ -42,7 +42,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             role=validated_data.get('role', 'donor'),
             avatar=validated_data.get('avatar', '👩‍💼')
         )
-        Profile.objects.create(user=user)
+        Profile.objects.get_or_create(user=user)
         return user
 
 class ProfileSerializer(serializers.ModelSerializer):

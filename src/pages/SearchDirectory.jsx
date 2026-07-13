@@ -17,7 +17,7 @@ const CATEGORIES = ['All', 'Books', 'Clothes', 'Food', 'Furniture', 'Electronics
 const USER_COORDS = [12.9716, 77.5946];
 
 export default function SearchDirectory() {
-  const { ngos, needs, donations } = useRealDB();
+  const { ngos, needs, donations, claimDonation } = useRealDB();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const currentNgo = user?.role === 'ngo' ? ngos.find(n => n.email === user.email) || ngos[0] : null;
@@ -58,17 +58,19 @@ export default function SearchDirectory() {
   const toggleWishlist = (id, e) => { if (e) e.stopPropagation(); if (wishlist.includes(id)) { setWishlist(prev => prev.filter(i => i !== id)); toast.success('Removed from saved.'); } else { setWishlist(prev => [...prev, id]); toast.success('Saved!'); } };
   const handleShare = (id, e) => { if (e) e.stopPropagation(); navigator.clipboard.writeText(`${window.location.origin}/discover?item=${id}`); toast.success('Link copied!'); };
 
-  const handleClaimSubmit = (e) => {
+  const handleClaimSubmit = async (e) => {
     e.preventDefault();
     if (!isAuthenticated || user?.role !== 'ngo') { toast.error('Only NGOs can claim.'); return; }
     setIsClaiming(true);
-    setTimeout(() => {
-      setIsClaiming(false); setClaimSuccess(true);
-      // Claim the donation via real API (handled in parent flow)
-      toast.success('Donation claimed! Route scheduled.');
+    try {
+      await claimDonation(selectedItem.id);
+      setIsClaiming(false);
+      setClaimSuccess(true);
       toast.success(`Claim submitted for ${selectedItem.title || selectedItem.category}!`);
       setWishlist(prev => prev.filter(id => id !== selectedItem.id));
-    }, 1200);
+    } catch (err) {
+      setIsClaiming(false);
+    }
   };
 
   const getSmartMatchDetails = (donation) => {
