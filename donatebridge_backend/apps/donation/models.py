@@ -13,7 +13,7 @@ class Donation(models.Model):
     id = models.CharField(primary_key=True, max_length=50) # Format DNT-YYYY-XXXXX
     donor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='donations')
     title = models.CharField(max_length=255)
-    category = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, db_index=True)
     condition = models.CharField(max_length=20)
     quantity = models.PositiveIntegerField()
     description = models.TextField()
@@ -21,7 +21,7 @@ class Donation(models.Model):
     pickup_lat = models.FloatField()
     pickup_lng = models.FloatField()
     preferred_pickup_time = models.CharField(max_length=255)
-    status = models.CharField(max_length=20, choices=DonationStatus.choices, default=DonationStatus.PENDING)
+    status = models.CharField(max_length=20, choices=DonationStatus.choices, default=DonationStatus.PENDING, db_index=True)
     rejection_reason = models.TextField(blank=True, null=True)
     
     # NGO Claim detail

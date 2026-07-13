@@ -5,6 +5,7 @@ import os
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from rest_framework import status, permissions, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -71,7 +72,7 @@ class UserMeView(generics.RetrieveUpdateAPIView):
         
         profile = getattr(user, 'profile', None)
         if not profile:
-            profile = Profile.objects.create(user=user)
+            profile, _ = Profile.objects.get_or_create(user=user)
             
         profile_serializer = ProfileSerializer(profile, data=request.data, partial=True)
         profile_serializer.is_valid(raise_exception=True)
@@ -97,6 +98,18 @@ class ResendOTPView(APIView):
             code=code,
             expires_at=expires_at
         )
+
+        # Trigger real email if configured
+        try:
+            send_mail(
+                subject="DonateBridge - OTP Verification Code",
+                message=f"Your DonateBridge verification OTP code is: {code}. It will expire in 5 minutes.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=True
+            )
+        except Exception:
+            pass
         
         # Print OTP to terminal output for easy verification
         print(f"\n==========================================")
@@ -153,6 +166,18 @@ class ForgotPasswordView(APIView):
             code=code,
             expires_at=expires_at
         )
+
+        # Trigger real email if configured
+        try:
+            send_mail(
+                subject="DonateBridge - Password Reset Verification Code",
+                message=f"Your DonateBridge password reset OTP code is: {code}. It will expire in 10 minutes.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=True
+            )
+        except Exception:
+            pass
 
         # Print OTP to terminal output for easy verification
         print(f"\n==========================================")

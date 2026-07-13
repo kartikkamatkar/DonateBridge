@@ -128,48 +128,33 @@ class DonationViewSet(viewsets.ModelViewSet):
         donation.matched_at = django_timezone.now()
         donation.save()
         
-        # Link Claim to Increment progress counters
-        # 1. Update NGO Need fulfilled quantity
-        if matching_need:
-            matching_need.fulfilled_quantity = min(
-                matching_need.fulfilled_quantity + donation.quantity, 
-                matching_need.quantity
-            )
-            matching_need.save()
-            
-        # 2. Update active Community Challenges matching category
-        active_challenges = CommunityChallenge.objects.filter(
-            category__iexact=donation.category,
-            is_active=True,
-            start_date__lte=django_timezone.now(),
-            end_date__gte=django_timezone.now()
-        )
-        for challenge in active_challenges:
-            challenge.current_quantity = min(
-                challenge.current_quantity + donation.quantity,
-                challenge.target_quantity
-            )
-            challenge.save()
-            
         # Generate logistics job with verification QR code token
         verify_token = f"VERIFY-{random.randint(100000, 999999)}-{donation.id}"
-        logistics_job = LogisticsJob.objects.create(
+        logistics_job, _ = LogisticsJob.objects.get_or_create(
             donation=donation,
-            carrier_name="Express Cargo #DB-990",
-            current_step=2,
-            verification_token=verify_token,
-            qr_code_content=f"https://donatebridge.org/verify-delivery/{verify_token}"
+            defaults={
+                'carrier_name': "Express Cargo #DB-990",
+                'current_step': 2,
+                'verification_token': verify_token,
+                'qr_code_content': f"https://donatebridge.org/verify-delivery/{verify_token}"
+            }
         )
         
-        TrackingMilestone.objects.create(
-            job=logistics_job, step_num=1, title='Requested',
-            description='Donation request logged by donor, pending verification.',
-            lat=donation.pickup_lat, lng=donation.pickup_lng
+        TrackingMilestone.objects.get_or_create(
+            job=logistics_job, step_num=1,
+            defaults={
+                'title': 'Requested',
+                'description': 'Donation request logged by donor, pending verification.',
+                'lat': donation.pickup_lat, 'lng': donation.pickup_lng
+            }
         )
-        TrackingMilestone.objects.create(
-            job=logistics_job, step_num=2, title='Approved',
-            description='Listing approved by Admin and matched with NGO parameters.',
-            lat=donation.pickup_lat, lng=donation.pickup_lng
+        TrackingMilestone.objects.get_or_create(
+            job=logistics_job, step_num=2,
+            defaults={
+                'title': 'Approved',
+                'description': 'Listing approved by Admin and matched with NGO parameters.',
+                'lat': donation.pickup_lat, 'lng': donation.pickup_lng
+            }
         )
         
         # Audit log creation
