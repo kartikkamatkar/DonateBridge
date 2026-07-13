@@ -101,13 +101,24 @@ class NGODetailsView(generics.RetrieveAPIView):
     serializer_class = NGODetailsSerializer
     permission_classes = (permissions.AllowAny,)
 
+class NGODetailsCurrentUserView(generics.RetrieveAPIView):
+    """Returns the NGO profile of the currently authenticated NGO user."""
+    serializer_class = NGODetailsSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_object(self):
+        if not hasattr(self.request.user, 'ngo_details'):
+            from rest_framework.exceptions import NotFound
+            raise NotFound("No NGO profile found for this user.")
+        return self.request.user.ngo_details
+
 class NGOCreateReviewView(generics.CreateAPIView):
     serializer_class = NGOReviewSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request, id):
+    def post(self, request, pk):
         try:
-            ngo = NGO.objects.get(id=id)
+            ngo = NGO.objects.get(pk=pk)
         except NGO.DoesNotExist:
             return Response({"error": "NGO does not exist"}, status=status.HTTP_404_NOT_FOUND)
             

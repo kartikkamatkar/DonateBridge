@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
-import { useMockDB } from '../hooks/useMockDB';
+import { useRealDB } from '../hooks/useRealDB';
 import { 
   Search, ShieldCheck, MapPin, Heart, ArrowRight, Star, Award, Leaf, 
   Users, ChevronRight, Check, BookOpen, Clock, Gift, Activity, ArrowUpRight,
@@ -69,7 +69,7 @@ const MOCK_COORDS = {
 
 export default function LandingPage() {
   const { isAuthenticated } = useAuth();
-  const db = useMockDB();
+  const { ngos, donations, needs } = useRealDB();
   const navigate = useNavigate();
   const [emailSub, setEmailSub] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -95,7 +95,7 @@ export default function LandingPage() {
   const [trackerStep, setTrackerStep] = useState(2); // 0, 1, 2, 3
 
   // Dynamic Ledger feed
-  const ledgerActivity = db.donations
+  const ledgerActivity = donations
     .filter(d => d.status === 'VERIFIED' || d.status === 'MATCHED' || d.status === 'DELIVERED')
     .slice(0, 4);
 
@@ -167,10 +167,10 @@ export default function LandingPage() {
     if (matchCategory === 'Medical Equipment') dbCategory = 'Medical';
     if (matchCategory === 'Clothes') dbCategory = 'Clothing';
 
-    const candidateNeeds = db.needs.filter(n => n.category.toLowerCase() === dbCategory.toLowerCase());
+    const candidateNeeds = needs.filter(n => n.category.toLowerCase() === dbCategory.toLowerCase());
     
     const matches = candidateNeeds.map(need => {
-      const ngo = db.ngos.find(o => o.id === need.ngoId) || { 
+      const ngo = ngos.find(o => o.id === need.ngoId) || { 
         name: need.ngoName, 
         lat: need.lat, 
         lng: need.lng, 
@@ -1047,7 +1047,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-            {db.ngos.slice(0, 4).map((ngo) => (
+            {ngos.slice(0, 4).map((ngo) => (
               <div key={ngo.id} className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl text-left flex flex-col justify-between shadow-premium-sm hover:shadow-premium-md hover:border-slate-300 transition-all">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">

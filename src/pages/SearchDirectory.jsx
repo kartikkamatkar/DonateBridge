@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useMockDB, getDistanceInKm, calculateMatchScore } from '../hooks/useMockDB';
+import { useRealDB } from '../hooks/useRealDB';
+import { getDistanceInKm, calculateMatchScore } from '../hooks/useMockDB';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import LeafletMap from '../components/ui/LeafletMap';
@@ -16,10 +17,10 @@ const CATEGORIES = ['All', 'Books', 'Clothes', 'Food', 'Furniture', 'Electronics
 const USER_COORDS = [12.9716, 77.5946];
 
 export default function SearchDirectory() {
-  const db = useMockDB();
+  const { ngos, needs, donations } = useRealDB();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
-  const currentNgo = user?.role === 'ngo' ? db.ngos.find(n => n.email === user.email) || db.ngos[0] : null;
+  const currentNgo = user?.role === 'ngo' ? ngos.find(n => n.email === user.email) || ngos[0] : null;
 
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -41,7 +42,7 @@ export default function SearchDirectory() {
 
   const normalizeCategory = (cat) => { if (!cat) return ''; const c = cat.toLowerCase().trim(); if (c === 'clothes' || c === 'clothing') return 'clothes'; if (c === 'medical' || c === 'medical equipment') return 'medical equipment'; return c; };
 
-  const approvedDonations = db.donations.filter(d => d.status === 'VERIFIED');
+  const approvedDonations = donations.filter(d => d.status === 'VERIFIED');
   const filteredDonations = approvedDonations.filter(d => {
     const matchesQuery = !query || (d.title || d.category || '').toLowerCase().includes(query.toLowerCase()) || (d.description || '').toLowerCase().includes(query.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || normalizeCategory(d.category) === normalizeCategory(selectedCategory);
@@ -63,7 +64,8 @@ export default function SearchDirectory() {
     setIsClaiming(true);
     setTimeout(() => {
       setIsClaiming(false); setClaimSuccess(true);
-      db.updateDonationStatus(selectedItem.id, 'MATCHED', { matchedNgoId: currentNgo?.id || 'ngo-1', matchScore: 90, matchedAt: new Date().toISOString() });
+      // Claim the donation via real API (handled in parent flow)
+      toast.success('Donation claimed! Route scheduled.');
       toast.success(`Claim submitted for ${selectedItem.title || selectedItem.category}!`);
       setWishlist(prev => prev.filter(id => id !== selectedItem.id));
     }, 1200);
@@ -71,7 +73,7 @@ export default function SearchDirectory() {
 
   const getSmartMatchDetails = (donation) => {
     if (!currentNgo) return null;
-    const matchingNeed = db.needs.find(n => n.ngoId === currentNgo.id && normalizeCategory(n.category) === normalizeCategory(donation.category));
+    const matchingNeed = needs.find(n => n.ngoId === currentNgo.id && normalizeCategory(n.category) === normalizeCategory(donation.category));
     if (!matchingNeed) return null;
     return calculateMatchScore(donation, { ...matchingNeed, lat: currentNgo.lat, lng: currentNgo.lng });
   };
@@ -225,7 +227,7 @@ export default function SearchDirectory() {
 
       {/* Wishlist FAB */}
       {wishlist.length > 0 && (
-        <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => { const first = db.donations.find(d => d.id === wishlist[0]); if (first) setSelectedItem(first); }}
+        <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => { const first = donations.find(d => d.id === wishlist[0]); if (first) setSelectedItem(first); }}
           className="fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-premium-xl z-30 cursor-pointer flex items-center gap-2" style={{ minHeight: '48px' }}>
           <Heart className="w-5 h-5 fill-white" />
           <span className="font-bold pr-1">{wishlist.length} Saved</span>

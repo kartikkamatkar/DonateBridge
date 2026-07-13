@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useToast } from '../components/ui/Toast';
-import { useMockDB } from '../hooks/useMockDB';
+import { donationAPI, authAPI, getApiError } from '../api/index';
 import { useAuth } from '../context/GlobalStateContext';
 import Navbar from '../components/Navbar';
 import LeafletMap from '../components/ui/LeafletMap';
@@ -25,8 +25,8 @@ const CONDITIONS = [
 export default function RequestWizard() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const db = useMockDB();
   const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
 
   const [step, setStep] = useState(1); // 1: Details, 2: Location Map, 3: Photos, 4: Success Receipt
@@ -90,33 +90,51 @@ export default function RequestWizard() {
     toast.success('Photo removed.');
   };
 
-  const onSubmitForm = (data) => {
+  const onSubmitForm = async (data) => {
     if (photos.length === 0) {
       toast.warning('Please upload at least one photo of the donation item.');
       return;
     }
 
-    const donationData = {
-      title: data.title,
-      category: data.category,
-      condition: data.condition,
-      quantity: parseInt(data.quantity) || 1,
-      description: data.description,
-      donorName: user?.name || 'Sarah Jenkins',
-      donorEmail: user?.email || 'donor@donatebridge.org',
-      photos: photos.map(p => p.previewUrl),
-      location: {
-        lat: selectedCoords.lat,
-        lng: selectedCoords.lng,
-        address: data.pickupAddress
-      },
-      preferredPickupTime: data.preferredPickupTime,
-      status: 'PENDING' // must be Pending Review to hide it from marketplace
-    };
+    setIsSubmitting(true);
+    try {
+      // Upload photos: convert blob URLs to real uploaded URLs
+      const uploadedPhotoUrls = [];
+      for (const photo of photos) {
+        if (photo.previewUrl.startsWith('blob:')) {
+          try {
+            const blob = await fetch(photo.previewUrl).then(r => r.blob());
+            const file = new File([blob], photo.name || 'photo.jpg', { type: blob.type });
+            const uploadRes = await authAPI.uploadFile(file);
+            uploadedPhotoUrls.push(uploadRes.data.url);
+          } catch {
+            uploadedPhotoUrls.push(photo.previewUrl);
+          }
+        } else {
+          uploadedPhotoUrls.push(photo.previewUrl);
+        }
+      }
 
-    db.addDonation(donationData);
-    setStep(4);
-    toast.success('Donation listing logged in moderation queue.');
+      await donationAPI.create({
+        title: data.title,
+        category: data.category,
+        condition: data.condition,
+        quantity: parseInt(data.quantity) || 1,
+        description: data.description,
+        photos: uploadedPhotoUrls,
+        pickup_address: data.pickupAddress,
+        pickup_lat: selectedCoords.lat,
+        pickup_lng: selectedCoords.lng,
+        preferred_pickup_time: data.preferredPickupTime,
+      });
+
+      setStep(4);
+      toast.success('Donation listing logged in moderation queue.');
+    } catch (err) {
+      toast.error(getApiError(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -354,8 +372,8 @@ export default function RequestWizard() {
                 <Button type="button" variant="secondary" onClick={() => setStep(2)} icon={ArrowLeft}>
                   Back
                 </Button>
-                <Button type="button" variant="primary" onClick={handleSubmit(onSubmitForm)} icon={CheckCircle}>
-                  Submit Listing Proposal
+                <Button type="button" variant="primary" onClick={handleSubmit(onSubmitForm)} icon={CheckCircle} loading={isSubmitting}>
+                  {isSubmitting ? 'Submitting…' : 'Submit Listing Proposal'}
                 </Button>
               </div>
             </div>

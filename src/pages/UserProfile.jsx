@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/GlobalStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ui/Toast';
@@ -6,17 +6,28 @@ import { Download, ShieldCheck, Lock, Mail, Star, Heart, Leaf, Check, Calendar, 
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
 import Navbar from '../components/Navbar';
+import { authAPI, getApiError } from '../api/index';
 
 export default function UserProfile() {
-  const { user } = useAuth();
+  const { user, loginWithTokens } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('account'); // 'account' | 'receipts' | 'achievements'
   const [profileName, setProfileName] = useState(user?.name || 'Sarah Jenkins');
-  const [profilePhone, setProfilePhone] = useState('+1 (555) 019-2831');
-  const [profileLocation, setProfileLocation] = useState('East End, Sector 4');
+  const [profilePhone, setProfilePhone] = useState(user?.phone || '+1 (555) 019-2831');
+  const [profileLocation, setProfileLocation] = useState(user?.location || 'East End, Sector 4');
   const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Sync state if user context updates
+  useEffect(() => {
+    if (user) {
+      setProfileName(user.name || '');
+      setProfilePhone(user.phone || '');
+      setProfileLocation(user.location || '');
+    }
+  }, [user]);
 
   // Downloadable tax-exempt receipt logs
   const [receipts] = useState([
@@ -25,13 +36,25 @@ export default function UserProfile() {
     { id: 'TX-9721', item: '1 Oxygen Concentrator', date: '2026-05-10', size: '135 KB', code: '501C3-Hope' },
   ]);
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    setIsSaved(true);
-    toast.success('Profile details saved successfully!');
-    setTimeout(() => {
-      setIsSaved(false);
-    }, 2000);
+    setIsSaving(true);
+    try {
+      const res = await authAPI.updateMe({
+        name: profileName,
+        phone: profilePhone,
+        location: profileLocation
+      });
+      setIsSaved(true);
+      toast.success('Profile details saved successfully!');
+      setTimeout(() => {
+        setIsSaved(false);
+      }, 2000);
+    } catch (err) {
+      toast.error(getApiError(err));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDownload = (id) => {
@@ -141,8 +164,8 @@ export default function UserProfile() {
                   </div>
 
                   <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-                    <Button type="submit" variant="primary" icon={isSaved ? Check : undefined}>
-                      {isSaved ? 'Details Saved' : 'Update Profile'}
+                    <Button type="submit" variant="primary" icon={isSaved ? Check : undefined} loading={isSaving}>
+                      {isSaved ? 'Details Saved' : isSaving ? 'Saving…' : 'Update Profile'}
                     </Button>
                   </div>
                 </form>

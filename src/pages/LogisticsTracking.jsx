@@ -5,6 +5,8 @@ import { Button } from '../components/ui/Button';
 import Navbar from '../components/Navbar';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { logisticsAPI, getApiError } from '../api/index';
+import { useToast } from '../components/ui/Toast';
 
 const DONOR_COORDS = [12.9592, 77.5726];
 const NGO_COORDS = [12.9716, 77.5946];
@@ -13,25 +15,76 @@ const MIDPOINT_COORDS = [12.9654, 77.5836];
 export default function LogisticsTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const [activeStep, setActiveStep] = useState(4); // default In Transit
+  const [activeStep, setActiveStep] = useState(1);
+  const [carrierName, setCarrierName] = useState('Express Cargo #DB-990');
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [donorCoords, setDonorCoords] = useState(DONOR_COORDS);
+  const [ngoCoords, setNgoCoords] = useState(NGO_COORDS);
   
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const courierMarker = useRef(null);
   const routeLine = useRef(null);
 
-  const milestones = [
-    { title: 'Requested', time: '10:00 AM, July 2', desc: 'Donation request logged by donor, pending verification.', coords: DONOR_COORDS },
-    { title: 'Approved', time: '10:15 AM, July 2', desc: 'Listing approved by Admin and matched with NGO need parameters.', coords: DONOR_COORDS },
-    { title: 'Dispatched', time: '10:45 AM, July 2', desc: 'Logistics carrier assigned and dispatched to donor pickup location.', coords: DONOR_COORDS },
-    { title: 'In Transit', time: '11:15 AM, July 2', desc: 'Shipment picked up, currently in transit to destination NGO hub.', coords: MIDPOINT_COORDS },
-    { title: 'Delivered', time: '11:40 AM, July 2', desc: 'Parcels delivered to the destination NGO Hub address.', coords: NGO_COORDS },
-    { title: 'Completed', time: '11:55 AM, July 2', desc: 'Digital receipt matching complete, transaction hashed on ledger.', coords: NGO_COORDS },
+  const defaultMilestones = [
+    { title: 'Requested', time: '10:00 AM, July 2', desc: 'Donation request logged by donor, pending verification.', coords: donorCoords },
+    { title: 'Approved', time: '10:15 AM, July 2', desc: 'Listing approved by Admin and matched with NGO need parameters.', coords: donorCoords },
+    { title: 'Dispatched', time: '10:45 AM, July 2', desc: 'Logistics carrier assigned and dispatched to donor pickup location.', coords: donorCoords },
+    { title: 'In Transit', time: '11:15 AM, July 2', desc: 'Shipment picked up, currently in transit to destination NGO hub.', coords: [ (donorCoords[0] + ngoCoords[0]) / 2, (donorCoords[1] + ngoCoords[1]) / 2 ] },
+    { title: 'Delivered', time: '11:40 AM, July 2', desc: 'Parcels delivered to the destination NGO Hub address.', coords: ngoCoords },
+    { title: 'Completed', time: '11:55 AM, July 2', desc: 'Digital receipt matching complete, transaction hashed on ledger.', coords: ngoCoords },
   ];
 
+  const [milestones, setMilestones] = useState(defaultMilestones);
+
   // Current active coordinates based on step
-  const currentCoords = milestones[activeStep - 1]?.coords || DONOR_COORDS;
+  const currentCoords = milestones[activeStep - 1]?.coords || donorCoords;
+
+  const fetchTracking = async () => {
+    try {
+      setLoading(true);
+      const res = await logisticsAPI.getTracking(id);
+      const job = res.data;
+      setActiveStep(job.current_step || 1);
+      setCarrierName(job.carrier_name || 'Express Cargo #DB-990');
+      
+      const donation = job.donation_details || {};
+      const pickupLat = donation.pickup_lat || DONOR_COORDS[0];
+      const pickupLng = donation.pickup_lng || DONOR_COORDS[1];
+      const deliveryLat = donation.matched_ngo_details?.lat || NGO_COORDS[0];
+      const deliveryLng = donation.matched_ngo_details?.lng || NGO_COORDS[1];
+      
+      const dCoords = [pickupLat, pickupLng];
+      const nCoords = [deliveryLat, deliveryLng];
+      setDonorCoords(dCoords);
+      setNgoCoords(nCoords);
+
+      // Re-map backend milestones or use default ones
+      const mapped = defaultMilestones.map((m, idx) => {
+        const stepNum = idx + 1;
+        const matchingMilestone = (job.milestones || []).find(ms => ms.step_num === stepNum);
+        return {
+          title: matchingMilestone ? matchingMilestone.title : m.title,
+          time: matchingMilestone ? new Date(matchingMilestone.time_stamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : m.time,
+          desc: matchingMilestone ? matchingMilestone.description : m.desc,
+          coords: stepNum >= 5 ? nCoords : stepNum === 4 ? [ (dCoords[0] + nCoords[0]) / 2, (dCoords[1] + nCoords[1]) / 2 ] : dCoords
+        };
+      });
+      setMilestones(mapped);
+    } catch (err) {
+      console.warn("Failed fetching tracking, using fallback:", err);
+      // Fallback handles newly created/unassigned jobs
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTracking();
+  }, [id]);
 
   useEffect(() => {
     if (mapRef.current && !mapInstance.current) {
@@ -45,20 +98,20 @@ export default function LogisticsTracking() {
         className: 'custom-donor-icon',
         iconSize: [24, 24]
       });
-      L.marker(DONOR_COORDS, { icon: donorIcon })
+      L.marker(donorCoords, { icon: donorIcon })
         .addTo(mapInstance.current)
-        .bindPopup('<b>Donor Pickup:</b> Sarah Jenkins<br/>Bengaluru City Center');
+        .bindPopup('<b>Donor Pickup Point</b>');
 
       const ngoIcon = L.divIcon({
         html: `<div class="w-6 h-6 rounded-full bg-[#2E7D32] border-2 border-white flex items-center justify-center text-white font-extrabold text-[8px] shadow-premium-md">NGO</div>`,
         className: 'custom-ngo-icon',
         iconSize: [24, 24]
       });
-      L.marker(NGO_COORDS, { icon: ngoIcon })
+      L.marker(ngoCoords, { icon: ngoIcon })
         .addTo(mapInstance.current)
-        .bindPopup('<b>NGO Destination Hub:</b> Hope Foundation');
+        .bindPopup('<b>NGO Destination Hub</b>');
 
-      routeLine.current = L.polyline([DONOR_COORDS, NGO_COORDS], {
+      routeLine.current = L.polyline([donorCoords, ngoCoords], {
         color: '#2E7D32',
         weight: 2.5,
         dashArray: '4,6',
@@ -70,7 +123,7 @@ export default function LogisticsTracking() {
         className: 'custom-truck-icon',
         iconSize: [28, 28]
       });
-      courierMarker.current = L.marker(DONOR_COORDS, { icon: truckIcon }).addTo(mapInstance.current);
+      courierMarker.current = L.marker(donorCoords, { icon: truckIcon }).addTo(mapInstance.current);
     }
 
     return () => {
@@ -81,7 +134,7 @@ export default function LogisticsTracking() {
         routeLine.current = null;
       }
     };
-  }, []);
+  }, [loading]);
 
   useEffect(() => {
     if (courierMarker.current) {
@@ -90,7 +143,21 @@ export default function LogisticsTracking() {
         mapInstance.current.panTo(currentCoords);
       }
     }
-  }, [activeStep, currentCoords]);
+  }, [activeStep, currentCoords, milestones]);
+
+  const handleUpdateStep = async (stepNum) => {
+    setUpdating(true);
+    try {
+      const res = await logisticsAPI.updateStep(id, stepNum);
+      setActiveStep(stepNum);
+      toast.success(`Logistics tracking status updated to step ${stepNum}.`);
+      fetchTracking();
+    } catch (err) {
+      toast.error(getApiError(err));
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -128,7 +195,7 @@ export default function LogisticsTracking() {
             </div>
             <div className="flex justify-between items-center">
               <span>Carrier Unit:</span>
-              <span className="text-slate-800">Express Cargo #DB-990</span>
+              <span className="text-slate-800">{carrierName}</span>
             </div>
           </div>
 
@@ -161,16 +228,18 @@ export default function LogisticsTracking() {
           {/* Stepper Controls */}
           <div className="pt-4 border-t border-border flex gap-2 mt-auto">
             <button
-              onClick={() => setActiveStep(prev => Math.max(1, prev - 1))}
-              className="w-full py-2 border border-border bg-white hover:bg-slate-50 text-xs font-bold rounded-lg cursor-pointer transition-colors"
+              disabled={updating || activeStep <= 1}
+              onClick={() => handleUpdateStep(activeStep - 1)}
+              className="w-full py-2 border border-border bg-white hover:bg-slate-50 text-xs font-bold rounded-lg cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              PREVIOUS STEP
+              {updating ? 'SAVING…' : 'PREVIOUS STEP'}
             </button>
             <button
-              onClick={() => setActiveStep(prev => Math.min(6, prev + 1))}
-              className="w-full py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
+              disabled={updating || activeStep >= 6}
+              onClick={() => handleUpdateStep(activeStep + 1)}
+              className="w-full py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              NEXT STEP
+              {updating ? 'SAVING…' : 'NEXT STEP'}
             </button>
           </div>
         </aside>

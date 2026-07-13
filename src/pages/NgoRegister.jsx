@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ui/Toast';
-import { useMockDB } from '../hooks/useMockDB';
+import { ngoAPI, authAPI, getApiError } from '../api/index';
 import Navbar from '../components/Navbar';
 import LeafletMap from '../components/ui/LeafletMap';
 import { Button } from '../components/ui/Button';
@@ -29,7 +29,7 @@ const DOCUMENT_SLOTS = [
 export default function NgoRegister() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const db = useMockDB();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [step, setStep] = useState(1); // 1: Org Info, 2: Address & Location Map, 3: Document Filings, 4: Success
   const [selectedCoords, setSelectedCoords] = useState({ lat: 12.9716, lng: 77.5946 });
@@ -120,27 +120,69 @@ export default function NgoRegister() {
     toast.success('Page removed from document.');
   };
 
-  const onFormSubmit = (data) => {
-    // Check if critical files are uploaded
+  const onFormSubmit = async (data) => {
     const missingDocs = DOCUMENT_SLOTS.filter(slot => !uploadedFiles[slot.key] || uploadedFiles[slot.key].length === 0);
     if (missingDocs.length > 0) {
       toast.warning(`Please upload files for: ${missingDocs.map(d => d.label).slice(0, 2).join(', ')}...`);
       return;
     }
 
-    const registrationData = {
-      ...data,
-      lat: selectedCoords.lat,
-      lng: selectedCoords.lng,
-      documents: Object.keys(uploadedFiles).reduce((acc, key) => {
-        acc[key] = uploadedFiles[key].map(page => page.previewUrl);
-        return acc;
-      }, {})
-    };
+    setIsSubmitting(true);
+    try {
+      // Upload all document files to backend and get URLs
+      const uploadedDocUrls = {};
+      for (const [key, pages] of Object.entries(uploadedFiles)) {
+        uploadedDocUrls[key] = [];
+        for (const page of pages) {
+          // If it's already a URL (from unsplash/sample), use it directly
+          if (page.previewUrl.startsWith('http') && !page.previewUrl.startsWith('blob:')) {
+            uploadedDocUrls[key].push(page.previewUrl);
+          } else if (page.previewUrl.startsWith('blob:')) {
+            // Real file upload
+            try {
+              const blob = await fetch(page.previewUrl).then(r => r.blob());
+              const file = new File([blob], page.name || 'document.jpg', { type: blob.type });
+              const uploadRes = await authAPI.uploadFile(file);
+              uploadedDocUrls[key].push(uploadRes.data.url);
+            } catch {
+              uploadedDocUrls[key].push(page.previewUrl);
+            }
+          } else {
+            uploadedDocUrls[key].push(page.previewUrl);
+          }
+        }
+      }
 
-    db.registerNgo(registrationData);
-    setStep(4);
-    toast.success('Registration filed successfully!');
+      const payload = {
+        name: data.name,
+        registration_number: data.registrationNumber,
+        gov_registration_number: data.govRegistrationNumber,
+        ngo_type: data.ngoType,
+        phone: data.phone,
+        website: data.website,
+        state: data.state,
+        district: data.district,
+        city: data.city,
+        pin_code: data.pinCode,
+        address: data.address,
+        description: data.description,
+        mission: data.mission,
+        working_areas: data.workingAreas,
+        operating_since: data.operatingSince,
+        volunteers_count: parseInt(data.volunteersCount),
+        lat: selectedCoords.lat,
+        lng: selectedCoords.lng,
+        documents: uploadedDocUrls,
+      };
+
+      await ngoAPI.register(payload);
+      setStep(4);
+      toast.success('Registration filed successfully! Pending admin review.');
+    } catch (err) {
+      toast.error(getApiError(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -507,8 +549,8 @@ export default function NgoRegister() {
                   <Button type="button" variant="secondary" onClick={() => setStep(2)} icon={ArrowLeft}>
                     Back
                   </Button>
-                  <Button type="submit" variant="primary" icon={CheckCircle}>
-                    Submit Application
+                  <Button type="submit" variant="primary" icon={CheckCircle} loading={isSubmitting}>
+                    {isSubmitting ? 'Submitting…' : 'Submit Application'}
                   </Button>
                 </div>
               </form>
