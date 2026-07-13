@@ -49,7 +49,7 @@ def calculate_match_score(donation, need, ngo):
     }
 
 class DonationViewSet(viewsets.ModelViewSet):
-    queryset = Donation.objects.all()
+    queryset = Donation.objects.select_related('donor', 'matched_ngo').prefetch_related('photos')
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
@@ -58,7 +58,7 @@ class DonationViewSet(viewsets.ModelViewSet):
         return DonationDetailsSerializer
 
     def get_queryset(self):
-        queryset = Donation.objects.filter(status='VERIFIED')
+        queryset = Donation.objects.select_related('donor', 'matched_ngo').prefetch_related('photos').filter(status='VERIFIED')
         
         category = self.request.query_params.get('category')
         if category:
@@ -98,7 +98,7 @@ class DonationViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def my_donations(self, request):
-        donations = Donation.objects.filter(donor=request.user).order_by('-submitted_at')
+        donations = Donation.objects.select_related('donor', 'matched_ngo').prefetch_related('photos').filter(donor=request.user).order_by('-submitted_at')
         serializer = DonationDetailsSerializer(donations, many=True, context={'request': request})
         return Response(serializer.data)
 
