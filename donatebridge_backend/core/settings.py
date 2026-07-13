@@ -9,6 +9,13 @@ import sys
 from pathlib import Path
 from datetime import timedelta
 
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent.parent / '.env')
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,7 +28,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-ewil=+0)3*v*o!=x&4h44
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -48,7 +55,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # Put at the top of middleware
+    'corsheaders.middleware.CorsMiddleware',  # Put at the top of middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,15 +85,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database Settings
-# By default, use MySQL. Fall back to SQLite if MySQL env vars are not set.
-DB_ENGINE = os.environ.get('DB_ENGINE', 'mysql')
-DB_NAME = os.environ.get('DB_NAME', 'donatebridge')
-DB_USER = os.environ.get('DB_USER', 'root')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
-DB_HOST = os.environ.get('DB_HOST', 'localhost')
-DB_PORT = os.environ.get('DB_PORT', '3306')
+# USE_SQLITE=True (default) uses local SQLite for development.
+# Set USE_SQLITE=False and provide DB_* env vars to use MySQL in production.
+USE_SQLITE = os.environ.get('USE_SQLITE', 'True') == 'True'
 
-if DB_ENGINE == 'mysql' and os.environ.get('USE_SQLITE', 'False') != 'True':
+if not USE_SQLITE:
+    DB_NAME = os.environ.get('DB_NAME', 'donatebridge')
+    DB_USER = os.environ.get('DB_USER', 'root')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
+    DB_HOST = os.environ.get('DB_HOST', 'localhost')
+    DB_PORT = os.environ.get('DB_PORT', '3306')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -134,18 +142,35 @@ USE_I18N = True
 USE_TZ = True
 
 # Static and Media Files
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS Config
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS Config - Allow all in dev, restrict in production via env
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # Django REST Framework Settings
 REST_FRAMEWORK = {
@@ -168,4 +193,19 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
+}
+
+# Logging for development visibility
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
 }

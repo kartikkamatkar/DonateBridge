@@ -4,21 +4,21 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
 import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Lock, KeyRound, ArrowLeft, Heart, Building, Eye, EyeOff, CheckCircle2, UserCheck } from 'lucide-react';
+import { ShieldCheck, Lock, KeyRound, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
+import { authAPI, getApiError } from '../api/index';
 
-const OTP_EXPIRY_MS = 5 * 60 * 1000;
 const RESEND_COOLDOWN_SEC = 30;
 
 export default function AuthSuite() {
-  const { login, authMessage, clearAuthMessage } = useAuth();
+  const { loginWithTokens, authMessage, clearAuthMessage } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const isRegisterParam = searchParams.get('tab') === 'register';
-  const roleParam = searchParams.get('role'); // 'donor' | 'ngo' | 'admin'
+  const roleParam = searchParams.get('role');
 
   const [isRegister, setIsRegister] = useState(isRegisterParam);
   const [selectedRole, setSelectedRole] = useState(roleParam || 'donor');
@@ -27,12 +27,16 @@ export default function AuthSuite() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [pendingCredentials, setPendingCredentials] = useState(null);
-  const [otpExpiresAt, setOtpExpiresAt] = useState(null);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [pendingCredentials, setPendingCredentials] = useState(null); // for OTP verify
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [otpPreview, setOtpPreview] = useState(''); // shown in dev mode from API response
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetConfirm, setResetConfirm] = useState('');
 
-  const { register, handleSubmit, formState: { errors }, watch } = useForm();
-  const passwordValue = watch('password');
+  const { register, handleSubmit, formState: { errors } } = useForm();
 
   useEffect(() => {
     setIsRegister(isRegisterParam);
@@ -52,28 +56,54 @@ export default function AuthSuite() {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  const onSubmitCredentials = (data) => {
-    setAuthError('');
-    setPendingCredentials(data);
-    setLoading(true);
-
-    // Simulated API authentication call
-    setTimeout(() => {
-      setLoading(false);
-      setStep('otp');
-      setOtpVal(['', '', '', '', '', '']);
-      setOtpExpiresAt(Date.now() + OTP_EXPIRY_MS);
-      setResendCooldown(RESEND_COOLDOWN_SEC);
-      toast.success('A 6-digit verification code has been dispatched to your email.');
-    }, 1000);
+  const redirectAfterLogin = (role) => {
+    if (role === 'admin') navigate('/admin');
+    else if (role === 'ngo') navigate('/ngo');
+    else navigate('/donor');
   };
 
+  // ─── Step 1: Submit Credentials ───
+  const onSubmitCredentials = async (data) => {
+    setAuthError('');
+    setLoading(true);
+
+    try {
+      if (isRegister) {
+        // REGISTER: create account, then send OTP
+        const username = data.name || data.email.split('@')[0];
+        await authAPI.register(username, data.email, data.password, selectedRole);
+        // After register, send OTP for verification
+        const otpRes = await authAPI.sendOTP(data.email);
+        setOtpPreview(otpRes.data?.otp_preview || '');
+        setPendingEmail(data.email);
+        setPendingCredentials(data);
+        setStep('otp');
+        setOtpVal(['', '', '', '', '', '']);
+        setResendCooldown(RESEND_COOLDOWN_SEC);
+        toast.success('Account created! Check your email for the verification code.');
+      } else {
+        // LOGIN: call login API → if successful, go to OTP step
+        await authAPI.sendOTP(data.email);
+        setPendingEmail(data.email);
+        setPendingCredentials(data);
+        setStep('otp');
+        setOtpVal(['', '', '', '', '', '']);
+        setResendCooldown(RESEND_COOLDOWN_SEC);
+        toast.success('A 6-digit verification code has been dispatched to your email.');
+      }
+    } catch (err) {
+      setAuthError(getApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── OTP Handlers ───
   const handleOtpChange = (index, value) => {
     if (isNaN(value)) return;
     const newOtp = [...otpVal];
     newOtp[index] = value.substring(value.length - 1);
     setOtpVal(newOtp);
-
     if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       if (nextInput) nextInput.focus();
@@ -87,73 +117,106 @@ export default function AuthSuite() {
     }
   };
 
-  const handleVerifyOtp = (e) => {
+  // ─── Step 2: Verify OTP → Complete Login ───
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
     const enteredOtp = otpVal.join('');
-
     if (enteredOtp.length !== 6) {
-      setAuthError('Please enter a valid 6-digit OTP.');
-      return;
-    }
-
-    // Accept standard demo OTP: '123456'
-    if (enteredOtp !== '123456') {
-      setAuthError('Invalid verification code. Use preseeded code: 123456');
-      toast.error('Verification code mismatch.');
+      setAuthError('Please enter a valid 6-digit OTP code.');
       return;
     }
 
     setAuthError('');
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      const email = pendingCredentials?.email || `${selectedRole}@donatebridge.org`;
-      const name = pendingCredentials?.name || '';
-      
-      login(selectedRole, email, name, { verificationStatus: 'approved' });
-      
-      if (selectedRole === 'admin') {
-        navigate('/admin');
-      } else if (selectedRole === 'ngo') {
-        navigate('/ngo');
+
+    try {
+      // Verify OTP with backend
+      await authAPI.verifyOTP(pendingEmail, enteredOtp);
+
+      if (isRegister) {
+        // Registration flow: send OTP was just for email verification; now auto-login
+        const loginRes = await authAPI.login(pendingEmail, pendingCredentials.password);
+        const { user, access, refresh } = loginRes.data;
+        loginWithTokens(user, access, refresh);
+        toast.success(`Account verified! Welcome to DonateBridge.`);
+        redirectAfterLogin(user.role);
       } else {
-        navigate('/donor');
+        // Login flow: verify then login
+        const loginRes = await authAPI.login(pendingEmail, pendingCredentials.password);
+        const { user, access, refresh } = loginRes.data;
+        loginWithTokens(user, access, refresh);
+        clearAuthMessage();
+        redirectAfterLogin(user.role);
       }
-    }, 1000);
+    } catch (err) {
+      setAuthError(getApiError(err));
+      toast.error('Verification failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (resendCooldown > 0) return;
     setAuthError('');
-    setOtpVal(['', '', '', '', '', '']);
-    setOtpExpiresAt(Date.now() + OTP_EXPIRY_MS);
-    setResendCooldown(RESEND_COOLDOWN_SEC);
-    toast.success('New 6-digit OTP code has been re-sent.');
+    setLoading(true);
+    try {
+      const res = await authAPI.sendOTP(pendingEmail);
+      setOtpPreview(res.data?.otp_preview || '');
+      setOtpVal(['', '', '', '', '', '']);
+      setResendCooldown(RESEND_COOLDOWN_SEC);
+      toast.success('New OTP code dispatched to your email.');
+    } catch (err) {
+      setAuthError(getApiError(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleForgotPassword = (e) => {
+  // ─── Forgot Password ───
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
+    if (!forgotEmail) { setAuthError('Email is required.'); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast.success('Instructions have been sent to your email.');
+    try {
+      const res = await authAPI.forgotPassword(forgotEmail);
+      setOtpPreview(res.data?.otp_preview || '');
+      toast.success('Password reset code dispatched to your email.');
       setStep('reset');
-    }, 1000);
+    } catch (err) {
+      setAuthError(getApiError(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResetPassword = (e) => {
+  // ─── Reset Password ───
+  const handleResetPassword = async (e) => {
     e.preventDefault();
+    if (resetPassword !== resetConfirm) {
+      setAuthError('Passwords do not match.');
+      return;
+    }
+    if (resetPassword.length < 8) {
+      setAuthError('Password must be at least 8 characters.');
+      return;
+    }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast.success('Password updated successfully.');
+    try {
+      await authAPI.resetPassword(forgotEmail, resetCode, resetPassword);
+      toast.success('Password updated successfully. Please sign in.');
       setStep('credentials');
-    }, 1000);
+      setAuthError('');
+    } catch (err) {
+      setAuthError(getApiError(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] text-slate-900 flex flex-col lg:grid lg:grid-cols-2">
-      {/* Left panel: Info & brand spotlight */}
+      {/* Left panel */}
       <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 bg-white border-r border-border h-full overflow-y-auto">
         <button
           onClick={() => navigate('/')}
@@ -202,12 +265,12 @@ export default function AuthSuite() {
         </p>
       </div>
 
-      {/* Right panel: Wizard auth form */}
+      {/* Right panel: Auth form */}
       <div className="flex-1 h-full overflow-y-auto bg-slate-50 flex flex-col justify-center py-8 px-6 sm:px-12 lg:px-20">
         <div className="w-full max-w-md mx-auto bg-white border border-border rounded-2xl p-6 sm:p-8 shadow-premium-lg">
           <AnimatePresence mode="wait">
-            
-            {/* STEP 1: Credentials Form */}
+
+            {/* STEP 1: Credentials */}
             {step === 'credentials' && (
               <motion.div
                 key="credentials"
@@ -224,7 +287,7 @@ export default function AuthSuite() {
                   <p className="text-xs text-slate-500">
                     {isRegister
                       ? 'Sign up to request or dispatch essential local goods.'
-                      : 'Please sign in with your preseeded role credentials.'}
+                      : 'Sign in with your registered credentials.'}
                   </p>
                   {authMessage && (
                     <p className="text-xs text-red-500 bg-red-50 py-2 px-3 border border-red-100 rounded-lg">
@@ -233,43 +296,22 @@ export default function AuthSuite() {
                   )}
                 </div>
 
-                {/* Role Switch Tabs */}
+                {/* Role Tabs */}
                 <div className="flex p-1 bg-slate-100 rounded-lg border border-border">
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedRole('donor'); clearAuthMessage(); }}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                      selectedRole === 'donor'
-                        ? 'bg-white text-primary shadow-premium-sm font-bold'
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
-                    Donor
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedRole('ngo'); clearAuthMessage(); }}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                      selectedRole === 'ngo'
-                        ? 'bg-white text-primary shadow-premium-sm font-bold'
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
-                    NGO
-                  </button>
-                  {!isRegister && (
+                  {['donor', 'ngo', ...(!isRegister ? ['admin'] : [])].map((role) => (
                     <button
+                      key={role}
                       type="button"
-                      onClick={() => { setSelectedRole('admin'); clearAuthMessage(); }}
-                      className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                        selectedRole === 'admin'
+                      onClick={() => { setSelectedRole(role); clearAuthMessage(); }}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all capitalize ${
+                        selectedRole === role
                           ? 'bg-white text-primary shadow-premium-sm font-bold'
                           : 'text-slate-500 hover:text-slate-700'
                       }`}
                     >
-                      Admin
+                      {role}
                     </button>
-                  )}
+                  ))}
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmitCredentials)} className="space-y-4">
@@ -323,7 +365,7 @@ export default function AuthSuite() {
                     <div className="flex justify-end">
                       <button
                         type="button"
-                        onClick={() => setStep('forgot')}
+                        onClick={() => { setStep('forgot'); setAuthError(''); }}
                         className="text-xs text-primary hover:underline font-semibold"
                       >
                         Forgot password?
@@ -336,7 +378,7 @@ export default function AuthSuite() {
                     className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
                     disabled={loading}
                   >
-                    {isRegister ? 'Submit Registration' : 'Sign In'}
+                    {loading ? 'Processing…' : isRegister ? 'Create Account' : 'Sign In'}
                   </Button>
 
                   {authError && (
@@ -357,7 +399,7 @@ export default function AuthSuite() {
               </motion.div>
             )}
 
-            {/* STEP 2: OTP View */}
+            {/* STEP 2: OTP */}
             {step === 'otp' && (
               <motion.div
                 key="otp"
@@ -373,8 +415,13 @@ export default function AuthSuite() {
                   </div>
                   <h2 className="text-xl font-display font-bold text-ink">Two-Factor OTP Security</h2>
                   <p className="text-xs text-slate-500">
-                    We've emailed a verification OTP code. Use preseeded code <strong className="text-ink">123456</strong> for testing.
+                    We've emailed a 6-digit code to <strong className="text-ink">{pendingEmail}</strong>.
                   </p>
+                  {otpPreview && (
+                    <p className="text-xs text-amber-600 bg-amber-50 py-1.5 px-3 border border-amber-100 rounded-lg font-mono">
+                      🔑 Dev Preview Code: <strong>{otpPreview}</strong>
+                    </p>
+                  )}
                 </div>
 
                 <form onSubmit={handleVerifyOtp} className="space-y-6">
@@ -400,7 +447,7 @@ export default function AuthSuite() {
                       className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
                       disabled={loading}
                     >
-                      Verify Code
+                      {loading ? 'Verifying…' : 'Verify Code'}
                     </Button>
                     <button
                       type="button"
@@ -421,7 +468,7 @@ export default function AuthSuite() {
                   <button
                     type="button"
                     onClick={handleResendOtp}
-                    disabled={resendCooldown > 0}
+                    disabled={resendCooldown > 0 || loading}
                     className="text-primary hover:underline font-bold disabled:opacity-50"
                   >
                     {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
@@ -441,8 +488,8 @@ export default function AuthSuite() {
                 className="space-y-6"
               >
                 <div className="text-center space-y-2">
-                  <h1 className="text-xl font-display font-bold text-ink">Reset Password Instructions</h1>
-                  <p className="text-xs text-slate-500">Provide your registered email and we'll dispatch password reset guidelines.</p>
+                  <h1 className="text-xl font-display font-bold text-ink">Reset Password</h1>
+                  <p className="text-xs text-slate-500">Enter your registered email to receive a reset code.</p>
                 </div>
 
                 <form onSubmit={handleForgotPassword} className="space-y-4">
@@ -451,6 +498,8 @@ export default function AuthSuite() {
                     id="forgot-email"
                     type="email"
                     placeholder="name@organization.org"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
                     required
                   />
 
@@ -459,12 +508,16 @@ export default function AuthSuite() {
                     className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
                     disabled={loading}
                   >
-                    Send Instructions
+                    {loading ? 'Sending…' : 'Send Reset Code'}
                   </Button>
+
+                  {authError && (
+                    <p className="text-xs text-red-500 font-semibold text-center">{authError}</p>
+                  )}
 
                   <button
                     type="button"
-                    onClick={() => setStep('credentials')}
+                    onClick={() => { setStep('credentials'); setAuthError(''); }}
                     className="w-full py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
                   >
                     Back to Sign In
@@ -485,15 +538,31 @@ export default function AuthSuite() {
               >
                 <div className="text-center space-y-2">
                   <h1 className="text-xl font-display font-bold text-ink">Set New Password</h1>
-                  <p className="text-xs text-slate-500">Establish a secure password for your account.</p>
+                  <p className="text-xs text-slate-500">Enter the reset code from your email and a new password.</p>
+                  {otpPreview && (
+                    <p className="text-xs text-amber-600 bg-amber-50 py-1.5 px-3 border border-amber-100 rounded-lg font-mono">
+                      🔑 Dev Reset Code: <strong>{otpPreview}</strong>
+                    </p>
+                  )}
                 </div>
 
                 <form onSubmit={handleResetPassword} className="space-y-4">
+                  <InputField
+                    label="Reset Code (6-digit)"
+                    id="reset-code"
+                    type="text"
+                    placeholder="123456"
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value)}
+                    required
+                  />
                   <InputField
                     label="New Password"
                     id="new-pass"
                     type="password"
                     placeholder="••••••••"
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
                     required
                   />
                   <InputField
@@ -501,6 +570,8 @@ export default function AuthSuite() {
                     id="confirm-new-pass"
                     type="password"
                     placeholder="••••••••"
+                    value={resetConfirm}
+                    onChange={(e) => setResetConfirm(e.target.value)}
                     required
                   />
 
@@ -509,12 +580,16 @@ export default function AuthSuite() {
                     className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
                     disabled={loading}
                   >
-                    Update Password
+                    {loading ? 'Updating…' : 'Update Password'}
                   </Button>
+
+                  {authError && (
+                    <p className="text-xs text-red-500 font-semibold text-center">{authError}</p>
+                  )}
 
                   <button
                     type="button"
-                    onClick={() => setStep('credentials')}
+                    onClick={() => { setStep('credentials'); setAuthError(''); }}
                     className="w-full py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
                   >
                     Cancel

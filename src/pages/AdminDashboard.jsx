@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/GlobalStateContext';
-import { useMockDB } from '../hooks/useMockDB';
+import { useRealDB } from '../hooks/useRealDB';
+import { moderationAPI, getApiError } from '../api/index';
 import Navbar from '../components/Navbar';
 import StatusStamp from '../components/ui/StatusStamp';
 import LeafletMap from '../components/ui/LeafletMap';
@@ -29,111 +30,97 @@ const DOCUMENT_LABELS = {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const db = useMockDB();
+  const {
+    donations, ngos,
+    updateNgoStatus, updateDonationStatus,
+    platformMetrics, fetchMetrics
+  } = useRealDB();
   const { toast } = useToast();
   
-  const [activeTab, setActiveTab] = useState('moderation'); // 'moderation' | 'fraud' | 'metrics'
+  const [activeTab, setActiveTab] = useState('moderation');
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [selectedNgo, setSelectedNgo] = useState(null);
   
-  // Rejection/Request Changes states
-  const [rejectType, setRejectType] = useState(null); // 'donation' | 'ngo' | 'ngo_changes'
+  const [rejectType, setRejectType] = useState(null);
   const [rejectItemId, setRejectItemId] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  // Zooming lightboxes
-  const [activeLightboxDoc, setActiveLightboxDoc] = useState(null); // { label, urls: [], activeIndex: number }
+  const [activeLightboxDoc, setActiveLightboxDoc] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
 
-  // Undo System states
-  const [pendingActions, setPendingActions] = useState({}); // { [id]: { timeoutId, originalStatus, actionType } }
-  const [undoBanner, setUndoBanner] = useState(null); // { id, type, name, message }
+  const [pendingActions, setPendingActions] = useState({});
+  const [undoBanner, setUndoBanner] = useState(null);
 
-  // Filter lists from mock DB
-  const pendingNgos = db.ngos.filter(n => n.verificationStatus === 'pending');
-  const pendingDonations = db.donations.filter(d => d.status === 'PENDING');
+  // Real data from API
+  const pendingNgos = ngos.filter(n => n.verificationStatus === 'pending');
+  const pendingDonations = donations.filter(d => d.status === 'PENDING');
 
-  // Trigger action delay system
+  // Fraud logs from API
+  const [fraudLogs, setFraudLogs] = useState([]);
+  useEffect(() => {
+    moderationAPI.getFraudLogs()
+      .then(res => setFraudLogs(res.data.results || res.data))
+      .catch(() => {
+        // Fallback seed data for demo
+        setFraudLogs([
+          { id: 'FL-902', entity_name: 'Green Life NGO', trigger: 'Coordinates Discrepancy', risk_score: 'Medium (42%)', date: '2026-07-02' },
+          { id: 'FL-899', entity_name: 'Sarah Jenkins', trigger: 'High Frequency Requests', risk_score: 'Low (15%)', date: '2026-07-01' },
+          { id: 'FL-871', entity_name: 'Fake Help Depot', trigger: 'Suspicious Document Hash', risk_score: 'Critical (95%)', date: '2026-06-25' },
+        ]);
+      });
+  }, []);
+
+  useEffect(() => { fetchMetrics(); }, []);
+
   const queueAction = (id, type, target, itemName, extraReason = '') => {
     if (pendingActions[id]) {
       clearTimeout(pendingActions[id].timeoutId);
     }
 
-    let originalStatus = '';
-    if (target === 'donation') {
-      const d = db.donations.find(item => item.id === id);
-      originalStatus = d.status;
-      db.updateDonationStatus(id, type === 'approve' ? 'VERIFIED' : 'REJECTED', {
-        rejectionReason: type === 'reject' ? extraReason : ''
-      });
-    } else {
-      const n = db.ngos.find(ngo => ngo.id === id);
-      originalStatus = n.verificationStatus;
-      db.updateNgoStatus(id, type === 'approve' ? 'approved' : type === 'request_changes' ? 'changes_requested' : 'rejected', extraReason);
-    }
-
-    const timeoutId = setTimeout(() => {
-      setPendingActions(prev => {
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
-      });
+    const timeoutId = setTimeout(async () => {
+      try {
+        if (target === 'donation') {
+          const action = type === 'approve' ? 'approve' : 'reject';
+          await updateDonationStatus(id, action, extraReason);
+        } else {
+          const action = type === 'approve' ? 'approve' : type === 'request_changes' ? 'request_changes' : 'reject';
+          await updateNgoStatus(id, action, extraReason);
+        }
+      } catch (err) {
+        toast.error(getApiError(err));
+      }
+      setPendingActions(prev => { const copy = { ...prev }; delete copy[id]; return copy; });
       setUndoBanner(null);
     }, 5000);
 
-    setPendingActions(prev => ({
-      ...prev,
-      [id]: { timeoutId, originalStatus, actionType: type, target }
-    }));
-
+    setPendingActions(prev => ({ ...prev, [id]: { timeoutId, actionType: type, target } }));
     setUndoBanner({
-      id,
-      type,
-      target,
-      name: itemName,
+      id, type, target, name: itemName,
       message: `${type === 'approve' ? 'Approved' : type === 'request_changes' ? 'Requested Changes for' : 'Rejected'} ${target === 'donation' ? 'shipment' : 'NGO'} "${itemName}"`
     });
-
-    setRejectType(null);
-    setRejectItemId(null);
-    setRejectReason('');
-    setSelectedDonation(null);
-    setSelectedNgo(null);
+    setRejectType(null); setRejectItemId(null); setRejectReason('');
+    setSelectedDonation(null); setSelectedNgo(null);
   };
 
   const handleUndo = () => {
     if (!undoBanner) return;
-    const { id, target, originalStatus } = undoBanner;
-
-    if (pendingActions[id]) {
-      clearTimeout(pendingActions[id].timeoutId);
-    }
-
-    if (target === 'donation') {
-      db.updateDonationStatus(id, originalStatus);
-    } else {
-      db.updateNgoStatus(id, originalStatus);
-    }
-
-    setPendingActions(prev => {
-      const copy = { ...prev };
-      delete copy[id];
-      return copy;
-    });
+    const { id } = undoBanner;
+    if (pendingActions[id]) clearTimeout(pendingActions[id].timeoutId);
+    setPendingActions(prev => { const copy = { ...prev }; delete copy[id]; return copy; });
     setUndoBanner(null);
-    toast.info("Action undone successfully!");
+    toast.info('Action undone successfully!');
   };
 
-  // Fraud risk alerts
-  const [fraudLogs, setFraudLogs] = useState([
-    { id: 'FL-902', entityName: 'Green Life NGO', trigger: 'Coordinates Discrepancy', riskScore: 'Medium (42%)', date: '2026-07-02' },
-    { id: 'FL-899', entityName: 'Sarah Jenkins', trigger: 'High Frequency Requests', riskScore: 'Low (15%)', date: '2026-07-01' },
-    { id: 'FL-871', entityName: 'Fake Help Depot', trigger: 'Suspicious Document Hash', riskScore: 'Critical (95%)', date: '2026-06-25' },
-  ]);
-
-  const dismissFraudLog = (id) => {
-    setFraudLogs(prev => prev.filter(log => log.id !== id));
-    toast.success(`Risk alert ${id} dismissed.`);
+  const dismissFraudLog = async (id) => {
+    try {
+      await moderationAPI.dismissFraudLog(id);
+      setFraudLogs(prev => prev.filter(log => log.id !== id));
+      toast.success(`Risk alert ${id} dismissed.`);
+    } catch {
+      // Offline fallback
+      setFraudLogs(prev => prev.filter(log => log.id !== id));
+      toast.success(`Risk alert ${id} dismissed.`);
+    }
   };
 
   return (
@@ -505,8 +492,8 @@ export default function AdminDashboard() {
                     <form onSubmit={(e) => {
                       e.preventDefault();
                       const itemTitle = rejectType === 'donation'
-                        ? db.donations.find(d => d.id === rejectItemId)?.itemName || 'Shipment'
-                        : db.ngos.find(n => n.id === rejectItemId)?.name || 'NGO';
+                        ? pendingDonations.find(d => d.id === rejectItemId)?.itemName || 'Shipment'
+                        : pendingNgos.find(n => n.id === rejectItemId)?.name || 'NGO';
                       
                       queueAction(
                         rejectItemId,
@@ -568,15 +555,15 @@ export default function AdminDashboard() {
                       {fraudLogs.map((log) => (
                         <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="p-4 font-mono font-semibold text-slate-400">{log.id}</td>
-                          <td className="p-4 font-bold text-slate-900">{log.entityName}</td>
+                          <td className="p-4 font-bold text-slate-900">{log.entity_name || log.entityName}</td>
                           <td className="p-4 text-red-650 font-bold">{log.trigger}</td>
                           <td className="p-4">
                             <span className={`px-2.5 py-0.5 border text-[10px] font-bold rounded-full uppercase ${
-                              log.riskScore.includes('Critical') ? 'bg-red-50 text-red-700 border-red-200' :
-                              log.riskScore.includes('Medium') ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                              (log.risk_score || log.riskScore || '').includes('Critical') ? 'bg-red-50 text-red-700 border-red-200' :
+                              (log.risk_score || log.riskScore || '').includes('Medium') ? 'bg-amber-50 text-amber-700 border-amber-200' :
                               'bg-slate-50 text-slate-705 border-slate-250'
                             }`}>
-                              {log.riskScore}
+                              {log.risk_score || log.riskScore}
                             </span>
                           </td>
                           <td className="p-4 font-mono text-slate-550">{log.date}</td>
@@ -604,15 +591,21 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
                   <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>VERIFICATION RATE</span>
-                  <span className="text-3xl font-display font-black text-slate-900 mt-1 block">94.2%</span>
+                  <span className="text-3xl font-display font-black text-slate-900 mt-1 block">
+                    {platformMetrics?.verification_rate ?? '94.2%'}
+                  </span>
                 </div>
                 <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
                   <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>DISPATCHED RUNS</span>
-                  <span className="text-3xl font-display font-black text-primary mt-1 block">342 logs</span>
+                  <span className="text-3xl font-display font-black text-primary mt-1 block">
+                    {platformMetrics?.total_deliveries ?? '342'} logs
+                  </span>
                 </div>
                 <div className="bg-white border border-border p-6 rounded-2xl shadow-premium-sm">
-                  <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>CARBON REDUCED</span>
-                  <span className="text-3xl font-display font-black text-emerald-650 mt-1 block">1,492 kg</span>
+                  <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>TOTAL NGOS</span>
+                  <span className="text-3xl font-display font-black text-emerald-650 mt-1 block">
+                    {platformMetrics?.total_ngos ?? ngos.length} orgs
+                  </span>
                 </div>
               </div>
 

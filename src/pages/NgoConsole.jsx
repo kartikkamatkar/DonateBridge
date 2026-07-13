@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
-import { useMockDB } from '../hooks/useMockDB';
+import { useRealDB } from '../hooks/useRealDB';
+import { getApiError } from '../api/index';
 import Navbar from '../components/Navbar';
 import DonationCard from '../components/ui/DonationCard';
 import { Button } from '../components/ui/Button';
@@ -31,11 +32,17 @@ const CATEGORY_DATA = [
 
 export default function NgoConsole() {
   const { user } = useAuth();
-  const db = useMockDB();
+  const {
+    myNgo, needs, donations,
+    addNeed, deleteNeed, claimDonation,
+    getSmartMatchesForNgo
+  } = useRealDB();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('matches'); // 'matches' | 'needs' | 'geo' | 'analytics'
+  const [activeTab, setActiveTab] = useState('matches');
+  const [smartMatches, setSmartMatches] = useState([]);
+  const [loadingMatches, setLoadingMatches] = useState(false);
 
   // Need posting form states
   const [needCategory, setNeedCategory] = useState('Clothing');
@@ -44,56 +51,77 @@ export default function NgoConsole() {
   const [needUrgency, setNeedUrgency] = useState('Medium');
   const [needDescription, setNeedDescription] = useState('');
 
-  // Active NGO Hub Info
-  const currentNgo = db.ngos.find(n => n.email === (user?.email || 'ngo@donatebridge.org')) || db.ngos[0];
 
-  // Dynamic Matches
-  const rawMatches = db.getSmartMatchesForNgo(currentNgo.id);
-  
-  // Needs registered by this NGO
-  const ngoNeeds = db.needs.filter(n => n.ngoId === currentNgo.id);
+  // Active NGO Hub Info (from real API)
+  const currentNgo = myNgo || {
+    id: null, name: user?.name || 'NGO', lat: 12.9716, lng: 77.5946,
+    trustScore: 70, responseTime: '--', successRate: '--',
+    verificationStatus: user?.verificationStatus || 'pending',
+    rejectionReason: user?.rejectionReason || ''
+  };
 
-  // Pickups/Matched items in transit
-  const activeIncoming = db.donations.filter(d => d.matchedNgoId === currentNgo.id && d.status === 'MATCHED');
-
-  // Inventory stats
-  const deliveredDonations = db.donations.filter(d => d.matchedNgoId === currentNgo.id && d.status === 'DELIVERED');
+  // NGO-specific data
+  const ngoNeeds = needs.filter(n => n.ngoId === currentNgo.id);
+  const activeIncoming = donations.filter(d => String(d.matchedNgoId) === String(currentNgo.id) && d.status === 'MATCHED');
+  const deliveredDonations = donations.filter(d => String(d.matchedNgoId) === String(currentNgo.id) && d.status === 'DELIVERED');
   const totalReceived = deliveredDonations.reduce((acc, curr) => acc + curr.quantity, 0);
   const totalInTransit = activeIncoming.reduce((acc, curr) => acc + curr.quantity, 0);
   const activeNeedsCount = ngoNeeds.length;
 
-  const handlePostNeed = (e) => {
+  // Fetch smart matches when NGO is approved
+  useEffect(() => {
+    if (currentNgo?.verificationStatus === 'approved') {
+      setLoadingMatches(true);
+      getSmartMatchesForNgo().then(matches => {
+        setSmartMatches(matches);
+      }).finally(() => setLoadingMatches(false));
+    }
+  }, [currentNgo?.id]);
+
+  const handlePostNeed = async (e) => {
     e.preventDefault();
-    db.addNeed({
-      ngoId: currentNgo.id,
-      ngoName: currentNgo.name,
-      category: needCategory,
-      item: needItem,
-      quantity: parseInt(needQty),
-      urgency: needUrgency,
-      description: needDescription,
-      lat: currentNgo.lat,
-      lng: currentNgo.lng
-    });
-
-    setNeedItem('');
-    setNeedQty('');
-    setNeedDescription('');
-    toast.success('Need broadcasted successfully!');
-    setActiveTab('needs');
+    try {
+      await addNeed({
+        category: needCategory,
+        item: needItem,
+        quantity: parseInt(needQty),
+        urgency: needUrgency,
+        description: needDescription,
+        lat: currentNgo.lat || 0,
+        lng: currentNgo.lng || 0,
+      });
+      setNeedItem('');
+      setNeedQty('');
+      setNeedDescription('');
+      toast.success('Need broadcasted successfully!');
+      setActiveTab('needs');
+    } catch (err) {
+      toast.error(getApiError(err));
+    }
   };
 
-  const handleClaimDonation = (donationId, score) => {
-    db.executeMatch(donationId, currentNgo.id, score);
-    toast.success('Logistics match claimed! Shipment scheduled.');
+  const handleClaimDonation = async (donationId, score) => {
+    try {
+      await claimDonation(donationId);
+      // Refresh smart matches
+      const matches = await getSmartMatchesForNgo();
+      setSmartMatches(matches);
+      toast.success('Logistics match claimed! Shipment scheduled.');
+    } catch (err) {
+      toast.error(getApiError(err));
+    }
   };
 
-  const handleDeleteNeed = (id) => {
-    db.deleteNeed(id);
-    toast.success('Need broadcast deleted.');
+  const handleDeleteNeed = async (id) => {
+    try {
+      await deleteNeed(id);
+      toast.success('Need broadcast deleted.');
+    } catch (err) {
+      toast.error(getApiError(err));
+    }
   };
 
-  const verStatus = currentNgo?.verificationStatus || 'approved';
+  const verStatus = currentNgo?.verificationStatus || 'pending';
 
   if (verStatus === 'rejected') {
     return (
@@ -236,7 +264,7 @@ export default function NgoConsole() {
             }`}
             style={{ fontSize: '15px' }}
           >
-            Smart Matches ({rawMatches.length})
+            Smart Matches ({smartMatches.length})
           </button>
           <button
             onClick={() => setActiveTab('needs')}
@@ -294,7 +322,9 @@ export default function NgoConsole() {
               </div>
             )}
 
-            {verStatus === 'approved' && rawMatches.length === 0 ? (
+              {loadingMatches ? (
+                <div className="bg-white border border-border p-12 rounded-2xl text-center text-slate-500 shadow-premium-sm">Loading smart matches…</div>
+              ) : verStatus === 'approved' && smartMatches.length === 0 ? (
               <div className="bg-white border border-border rounded-2xl p-12 text-center space-y-4 shadow-premium-sm">
                 <Package className="w-12 h-12 text-slate-350 mx-auto" />
                 <h3 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>No matches recommended yet</h3>
@@ -305,7 +335,7 @@ export default function NgoConsole() {
               </div>
             ) : verStatus === 'approved' && (
               <div className="grid grid-cols-1 gap-6">
-                {rawMatches.map(({ donation, need, scoreBreakdown }) => (
+                {smartMatches.map(({ donation, need, scoreBreakdown }) => (
                   <DonationCard
                     key={donation.id}
                     donation={donation}

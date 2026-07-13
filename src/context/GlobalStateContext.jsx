@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useToast } from '../components/ui/Toast';
@@ -8,32 +8,25 @@ const ThemeContext = createContext();
 const AuthContext = createContext();
 const SocketContext = createContext();
 
-// Create configured axios instance
+// ─────────────────────────────────────────────
+// Configured Axios Instance
+// ─────────────────────────────────────────────
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://api.donatebridge.org/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-const TOKEN_TTL_MS = 60 * 60 * 1000;
-
-const getNgoVerificationSnapshot = (email) => {
-  const raw = localStorage.getItem('ngoVerificationMap');
-  const map = raw ? JSON.parse(raw) : {};
-  const row = map[email] || {};
-  return {
-    status: row.status || 'approved',
-    rejectionReason: row.rejectionReason || '',
-  };
-};
-
+// ─────────────────────────────────────────────
+// GlobalStateProvider
+// ─────────────────────────────────────────────
 export const GlobalStateProvider = ({ children }) => {
   const { toast } = useToast();
-  // --- THEME CONTEXT STATE ---
+
+  // --- THEME ---
   const theme = 'light';
   const toggleTheme = () => {};
-
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('dark');
@@ -41,84 +34,93 @@ export const GlobalStateProvider = ({ children }) => {
     localStorage.setItem('theme', 'light');
   }, []);
 
-  // --- AUTH CONTEXT STATE ---
+  // --- AUTH STATE ---
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null; // e.g., { name: 'Sarah Jenkins', email: 'sarah@donor.org', role: 'donor' }
+    return saved ? JSON.parse(saved) : null;
   });
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  const [refreshToken, setRefreshToken] = useState(() => localStorage.getItem('refreshToken') || null);
   const [authMessage, setAuthMessage] = useState(() => localStorage.getItem('authMessage') || '');
 
-  const clearAuthMessage = () => {
+  const clearAuthMessage = useCallback(() => {
     setAuthMessage('');
     localStorage.removeItem('authMessage');
-  };
+  }, []);
 
-  const setSessionExpired = () => {
+  const setSessionExpired = useCallback(() => {
     const msg = 'Session expired. Please sign in again.';
     setAuthMessage(msg);
     localStorage.setItem('authMessage', msg);
     setUser(null);
     setToken(null);
+    setRefreshToken(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    localStorage.removeItem('tokenExpiresAt');
+    localStorage.removeItem('refreshToken');
     toast.error(msg);
-  };
+  }, [toast]);
 
-  const login = (role, email, name = '', options = {}) => {
-    const fallbackName = role === 'admin' ? 'Super Admin' : role === 'ngo' ? 'Hope Foundation' : 'Sarah Jenkins';
-    const ngoStatus = role === 'ngo'
-      ? (options.verificationStatus || getNgoVerificationSnapshot(email || `${role}@donatebridge.org`).status)
-      : null;
-    const ngoReason = role === 'ngo'
-      ? (options.rejectionReason || getNgoVerificationSnapshot(email || `${role}@donatebridge.org`).rejectionReason)
-      : '';
-    const mockUser = {
-      name: name || fallbackName,
-      email: email || `${role}@donatebridge.org`,
-      role: role, // 'donor', 'ngo', 'admin'
-      avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${name || role}`,
-      trustScore: role === 'ngo' ? 98 : null,
-      verificationStatus: ngoStatus,
-      rejectionReason: ngoReason,
+  /**
+   * loginWithTokens - Called after successful API login/register.
+   * Stores user and tokens; attaches Bearer header to future requests.
+   */
+  const loginWithTokens = useCallback((userData, accessToken, refreshTkn, ngoDetails = null) => {
+    const userToStore = {
+      id: userData.id,
+      name: userData.username || userData.name || userData.email,
+      email: userData.email,
+      role: userData.role,
+      avatar: userData.avatar || '👤',
+      verificationStatus: ngoDetails?.verification_status || null,
+      rejectionReason: ngoDetails?.rejection_reason || '',
+      trustScore: ngoDetails?.trust_score || null,
+      ngoId: ngoDetails?.id || null,
     };
-    const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ';
-    const expiresAt = Date.now() + TOKEN_TTL_MS;
-    
     clearAuthMessage();
-    setUser(mockUser);
-    setToken(mockToken);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('token', mockToken);
-    localStorage.setItem('tokenExpiresAt', String(expiresAt));
-    toast.success(`Logged in as ${mockUser.name}`);
-  };
+    setUser(userToStore);
+    setToken(accessToken);
+    setRefreshToken(refreshTkn);
+    localStorage.setItem('user', JSON.stringify(userToStore));
+    localStorage.setItem('token', accessToken);
+    localStorage.setItem('refreshToken', refreshTkn);
+    toast.success(`Welcome back, ${userToStore.name}!`);
+  }, [clearAuthMessage, toast]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    setRefreshToken(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    localStorage.removeItem('tokenExpiresAt');
+    localStorage.removeItem('refreshToken');
     toast.info('Signed out successfully.');
-  };
+  }, [toast]);
 
-  useEffect(() => {
-    const checkSessionExpiry = () => {
-      const expiresAtRaw = localStorage.getItem('tokenExpiresAt');
-      const expiresAt = expiresAtRaw ? Number(expiresAtRaw) : null;
-      if (token && expiresAt && Date.now() >= expiresAt) {
-        setSessionExpired();
-      }
-    };
+  /**
+   * refreshUserData - Re-fetch /api/users/me/ and update localStorage.
+   * Called after profile updates or NGO registration to sync latest data.
+   */
+  const refreshUserData = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await api.get('/api/users/me/', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const updatedUser = {
+        ...user,
+        name: res.data.username || user?.name,
+        email: res.data.email,
+        avatar: res.data.avatar,
+      };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch {
+      // Silently fail — non-critical
+    }
+  }, [token, user]);
 
-    checkSessionExpiry();
-    const timer = setInterval(checkSessionExpiry, 30000);
-    return () => clearInterval(timer);
-  }, [token]);
-
-  // Axios Request & Response Interceptors
+  // ─── Axios interceptors (attach JWT, handle 401 refresh) ───
   useEffect(() => {
     const requestInterceptor = api.interceptors.request.use(
       (config) => {
@@ -134,18 +136,31 @@ export const GlobalStateProvider = ({ children }) => {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
+
+        // Attempt silent token refresh on 401
+        if (error.response?.status === 401 && !originalRequest._retry && refreshToken) {
           originalRequest._retry = true;
-          // Simulate JWT refreshing token
-          console.log('[Axios Interceptor] Simulating 401 JWT Refresh Token...');
-          const newMockToken = 'refreshed-jwt-token-xyz';
-          const newExpiresAt = Date.now() + TOKEN_TTL_MS;
-          setToken(newMockToken);
-          localStorage.setItem('token', newMockToken);
-          localStorage.setItem('tokenExpiresAt', String(newExpiresAt));
-          originalRequest.headers['Authorization'] = `Bearer ${newMockToken}`;
-          return api(originalRequest);
+          try {
+            const refreshRes = await axios.post(
+              `${api.defaults.baseURL}/api/auth/refresh/`,
+              { refresh: refreshToken }
+            );
+            const newAccess = refreshRes.data.access;
+            const newRefresh = refreshRes.data.refresh || refreshToken;
+
+            setToken(newAccess);
+            setRefreshToken(newRefresh);
+            localStorage.setItem('token', newAccess);
+            localStorage.setItem('refreshToken', newRefresh);
+
+            originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
+            return api(originalRequest);
+          } catch {
+            setSessionExpired();
+            return Promise.reject(error);
+          }
         }
+
         if (error.response?.status === 401) {
           setSessionExpired();
         }
@@ -157,67 +172,69 @@ export const GlobalStateProvider = ({ children }) => {
       api.interceptors.request.eject(requestInterceptor);
       api.interceptors.response.eject(responseInterceptor);
     };
+  }, [token, refreshToken, setSessionExpired]);
+
+  // --- SOCKET + NOTIFICATIONS ---
+  const [socket, setSocket] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+
+  // Fetch real notifications from API when user is logged in
+  useEffect(() => {
+    if (!token) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+    api.get('/api/notifications/')
+      .then((res) => {
+        const data = res.data.results || res.data;
+        const mapped = data.map((n) => ({
+          id: n.id,
+          type: n.notification_type,
+          message: n.message,
+          title: n.title,
+          time: new Date(n.created_at).toLocaleString(),
+          read: n.is_read,
+        }));
+        setNotifications(mapped);
+        setUnreadCount(mapped.filter((n) => !n.read).length);
+      })
+      .catch(() => {
+        // Silently fail - user may be offline
+      });
   }, [token]);
 
-  // --- SOCKET CONTEXT STATE (WebSocket Matrix) ---
-  const [socket, setSocket] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(3);
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'delivery', message: 'Courier has picked up Clothes batch #1042', time: '10m ago', read: false },
-    { id: 2, type: 'match', message: 'Hope Foundation accepted your school books request!', time: '2h ago', read: false },
-    { id: 3, type: 'system', message: 'Your donor account verification completed.', time: '1d ago', read: false },
-  ]);
-
+  // Attempt Socket.IO connection for real-time updates
   useEffect(() => {
-    // Attempt real websocket connection (fails gracefully if no server)
-    const socketInstance = io(import.meta.env.VITE_WS_URL || 'http://localhost:5000', {
+    const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:8000';
+    const socketInstance = io(wsUrl, {
       autoConnect: false,
       reconnectionAttempts: 3,
+      timeout: 5000,
     });
-    
     socketInstance.connect();
     Promise.resolve().then(() => setSocket(socketInstance));
 
-    // Simulated event triggers for visualization purposes
-    const interval = setInterval(() => {
-      if (Math.random() > 0.7) {
-        const mockMsgs = [
-          'New notification: Matching route optimized!',
-          'NGO requested updates on electronics dimensions.',
-          'Milestone achieved: Blankets delivered to Rescue Mission.',
-        ];
-        const newMsg = mockMsgs[Math.floor(Math.random() * mockMsgs.length)];
-        
-        setNotifications(prev => [
-          {
-            id: Date.now(),
-            type: 'system',
-            message: newMsg,
-            time: 'Just now',
-            read: false
-          },
-          ...prev
-        ]);
-        setUnreadCount(prev => prev + 1);
-        toast.info(newMsg);
-      }
-    }, 45000); // Trigger occasionally for preview
-
     return () => {
       socketInstance.disconnect();
-      clearInterval(interval);
     };
-  }, [toast]);
+  }, []);
 
-  const markAllRead = () => {
+  const markAllRead = useCallback(async () => {
+    try {
+      await api.post('/api/notifications/mark-all-read/');
+    } catch {
+      // Offline fallback
+    }
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
-  };
+  }, []);
 
-  const addNotification = (n) => {
-    setNotifications(prev => [n, ...prev]);
-    setUnreadCount(prev => prev + 1);
-  };
+  const addNotification = useCallback((n) => {
+    setNotifications((prev) => [n, ...prev]);
+    setUnreadCount((prev) => prev + 1);
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
@@ -226,14 +243,18 @@ export const GlobalStateProvider = ({ children }) => {
           user,
           setUser,
           token,
+          refreshToken,
           isAuthenticated: !!token,
-          login,
+          loginWithTokens,
           logout,
           authMessage,
           clearAuthMessage,
+          refreshUserData,
         }}
       >
-        <SocketContext.Provider value={{ socket, unreadCount, notifications, markAllRead, addNotification, setNotifications }}>
+        <SocketContext.Provider
+          value={{ socket, unreadCount, notifications, markAllRead, addNotification, setNotifications, setUnreadCount }}
+        >
           {children}
         </SocketContext.Provider>
       </AuthContext.Provider>
@@ -241,7 +262,7 @@ export const GlobalStateProvider = ({ children }) => {
   );
 };
 
-// Custom hooks for easy consumption
+// Custom hooks
 export const useTheme = () => useContext(ThemeContext);
 export const useAuth = () => useContext(AuthContext);
 export const useSocket = () => useContext(SocketContext);

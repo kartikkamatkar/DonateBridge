@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/GlobalStateContext';
-import { useMockDB } from '../hooks/useMockDB';
+import { useRealDB } from '../hooks/useRealDB';
+import { authAPI, getApiError } from '../api/index';
 import Navbar from '../components/Navbar';
 import DonationCard from '../components/ui/DonationCard';
 import { Button } from '../components/ui/Button';
@@ -15,7 +16,7 @@ const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
 
 export default function DonorDashboard() {
   const { user } = useAuth();
-  const db = useMockDB();
+  const { myDonations, addDonation, fetchMyDonations } = useRealDB();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'submit' | 'history' | 'impact'
   
@@ -40,8 +41,8 @@ export default function DonorDashboard() {
   const certificateRef = useRef(null);
   const [activeReceiptDonation, setActiveReceiptDonation] = useState(null);
 
-  // Filter donor specific donations
-  const donorDonations = db.donations.filter(d => d.donorEmail === (user?.email || 'donor@donatebridge.org'));
+  // Filter donor specific donations from real API
+  const donorDonations = myDonations;
 
   // Stats calculation
   const totalDonated = donorDonations.reduce((acc, curr) => acc + curr.quantity, 0);
@@ -90,54 +91,54 @@ export default function DonorDashboard() {
     }
   };
 
-  const handlePhotoUpload = (e) => {
+  const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotos(prev => [...prev, reader.result]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const simulateCloudinaryUpload = () => {
-    const samples = [
-      'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400',
-      'https://images.unsplash.com/photo-1574634534894-89d7576c8259?w=400',
-      'https://images.unsplash.com/photo-1517842645767-c639042777db?w=400'
-    ];
-    const pick = samples[Math.floor(Math.random() * samples.length)];
-    setPhotos(prev => [...prev, pick]);
+    for (const file of files) {
+      try {
+        const res = await authAPI.uploadFile(file);
+        setPhotos(prev => [...prev, res.data.url]);
+        toast.success('Photo uploaded successfully.');
+      } catch (err) {
+        // Fallback: use local preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhotos(prev => [...prev, reader.result]);
+        };
+        reader.readAsDataURL(file);
+        toast.info('Using local photo preview (upload failed).');
+      }
+    }
   };
 
   const removePhoto = (index) => {
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmitDonation = (e) => {
+  const handleSubmitDonation = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
-      const newDnt = db.addDonation({
+    try {
+      const newDnt = await addDonation({
         itemName,
-        donorName: user?.name || 'Sarah Jenkins',
-        donorEmail: user?.email || 'donor@donatebridge.org',
         category,
         condition,
         quantity: parseInt(quantity),
         description,
-        photos: photos.length > 0 ? photos : ['https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400'],
-        location
+        photos,
+        location,
+        preferredPickupTime: 'Flexible',
       });
       setItemName('');
       setDescription('');
       setPhotos([]);
       setQuantity(1);
       setSubmissionSuccess(newDnt);
+      toast.success('Donation submitted successfully! Pending admin review.');
+    } catch (err) {
+      toast.error(getApiError(err));
+    } finally {
       setIsSubmitting(false);
-      toast.success('Donation submitted successfully!');
-    }, 1000);
+    }
   };
 
   const downloadReceipt = () => {
@@ -489,11 +490,11 @@ export default function DonorDashboard() {
 
                       <button
                         type="button"
-                        onClick={simulateCloudinaryUpload}
+                        onClick={() => setPhotos(prev => [...prev, 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400'])}
                         className="aspect-square border border-slate-200 hover:bg-slate-50 rounded-xl flex flex-col items-center justify-center p-3 text-center cursor-pointer font-semibold"
                       >
                         <Sparkles className="w-6 h-6 text-primary mb-1" />
-                        <span style={{ fontSize: '11px' }}>Simulate Add</span>
+                        <span style={{ fontSize: '11px' }}>Add Sample</span>
                       </button>
                     </div>
                   </div>
