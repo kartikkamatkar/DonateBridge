@@ -207,6 +207,8 @@ export const GlobalStateProvider = ({ children }) => {
 
   // Attempt Socket.IO connection for real-time updates
   useEffect(() => {
+    // Disabled since backend does not use WebSockets/Channels right now
+    /*
     const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:8000';
     const socketInstance = io(wsUrl, {
       autoConnect: false,
@@ -219,6 +221,7 @@ export const GlobalStateProvider = ({ children }) => {
     return () => {
       socketInstance.disconnect();
     };
+    */
   }, []);
 
   const markAllRead = useCallback(async () => {

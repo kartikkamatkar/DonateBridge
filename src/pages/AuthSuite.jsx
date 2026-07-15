@@ -69,9 +69,10 @@ export default function AuthSuite() {
 
     try {
       if (isRegister) {
-        // REGISTER: create account, then send OTP
-        const username = data.name || data.email.split('@')[0];
-        await authAPI.register(username, data.email, data.password, selectedRole);
+        // Django username allows only letters, numbers, and @/./+/-/_
+        const rawUsername = data.name || data.email.split('@')[0];
+        const cleanUsername = rawUsername.replace(/[^a-zA-Z0-9@.+-_]/g, '') + Math.floor(Math.random() * 10000);
+        await authAPI.register(cleanUsername, data.email, data.password, selectedRole);
         // After register, send OTP for verification
         const otpRes = await authAPI.sendOTP(data.email);
         setOtpPreview(otpRes.data?.otp_preview || '');

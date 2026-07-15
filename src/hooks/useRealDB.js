@@ -8,9 +8,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { donationAPI, ngoAPI, moderationAPI, getApiError } from '../api/index';
 import { useToast } from '../components/ui/Toast';
+import { useAuth } from '../context/GlobalStateContext';
 
 export function useRealDB() {
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
 
   // ─── Donations ───────────────────────────────────
   const [donations, setDonations] = useState([]);
@@ -31,6 +33,7 @@ export function useRealDB() {
   }, []);
 
   const fetchMyDonations = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await donationAPI.getMyDonations();
       const data = res.data.results || res.data;
@@ -38,12 +41,12 @@ export function useRealDB() {
     } catch (err) {
       console.warn('[useRealDB] fetchMyDonations failed:', getApiError(err));
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchDonations();
     fetchMyDonations();
-  }, []);
+  }, [fetchDonations, fetchMyDonations]);
 
   const addDonation = useCallback(async (donationData) => {
     try {
@@ -100,18 +103,19 @@ export function useRealDB() {
   }, []);
 
   const fetchMyNgo = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await ngoAPI.getMe();
       setMyNgo(normalizeNgo(res.data));
     } catch {
       // User may not have an NGO registered
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchNgos();
     fetchMyNgo();
-  }, []);
+  }, [fetchNgos, fetchMyNgo]);
 
   const registerNgo = useCallback(async (ngoData) => {
     try {

@@ -7,7 +7,7 @@ import { InputField } from '../components/ui/InputField';
 import { useToast } from '../components/ui/Toast';
 import LeafletMap from '../components/ui/LeafletMap';
 
-const MAP_CENTER = [12.9716, 77.5946];
+const MAP_CENTER = [21.1458, 79.0882];
 
 export default function Contact() {
   const { toast } = useToast();
@@ -20,7 +20,10 @@ export default function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success('Your message has been sent successfully! Our support team will reach out shortly.');
+    const existingData = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+    existingData.push({ ...formData, id: Date.now(), date: new Date().toISOString() });
+    localStorage.setItem('contactMessages', JSON.stringify(existingData));
+    toast.success('Your general feedback has been saved successfully!');
     setFormData({ name: '', email: '', role: 'donor', message: '' });
   };
 
@@ -31,7 +34,7 @@ export default function Contact() {
       popupContent: (
         <div>
           <strong className="text-primary font-bold">DonateBridge HQ</strong>
-          <p className="text-slate-500 text-[10px] mt-0.5">MG Road, Bengaluru</p>
+          <p className="text-slate-500 text-[10px] mt-0.5">Lokmanya Nagar, Hingna</p>
         </div>
       )
     }
@@ -73,7 +76,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-bold text-slate-800" style={{ fontSize: '15px' }}>Email Us</p>
-                    <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>support@donatebridge.org</p>
+                    <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>anglepriya2405@gmail.com</p>
+                    <p className="text-slate-400 text-xs mt-0.5">24/may/2005</p>
                   </div>
                 </div>
 
@@ -94,8 +98,8 @@ export default function Contact() {
                   <div>
                     <p className="font-bold text-slate-800" style={{ fontSize: '15px' }}>Our Office</p>
                     <p className="text-slate-500 mt-1 leading-relaxed" style={{ fontSize: '14px' }}>
-                      MG Road Central Office Hub,<br />
-                      Sector 4, Bengaluru, Karnataka
+                      Lokmanya Nagar,Hingna Nagpur,<br />
+                      Maharashtra
                     </p>
                   </div>
                 </div>
@@ -117,7 +121,7 @@ export default function Contact() {
           {/* Contact Form */}
           <div className="lg:col-span-7 bg-white border border-border p-8 rounded-2xl shadow-premium-sm">
             <h3 className="font-display font-bold text-slate-900 mb-6" style={{ fontSize: '18px' }}>
-              Send us a Message
+              General Feedback
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -163,7 +167,7 @@ export default function Contact() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-slate-700 block">Message Details</label>
+                <label className="text-sm font-semibold text-slate-700 block">General Feedback</label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
@@ -177,7 +181,7 @@ export default function Contact() {
 
               <div className="pt-4 border-t border-slate-100">
                 <Button type="submit" variant="primary" className="w-full" icon={Send}>
-                  Send Message
+                  Submit Feedback
                 </Button>
               </div>
             </form>
