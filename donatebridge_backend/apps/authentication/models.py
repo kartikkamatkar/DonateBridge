@@ -29,7 +29,7 @@ class Profile(models.Model):
         return f"Profile of {self.user.email}"
 
 class OTPVerification(models.Model):
-    email = models.EmailField()
+    email = models.EmailField(db_index=True)
     code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()

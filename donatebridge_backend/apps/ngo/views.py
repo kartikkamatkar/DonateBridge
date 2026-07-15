@@ -58,7 +58,7 @@ class NGOListView(generics.ListAPIView):
     permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
-        queryset = NGO.objects.filter(verification_status='approved')
+        queryset = NGO.objects.prefetch_related('documents', 'reviews', 'needs').filter(verification_status='approved')
         
         category = self.request.query_params.get('category')
         if category:
@@ -97,7 +97,7 @@ class NGOListView(generics.ListAPIView):
         return queryset
 
 class NGODetailsView(generics.RetrieveAPIView):
-    queryset = NGO.objects.all()
+    queryset = NGO.objects.prefetch_related('documents', 'reviews', 'needs').all()
     serializer_class = NGODetailsSerializer
     permission_classes = (permissions.AllowAny,)
 
@@ -110,7 +110,7 @@ class NGODetailsCurrentUserView(generics.RetrieveAPIView):
         if not hasattr(self.request.user, 'ngo_details'):
             from rest_framework.exceptions import NotFound
             raise NotFound("No NGO profile found for this user.")
-        return self.request.user.ngo_details
+        return NGO.objects.prefetch_related('documents', 'reviews', 'needs').get(user=self.request.user)
 
 class NGOCreateReviewView(generics.CreateAPIView):
     serializer_class = NGOReviewSerializer

@@ -310,7 +310,7 @@ export default function NgoConsole() {
                 <p className="text-slate-500 mt-0.5" style={{ fontSize: '13px' }}>Matching nearby verified donor dispatches with your active demand configurations.</p>
               </div>
               <span className="font-mono bg-primary text-white px-3 py-1 rounded-xl font-bold uppercase tracking-wider" style={{ fontSize: '11px' }}>
-                {rawMatches.length} Matches Found
+                {smartMatches.length} Matches Found
               </span>
             </div>
 
