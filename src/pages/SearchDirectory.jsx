@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRealDB } from '../hooks/useRealDB';
-import { getDistanceInKm, calculateMatchScore } from '../hooks/useMockDB';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import { getDistanceInKm, calculateMatchScore } from '../utils/geo';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import LeafletMap from '../components/ui/LeafletMap';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../context/GlobalStateContext';

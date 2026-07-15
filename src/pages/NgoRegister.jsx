@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ui/Toast';
 import { ngoAPI, authAPI, getApiError } from '../api/index';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import LeafletMap from '../components/ui/LeafletMap';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';

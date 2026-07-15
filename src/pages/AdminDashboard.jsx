@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/GlobalStateContext';
 import { useRealDB } from '../hooks/useRealDB';
 import { moderationAPI, getApiError } from '../api/index';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import StatusStamp from '../components/ui/StatusStamp';
 import LeafletMap from '../components/ui/LeafletMap';
 import { Button } from '../components/ui/Button';

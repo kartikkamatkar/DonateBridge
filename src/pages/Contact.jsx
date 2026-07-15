@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';

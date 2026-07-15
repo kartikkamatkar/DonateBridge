@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 
 PROJECT_CONTEXT.md
+
+# Backend
+__pycache__/
+*.pyc
+donatebridge_backend/.env
+donatebridge_backend/media/uploads/
+donatebridge_backend/db.sqlite3
+donatebridge_backend/.venv/
+eslint_report.txt

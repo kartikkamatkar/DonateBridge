@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import { ShieldCheck, Heart, Users, Target, HelpCircle, Code, ChevronDown, ChevronUp, Sparkles, Sprout } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';

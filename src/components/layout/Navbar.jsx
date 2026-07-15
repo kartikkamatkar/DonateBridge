@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth, useSocket } from '../context/GlobalStateContext';
+import { useAuth, useSocket } from '../../context/GlobalStateContext';
 import { Menu, X, Bell, MessageSquare, User, Settings, LogOut, ChevronDown } from 'lucide-react';
-import { Button } from './ui/Button';
-import Logo from './Logo';
+import { Button } from '../ui/Button';
+import Logo from '../Logo';
 
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();

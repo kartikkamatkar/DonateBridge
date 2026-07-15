@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 
 import {
   Chart as ChartJS,

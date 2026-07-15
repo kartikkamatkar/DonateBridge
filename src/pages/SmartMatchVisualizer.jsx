@@ -7,7 +7,7 @@ import {
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import LeafletMap from '../components/ui/LeafletMap';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 
 export default function SmartMatchVisualizer() {
   const navigate = useNavigate();

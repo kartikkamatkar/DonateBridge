@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Logo from './Logo';
-import { Button } from './ui/Button';
-import { useToast } from './ui/Toast';
+import Logo from '../Logo';
+import { Button } from '../ui/Button';
+import { useToast } from '../ui/Toast';
 import { Mail, Globe, ShieldCheck, Users, Heart } from 'lucide-react';
 
 export default function Footer() {
