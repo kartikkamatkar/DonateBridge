@@ -115,33 +115,34 @@ export default function About() {
           <h3 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>Initiative Founders</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
             <div className="p-6 border border-border bg-white rounded-2xl shadow-premium-sm text-center space-y-3">
               <div className="w-16 h-16 rounded-full bg-emerald-50 text-primary flex items-center justify-center font-bold text-lg mx-auto border border-emerald-100">
-                KK
+                AR
               </div>
               <div>
-                <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>Kartik Kamatkar</h4>
-                <p className="text-slate-400" style={{ fontSize: '13px' }}>Lead Architect</p>
+                <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>Ayushi Rai</h4>
+                {/* <p className="text-slate-400" style={{ fontSize: '13px' }}>Core Team</p> */}
               </div>
             </div>
 
             <div className="p-6 border border-border bg-white rounded-2xl shadow-premium-sm text-center space-y-3">
               <div className="w-16 h-16 rounded-full bg-emerald-50 text-primary flex items-center justify-center font-bold text-lg mx-auto border border-emerald-100">
-                AS
+                PS
               </div>
               <div>
-                <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>Aditya S.</h4>
-                <p className="text-slate-400" style={{ fontSize: '13px' }}>Logistics Coordinator</p>
+                <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>Priyanshi Shah</h4>
+                {/* <p className="text-slate-400" style={{ fontSize: '13px' }}>Core Team</p> */}
               </div>
             </div>
 
             <div className="p-6 border border-border bg-white rounded-2xl shadow-premium-sm text-center space-y-3">
               <div className="w-16 h-16 rounded-full bg-emerald-50 text-primary flex items-center justify-center font-bold text-lg mx-auto border border-emerald-100">
-                RN
+                KY
               </div>
               <div>
-                <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>Rohit N.</h4>
-                <p className="text-slate-400" style={{ fontSize: '13px' }}>Operations Lead</p>
+                <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>Karishma Yadav</h4>
+                {/* <p className="text-slate-400" style={{ fontSize: '13px' }}>Core Team</p> */}
               </div>
             </div>
           </div>
