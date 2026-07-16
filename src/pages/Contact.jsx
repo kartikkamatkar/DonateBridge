@@ -77,7 +77,7 @@ export default function Contact() {
                   <div>
                     <p className="font-bold text-slate-800" style={{ fontSize: '15px' }}>Email Us</p>
                     <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>anglepriya2405@gmail.com</p>
-                    <p className="text-slate-400 text-xs mt-0.5">24/may/2005</p>
+              
                   </div>
                 </div>
 

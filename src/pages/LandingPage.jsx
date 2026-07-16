@@ -310,7 +310,7 @@ export default function LandingPage() {
           {/* Top Headline and Wide Search Bar (Centered, no cramp/overlaps) */}
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" /> Official National Humanitarian Match Ledger
+              <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" /> National Humanitarian Match Ledger
             </span>
             <h1 className="text-4xl lg:text-6xl font-display font-extrabold text-slate-900 leading-tight tracking-tight">
               Bridging Donors &amp; NGOs <br />
@@ -1107,15 +1107,15 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {[
               {
-                quote: "DonateBridge turned our chaotic blankets logistics timeline into a predictable, automated process. We coordinate requirements, and local donor matches handle dispatch within 24 hours.",
+                quote: "The donation process was simple and transparent. The admin verification process increased confidence.",
                 author: "Elena Rostova",
-                role: "Logistics Director, Hope Foundation",
+                role: "Sample Donor Testimonial",
                 avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100"
               },
               {
-                quote: "The direct chat matching and automated 80G tax certificates make physical CSR supply matching a breeze. We know exactly which municipal clinic received our gloves and monitors.",
+                quote: "Our NGO received school supplies quickly. The tracking feature made the process trustworthy.",
                 author: "Marcus Chen",
-                role: "CSR Manager, Apex Corp",
+                role: "Sample NGO Testimonial",
                 avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100"
               }
             ].map((t, idx) => (
