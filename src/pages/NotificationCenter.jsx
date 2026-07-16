@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSocket } from '../context/GlobalStateContext';
 import { Bell, ShieldAlert, Truck, Check, Trash2, CheckSquare, MailOpen, Info, ShieldCheck, Cpu } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 
 export default function NotificationCenter() {
   const { notifications, unreadCount, markAllRead, setNotifications } = useSocket();

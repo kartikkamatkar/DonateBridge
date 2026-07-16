@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Truck, MapPin, CheckCircle, Package, ArrowLeft, Calendar, ShieldCheck, RefreshCw, Navigation } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { logisticsAPI, getApiError } from '../api/index';

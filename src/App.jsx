@@ -1,31 +1,31 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/GlobalStateContext';
 
-// Import All Master Screens
-import LandingPage from './pages/LandingPage';
-import AuthSuite from './pages/AuthSuite';
-import DonorDashboard from './pages/DonorDashboard';
-import NgoConsole from './pages/NgoConsole';
-import AdminDashboard from './pages/AdminDashboard';
-import SearchDirectory from './pages/SearchDirectory';
-import NgoProfile from './pages/NgoProfile';
-import RequestWizard from './pages/RequestWizard';
-import SmartMatchVisualizer from './pages/SmartMatchVisualizer';
-import ChatTerminal from './pages/ChatTerminal';
-import LogisticsTracking from './pages/LogisticsTracking';
-import ImpactAnalytics from './pages/ImpactAnalytics';
-import NotificationCenter from './pages/NotificationCenter';
-import UserProfile from './pages/UserProfile';
-import SettingsTerminal from './pages/SettingsTerminal';
+// Lazy Load All Master Screens
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const AuthSuite = lazy(() => import('./pages/AuthSuite'));
+const DonorDashboard = lazy(() => import('./pages/DonorDashboard'));
+const NgoConsole = lazy(() => import('./pages/NgoConsole'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const SearchDirectory = lazy(() => import('./pages/SearchDirectory'));
+const NgoProfile = lazy(() => import('./pages/NgoProfile'));
+const RequestWizard = lazy(() => import('./pages/RequestWizard'));
+const SmartMatchVisualizer = lazy(() => import('./pages/SmartMatchVisualizer'));
+const ChatTerminal = lazy(() => import('./pages/ChatTerminal'));
+const LogisticsTracking = lazy(() => import('./pages/LogisticsTracking'));
+const ImpactAnalytics = lazy(() => import('./pages/ImpactAnalytics'));
+const NotificationCenter = lazy(() => import('./pages/NotificationCenter'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
+const SettingsTerminal = lazy(() => import('./pages/SettingsTerminal'));
 
-// New Informational Pages
-import Bridge from './pages/Bridge';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import BrandIdentity from './pages/BrandIdentity';
-import NotFound from './pages/NotFound';
-import NgoRegister from './pages/NgoRegister';
+// Lazy Load Informational Pages
+const Bridge = lazy(() => import('./pages/Bridge'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const BrandIdentity = lazy(() => import('./pages/BrandIdentity'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const NgoRegister = lazy(() => import('./pages/NgoRegister'));
 
 // Role-Based Access Control Route Guard
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -47,7 +47,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+          <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+        </div>
+      }>
+        <Routes>
         {/* Screen 1: Landing Page */}
         <Route path="/" element={<LandingPage />} />
 
@@ -166,7 +171,8 @@ export default function App() {
 
         {/* Custom 404 Wildcard Page */}
         <Route path="*" element={<NotFound />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

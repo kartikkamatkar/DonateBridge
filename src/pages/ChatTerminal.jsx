@@ -6,7 +6,7 @@ import {
   Sparkles, AlertCircle, Paperclip, Image, MapPin, Eye, X, Info, Truck, Calendar, ShoppingBag
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { chatAPI, getApiError } from '../api/index';
 import { useAuth } from '../context/GlobalStateContext';
 
@@ -101,7 +101,7 @@ export default function ChatTerminal() {
     handleSendMessage(typedMessage.trim());
   };
 
-  // Mock Attachments
+  // Quick attachment shortcuts
   const sendMockImage = () => {
     const images = [
       'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400',

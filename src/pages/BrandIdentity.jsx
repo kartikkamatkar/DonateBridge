@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import Logo from '../components/Logo';
 import { Copy, ShieldCheck, ArrowRight, Download, Info } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';

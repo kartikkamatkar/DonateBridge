@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/GlobalStateContext';
 import { useRealDB } from '../hooks/useRealDB';
 import { authAPI, getApiError } from '../api/index';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import DonationCard from '../components/ui/DonationCard';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
@@ -16,7 +16,7 @@ const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
 
 export default function DonorDashboard() {
   const { user } = useAuth();
-  const { myDonations, addDonation, fetchMyDonations } = useRealDB();
+  const { myDonations, addDonation, fetchMyDonations, needs, ngos } = useRealDB();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'submit' | 'history' | 'impact'
   
@@ -50,12 +50,21 @@ export default function DonorDashboard() {
   const estimatedPeopleHelped = totalDelivered * 3;
   const carbonSavedKg = totalDelivered * 4.5;
 
-  // Mock NGO urgent demands feed data
-  const [urgentDemands] = useState([
-    { id: 'DMD-101', ngo: 'Hope Foundation', item: 'Winter Blankets', qty: 30, urgency: 'Critical', dist: '1.2 km away' },
-    { id: 'DMD-102', ngo: 'Red Cross Depot', item: 'First-Aid Kits', qty: 15, urgency: 'High', dist: '2.5 km away' },
-    { id: 'DMD-103', ngo: 'Green Earth NGO', item: 'Science Textbooks', qty: 50, urgency: 'Medium', dist: '4.1 km away' },
-  ]);
+  // NGO urgent demands feed — derived from real needs API
+  const urgentNeeds = needs
+    .filter(n => n.urgency === 'High' || n.urgency === 'Medium')
+    .slice(0, 5)
+    .map(n => {
+      const ngo = ngos.find(o => String(o.id) === String(n.ngoId));
+      return {
+        id: n.id,
+        ngo: ngo?.name || 'NGO Partner',
+        item: n.item || n.category,
+        qty: n.quantity,
+        urgency: n.urgency,
+        category: n.category,
+      };
+    });
 
   // Handle address geocoding search
   const handleAddressSearch = async () => {
@@ -157,13 +166,9 @@ export default function DonorDashboard() {
 
   const fulfillDemand = (demand) => {
     setItemName(`${demand.qty}x ${demand.item} for ${demand.ngo}`);
-    if (CATEGORIES.includes(demand.item.split(' ')[1] || 'Clothing')) {
-      setCategory(demand.item.split(' ')[1]);
-    } else {
-      setCategory('Clothing');
-    }
+    setCategory(CATEGORIES.includes(demand.category) ? demand.category : 'Clothing');
     setQuantity(demand.qty);
-    setDescription(`Direct demand fulfillment claim for ${demand.ngo}. Item requirements match NGO specifications.`);
+    setDescription(`Direct demand fulfillment for ${demand.ngo}. Item requirements match NGO specifications.`);
     setActiveTab('submit');
     toast.info(`Auto-filled submit form for ${demand.ngo}'s request.`);
   };
@@ -328,7 +333,7 @@ export default function DonorDashboard() {
                   </div>
 
                   <div className="space-y-3">
-                    {urgentDemands.map((demand) => (
+                {urgentNeeds.map((demand) => (
                       <div
                         key={demand.id}
                         className="bg-white border border-border p-5 rounded-2xl shadow-premium-sm space-y-3.5 hover:border-red-200 transition-all"
@@ -339,7 +344,7 @@ export default function DonorDashboard() {
                               {demand.urgency} Urgency
                             </span>
                             <h4 className="font-bold text-slate-905 mt-2" style={{ fontSize: '15px' }}>{demand.item} Required</h4>
-                            <p className="text-slate-550 mt-0.5" style={{ fontSize: '13px' }}>{demand.ngo} &bull; {demand.dist}</p>
+                            <p className="text-slate-550 mt-0.5" style={{ fontSize: '13px' }}>{demand.ngo}</p>
                           </div>
                           <span className="font-mono font-bold text-slate-900 text-right" style={{ fontSize: '16px' }}>{demand.qty}x</span>
                         </div>

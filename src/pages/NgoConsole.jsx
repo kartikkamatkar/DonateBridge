@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
 import { useRealDB } from '../hooks/useRealDB';
 import { getApiError } from '../api/index';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import DonationCard from '../components/ui/DonationCard';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';

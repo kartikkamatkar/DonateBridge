@@ -5,7 +5,7 @@ import { useToast } from '../components/ui/Toast';
 import { Download, ShieldCheck, Lock, Mail, Star, Heart, Leaf, Check, Calendar, Activity, Sparkles, Award } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { authAPI, getApiError } from '../api/index';
 
 export default function UserProfile() {

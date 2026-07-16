@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
 import { Settings, Sun, Eye, Bell, Lock, ToggleLeft, ToggleRight, Check, ShieldCheck, Cpu, Database, Wifi } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 
 export default function SettingsTerminal() {
   const { user } = useAuth();

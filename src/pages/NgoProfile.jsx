@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, ShieldCheck, Star, Send } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { ngoAPI, getApiError } from '../api/index';
 import { useToast } from '../components/ui/Toast';
 
