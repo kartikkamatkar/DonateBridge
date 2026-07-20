@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Startup Palette */
+  --color-primary: #2E7D32;
+  --color-primary-hover: #1b5e20;
+  --color-secondary: #43A047;
+  --color-accent: #4CAF50;
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-ink: #111827;
+  --color-ink-muted: #6B7280;
+  --color-border: #E5E7EB;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  /* Font Families */
+  --font-sans: 'Inter', 'Geist', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Poppins', 'Manrope', var(--font-sans);
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Consolas, monospace;
+
+  /* Spacing Scale (8pt grid) */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 24px;
+  --spacing-6: 32px;
+  --spacing-7: 48px;
+  --spacing-8: 64px;
+  --spacing-9: 96px;
+
+  /* Shadow scale */
+  --shadow-premium-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-premium-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-premium-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-premium-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+/* Custom premium styles */
+.saas-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-5);
+  box-shadow: var(--shadow-premium-sm);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.saas-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-md);
+  border-color: rgba(46, 125, 50, 0.2);
+}
+
+.db-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  box-shadow: var(--shadow-premium-sm);
+  transition: all 0.2s ease-in-out;
+}
+
+.db-card:hover {
+  box-shadow: var(--shadow-premium-md);
+  border-color: rgba(46, 125, 50, 0.2);
+}
+
+/* Accessibility settings */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-primary) !important;
+  outline-offset: 2px;
+}
+
+/* Animations */
+.animate-fadeInUp {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+}
+
+/* Leaflet maps global customization */
+.leaflet-container {
+  font-family: var(--font-sans);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-premium-md);
+  border: 1px solid var(--color-border);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-premium-lg) !important;
+  border: 1px solid var(--color-border) !important;
+  padding: 0px !important;
+}
+.leaflet-popup-content {
+  margin: 12px !important;
+  line-height: 1.4 !important;
+}
+.leaflet-bar {
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-premium-sm) !important;
+  border-radius: var(--radius-sm) !important;
+}
+.leaflet-bar a {
+  background-color: var(--color-surface) !important;
+  color: var(--color-ink) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+.leaflet-bar a:hover {
+  background-color: var(--color-bg) !important;
+}
+
+/* Global Sizing & Typography Overrides */
+h1, .page-title {
+  font-size: 36px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em;
+}
+
+h2, .section-heading {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+h3, .card-title {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+
+p, span, div, li, td, .text-normal {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.text-normal-lg {
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+/* Button & Input Sizing (48px Heights & 16px Font Sizes) */
+input, select, textarea, .input-tall {
+  font-size: 16px !important;
+  min-height: 48px !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+input[type="range"] {
+  min-height: auto !important;
+  height: auto !important;
+  background: transparent !important;
+}
+
+button, .btn-tall {
+  font-size: 16px !important;
+  min-height: 48px !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+table, th, td {
+  font-size: 16px !important;
+}
+
+/* Increase card spacings */
+.grid-gap-large {
+  gap: 24px !important;
+}
+
+.saas-card {
+  padding: 28px !important;
+  margin-bottom: 24px;
+}
+

@@ -1,35 +1,24 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Frontend
+client/node_modules/
+client/dist/
+client/dist-ssr/
+client/*.local
 
-node_modules
-dist
-dist-ssr
-*.local
+# Backend
+server/__pycache__/
+server/*.pyc
+server/.env
+server/media/uploads/
+server/db.sqlite3
+server/.venv/
 
-# Editor directories and files
+# Editor / System directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-PROJECT_CONTEXT.md
-
-# Backend
-__pycache__/
-*.pyc
-donatebridge_backend/.env
-donatebridge_backend/media/uploads/
-donatebridge_backend/db.sqlite3
-donatebridge_backend/.venv/
-eslint_report.txt
