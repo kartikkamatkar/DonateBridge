@@ -107,8 +107,10 @@ export function useRealDB() {
     try {
       const res = await ngoAPI.getMe();
       setMyNgo(normalizeNgo(res.data));
-    } catch {
-      // User may not have an NGO registered
+    } catch (err) {
+      if (err.response?.status === 404) {
+        setMyNgo(false); // Indicates user has no NGO profile yet
+      }
     }
   }, [isAuthenticated]);
 

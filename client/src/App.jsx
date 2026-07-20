@@ -60,7 +60,14 @@ export default function App() {
         <Route path="/auth" element={<AuthSuite />} />
 
         {/* New NGO Registration Wizard */}
-        <Route path="/ngo-register" element={<NgoRegister />} />
+        <Route 
+          path="/ngo-register" 
+          element={
+            <ProtectedRoute allowedRoles={['ngo']}>
+              <NgoRegister />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Screen 6: Discover Directory */}
         <Route path="/discover" element={<SearchDirectory />} />

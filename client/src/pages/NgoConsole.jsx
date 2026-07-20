@@ -52,7 +52,14 @@ export default function NgoConsole() {
  const [needDescription, setNeedDescription] = useState('');
 
 
- // Active NGO Hub Info (from real API)
+ useEffect(() => {
+    if (myNgo === false) {
+      toast.error('Please complete your NGO profile registration first.');
+      navigate('/ngo-register');
+    }
+  }, [myNgo, navigate, toast]);
+
+  // Active NGO Hub Info (from real API)
  const currentNgo = myNgo || {
   id: null, name: user?.name || 'NGO', lat: 12.9716, lng: 77.5946,
   trustScore: 70, responseTime: '--', successRate: '--',

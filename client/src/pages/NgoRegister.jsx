@@ -13,17 +13,7 @@ import {
 } from 'lucide-react';
 
 const DOCUMENT_SLOTS = [
- { key: 'govRegCert', label: 'Government Registration Certificate' },
- { key: 'panCard', label: 'PAN Card Copy' },
- { key: 'trustRegCert', label: 'Trust Registration Certificate' },
- { key: 'doc80G', label: '80G Exemption Certificate' },
- { key: 'doc12A', label: '12A Registration Certificate' },
- { key: 'logo', label: 'NGO Logo Brand' },
- { key: 'officePhoto', label: 'Registered Office Photo' },
- { key: 'authPersonPhoto', label: 'Authorized Person Photo' },
- { key: 'addressProof', label: 'Office Address Proof' },
- { key: 'idProof', label: 'Authorized Person ID Proof' },
- { key: 'verificationLetter', label: 'Verification Request Letter' },
+ { key: 'govRegCert', label: 'Government Registration Certificate (Required)' }
 ];
 
 export default function NgoRegister() {
@@ -72,24 +62,14 @@ export default function NgoRegister() {
   }
  }, []);
 
- const handleNextStep = async () => {
-  let fieldsToValidate = [];
-  if (step === 1) {
-   fieldsToValidate = [
-    'name', 'registrationNumber', 'govRegistrationNumber', 'ngoType',
-    'operatingSince', 'volunteersCount', 'description', 'mission', 'workingAreas'
-   ];
-  } else if (step === 2) {
-   fieldsToValidate = ['email', 'phone', 'website', 'address', 'state', 'district', 'city', 'pinCode'];
-  }
-
-  const isValid = await trigger(fieldsToValidate);
-  if (isValid) {
-   setStep(prev => prev + 1);
-  } else {
-   toast.error('Please resolve validation errors before continuing.');
-  }
- };
+  const handleNextStep = async () => {
+   const isValid = await trigger(['name', 'phone', 'address']);
+   if (isValid) {
+    setStep(3); // Skip straight to documents step
+   } else {
+    toast.error('Please resolve validation errors before continuing.');
+   }
+  };
 
  const handleMapClick = (latlng) => {
   setSelectedCoords({ lat: latlng.lat, lng: latlng.lng });
@@ -168,21 +148,21 @@ export default function NgoRegister() {
 
    const payload = {
     name: data.name,
-    registration_number: data.registrationNumber,
-    gov_registration_number: data.govRegistrationNumber,
-    ngo_type: data.ngoType,
+    registration_number: data.registrationNumber || 'N/A',
+    gov_registration_number: data.govRegistrationNumber || 'N/A',
+    ngo_type: data.ngoType || 'Trust',
     phone: data.phone,
-    website: data.website,
-    state: data.state,
-    district: data.district,
-    city: data.city,
-    pin_code: data.pinCode,
+    website: data.website || '',
+    state: data.state || 'Karnataka',
+    district: data.district || 'Bengaluru Urban',
+    city: data.city || 'Bengaluru',
+    pin_code: data.pinCode || '560000',
     address: data.address,
-    description: data.description,
-    mission: data.mission,
-    working_areas: data.workingAreas,
-    operating_since: data.operatingSince,
-    volunteers_count: parseInt(data.volunteersCount),
+    description: data.description || 'Verified fast-track NGO.',
+    mission: data.mission || 'To serve the community quickly.',
+    working_areas: data.workingAreas || 'General Relief',
+    operating_since: data.operatingSince || '2023',
+    volunteers_count: parseInt(data.volunteersCount) || 10,
     lat: selectedCoords.lat,
     lng: selectedCoords.lng,
     documents: uploadedDocUrls,
@@ -217,22 +197,16 @@ export default function NgoRegister() {
      </p>
     </section>
 
-    {/* Wizard step progress */}
     {step < 4 && (
-     <div className="db-card flex justify-between items-center text-xs">
+     <div className="db-card flex justify-between items-center text-xs max-w-md mx-auto">
       <div className="flex items-center gap-2">
        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 1 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>1</span>
-       <span className={step === 1 ? 'font-bold text-slate-900' : 'text-slate-500'}>Organization Info</span>
+       <span className={step === 1 ? 'font-bold text-slate-900' : 'text-slate-500'}>Basic Info</span>
       </div>
       <span className="h-[1px] bg-border flex-1 mx-4"></span>
       <div className="flex items-center gap-2">
-       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 2 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
-       <span className={step === 2 ? 'font-bold text-slate-900' : 'text-slate-500'}>Address & Map Picker</span>
-      </div>
-      <span className="h-[1px] bg-border flex-1 mx-4"></span>
-      <div className="flex items-center gap-2">
-       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 3 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>3</span>
-       <span className={step === 3 ? 'font-bold text-slate-900' : 'text-slate-500'}>Document Filings</span>
+       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 3 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
+       <span className={step === 3 ? 'font-bold text-slate-900' : 'text-slate-500'}>Upload Document</span>
       </div>
      </div>
     )}
@@ -243,10 +217,9 @@ export default function NgoRegister() {
      {step === 1 && (
       <div className="space-y-6">
        <div>
-        <h3 className="text-xl font-bold text-slate-900">Step 1: Organizational Information</h3>
-        <p className="text-xs text-slate-500 mt-1">Provide regulatory registry credentials and mission outlines.</p>
+        <h3 className="text-xl font-bold text-slate-900">Step 1: Basic Information</h3>
+        <p className="text-xs text-slate-500 mt-1">Provide your organization name and address.</p>
        </div>
-
        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <InputField
          label="NGO Name"
@@ -255,117 +228,6 @@ export default function NgoRegister() {
          error={errors.name}
          {...register('name', { required: 'NGO Legal Name is required' })}
         />
-        
-        <div className="space-y-1">
-         <label className="text-xs font-semibold text-slate-700 block">NGO Type</label>
-         <select
-          id="ngoType"
-          {...register('ngoType', { required: 'Type is required' })}
-          className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none h-12"
-         >
-          <option value="Trust">Trust</option>
-          <option value="Society">Society</option>
-          <option value="Section 8 Company">Section 8 Company</option>
-          <option value="Other">Other</option>
-         </select>
-        </div>
-
-        <InputField
-         label="Tax Registration Number"
-         id="registrationNumber"
-         placeholder="e.g. PAN-8987-B"
-         error={errors.registrationNumber}
-         {...register('registrationNumber', { required: 'Tax registry ID is required' })}
-        />
-
-        <InputField
-         label="Government Reg Number"
-         id="govRegistrationNumber"
-         placeholder="e.g. CSR-GOV-9021"
-         error={errors.govRegistrationNumber}
-         {...register('govRegistrationNumber', { required: 'Gov Reg number is required' })}
-        />
-
-        <InputField
-         label="Operating Since (Year)"
-         id="operatingSince"
-         type="number"
-         placeholder="e.g. 2015"
-         error={errors.operatingSince}
-         {...register('operatingSince', { required: 'Start year is required' })}
-        />
-
-        <InputField
-         label="Number of Active Volunteers"
-         id="volunteersCount"
-         type="number"
-         placeholder="e.g. 25"
-         error={errors.volunteersCount}
-         {...register('volunteersCount', { required: 'Volunteer count is required' })}
-        />
-       </div>
-
-       <div className="space-y-4">
-        <div className="space-y-1">
-         <label className="text-xs font-semibold text-slate-700 block">Mission Statement</label>
-         <textarea
-          id="mission"
-          rows="2"
-          placeholder="Provide a short overview of organizational core purpose..."
-          {...register('mission', { required: 'Mission is required' })}
-          className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-[80px]"
-         />
-         {errors.mission && <p className="text-[10px] text-red-500">{errors.mission.message}</p>}
-        </div>
-
-        <div className="space-y-1">
-         <label className="text-xs font-semibold text-slate-700 block">Working Areas (Comma-separated)</label>
-         <InputField
-          id="workingAreas"
-          placeholder="e.g. Education, Food Security, Healthcare, Clean Water"
-          error={errors.workingAreas}
-          {...register('workingAreas', { required: 'Working areas are required' })}
-         />
-        </div>
-
-        <div className="space-y-1">
-         <label className="text-xs font-semibold text-slate-700 block">Organization Description</label>
-         <textarea
-          id="description"
-          rows="3"
-          placeholder="Describe your active community drives and relief programs..."
-          {...register('description', { required: 'Description is required' })}
-          className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-[100px]"
-         />
-         {errors.description && <p className="text-[10px] text-red-500">{errors.description.message}</p>}
-        </div>
-       </div>
-
-       <div className="pt-4 border-t border-border flex justify-end">
-        <Button type="button" variant="primary" onClick={handleNextStep} icon={ArrowRight}>
-         Continue to Address
-        </Button>
-       </div>
-      </div>
-     )}
-
-     {step === 2 && (
-      <div className="space-y-6">
-       <div>
-        <h3 className="text-xl font-bold text-slate-900">Step 2: Address & Location Coordinator Pin</h3>
-        <p className="text-xs text-slate-500 mt-1">Point exact headquarters coordinate coordinates via Leaflet OpenStreetMap.</p>
-       </div>
-
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <InputField
-         label="Official Email Address"
-         id="email"
-         type="email"
-         placeholder="contact@organisation.org"
-         error={errors.email}
-         {...register('email', { required: 'Official email is required' })}
-        />
-        
         <InputField
          label="Phone Number"
          id="phone"
@@ -373,48 +235,7 @@ export default function NgoRegister() {
          error={errors.phone}
          {...register('phone', { required: 'Contact phone is required' })}
         />
-
-        <InputField
-         label="Website Link"
-         id="website"
-         placeholder="https://www.organisation.org"
-         error={errors.website}
-         {...register('website')}
-        />
-
-        <InputField
-         label="PIN Code"
-         id="pinCode"
-         placeholder="e.g. 560001"
-         error={errors.pinCode}
-         {...register('pinCode', { required: 'Postal PIN is required' })}
-        />
-
-        <InputField
-         label="State"
-         id="state"
-         placeholder="Karnataka"
-         error={errors.state}
-         {...register('state', { required: 'State is required' })}
-        />
-
-        <InputField
-         label="District"
-         id="district"
-         placeholder="Bengaluru Urban"
-         error={errors.district}
-         {...register('district', { required: 'District is required' })}
-        />
-
-        <InputField
-         label="City"
-         id="city"
-         placeholder="Bengaluru"
-         error={errors.city}
-         {...register('city', { required: 'City is required' })}
-        />
        </div>
-
        <div className="space-y-1">
         <label className="text-xs font-semibold text-slate-700 block">Street Address Details</label>
         <textarea
@@ -426,7 +247,6 @@ export default function NgoRegister() {
         />
         {errors.address && <p className="text-[10px] text-red-500">{errors.address.message}</p>}
        </div>
-
        {/* Map Coordinator Picker */}
        <div className="space-y-2">
         <div className="flex justify-between items-center text-xs">
@@ -443,13 +263,9 @@ export default function NgoRegister() {
         </div>
         <p className="text-[10px] text-slate-400">Click anywhere on the map above to select the coordinates of your NGO facility.</p>
        </div>
-
-       <div className="pt-4 border-t border-border flex justify-between">
-        <Button type="button" variant="secondary" onClick={() => setStep(1)} icon={ArrowLeft}>
-         Back
-        </Button>
+       <div className="pt-4 border-t border-border flex justify-end">
         <Button type="button" variant="primary" onClick={handleNextStep} icon={ArrowRight}>
-         Continue to Documents
+         Continue to Document
         </Button>
        </div>
       </div>
@@ -559,7 +375,7 @@ export default function NgoRegister() {
         </div>
 
         <div className="pt-4 border-t border-border flex justify-between">
-         <Button type="button" variant="secondary" onClick={() => setStep(2)} icon={ArrowLeft}>
+         <Button type="button" variant="secondary" onClick={() => setStep(1)} icon={ArrowLeft}>
           Back
          </Button>
          <Button type="submit" variant="primary" icon={CheckCircle} loading={isSubmitting}>

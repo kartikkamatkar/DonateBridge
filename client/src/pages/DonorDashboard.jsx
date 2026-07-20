@@ -147,8 +147,12 @@ export default function DonorDashboard() {
  };
 
  const handleSubmitDonation = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+   e.preventDefault();
+   if (!location.lat || !location.lng || location.lat === 0) {
+      toast.error('Please wait for location to load or manually pick an address on the map.');
+      return;
+   }
+   setIsSubmitting(true);
   try {
    const newDnt = await addDonation({
     itemName,
@@ -167,8 +171,8 @@ export default function DonorDashboard() {
    setSubmissionSuccess(newDnt);
    toast.success('Donation submitted successfully! Pending admin review.');
   } catch (err) {
-   toast.error(getApiError(err));
-  } finally {
+    toast.error(err.response?.data ? JSON.stringify(err.response.data) : getApiError(err));
+   } finally {
    setIsSubmitting(false);
   }
  };

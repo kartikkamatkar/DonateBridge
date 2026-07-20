@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
 
@@ -46,12 +46,12 @@ export const ToastProvider = ({ children }) => {
   }, []);
 
   // Helpers for direct triggers
-  const toast = {
+  const toast = useMemo(() => ({
     success: (msg, dur) => showToast(msg, 'success', dur),
     error: (msg, dur) => showToast(msg, 'error', dur),
     warning: (msg, dur) => showToast(msg, 'warning', dur),
     info: (msg, dur) => showToast(msg, 'info', dur),
-  };
+  }), [showToast]);
 
   return (
     <ToastContext.Provider value={{ showToast, toast }}>

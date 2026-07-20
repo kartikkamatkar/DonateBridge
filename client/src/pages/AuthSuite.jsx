@@ -45,12 +45,6 @@ export default function AuthSuite() {
     setIsRegister(isRegisterParam);
   }, [isRegisterParam]);
 
-  useEffect(() => {
-    if (isRegister && selectedRole === 'ngo') {
-      navigate('/ngo-register');
-    }
-  }, [isRegister, selectedRole, navigate]);
-
   // Resend Timer countdown
   useEffect(() => {
     let interval;

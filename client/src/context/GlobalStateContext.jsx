@@ -18,6 +18,8 @@ export const api = axios.create({
   },
 });
 
+let refreshPromise = null;
+
 // ─────────────────────────────────────────────
 // GlobalStateProvider
 // ─────────────────────────────────────────────
@@ -124,8 +126,9 @@ export const GlobalStateProvider = ({ children }) => {
   useEffect(() => {
     const requestInterceptor = api.interceptors.request.use(
       (config) => {
-        if (token) {
-          config.headers['Authorization'] = `Bearer ${token}`;
+        const liveToken = localStorage.getItem('token');
+        if (liveToken) {
+          config.headers['Authorization'] = `Bearer ${liveToken}`;
         }
         return config;
       },
@@ -136,34 +139,45 @@ export const GlobalStateProvider = ({ children }) => {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
+        const liveRefreshToken = localStorage.getItem('refreshToken');
 
-        // Attempt silent token refresh on 401
-        if (error.response?.status === 401 && !originalRequest._retry && refreshToken) {
+        if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          try {
-            const refreshRes = await axios.post(
-              `${api.defaults.baseURL}/api/auth/refresh/`,
-              { refresh: refreshToken }
-            );
-            const newAccess = refreshRes.data.access;
-            const newRefresh = refreshRes.data.refresh || refreshToken;
-
-            setToken(newAccess);
-            setRefreshToken(newRefresh);
-            localStorage.setItem('token', newAccess);
-            localStorage.setItem('refreshToken', newRefresh);
-
-            originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
-            return api(originalRequest);
-          } catch {
+          
+          if (!liveRefreshToken) {
             setSessionExpired();
             return Promise.reject(error);
           }
+
+          try {
+            if (!refreshPromise) {
+              refreshPromise = axios.post(
+                `${api.defaults.baseURL}/api/auth/refresh/`,
+                { refresh: liveRefreshToken }
+              ).then((res) => {
+                const newAccess = res.data.access;
+                const newRefresh = res.data.refresh || liveRefreshToken;
+                
+                localStorage.setItem('token', newAccess);
+                localStorage.setItem('refreshToken', newRefresh);
+                setToken(newAccess);
+                setRefreshToken(newRefresh);
+                
+                return newAccess;
+              }).finally(() => {
+                refreshPromise = null;
+              });
+            }
+
+            const newAccess = await refreshPromise;
+            originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
+            return api(originalRequest);
+          } catch (refreshError) {
+            setSessionExpired();
+            return Promise.reject(refreshError);
+          }
         }
 
-        if (error.response?.status === 401) {
-          setSessionExpired();
-        }
         return Promise.reject(error);
       }
     );
@@ -172,7 +186,7 @@ export const GlobalStateProvider = ({ children }) => {
       api.interceptors.request.eject(requestInterceptor);
       api.interceptors.response.eject(responseInterceptor);
     };
-  }, [token, refreshToken, setSessionExpired]);
+  }, [setSessionExpired]);
 
   // --- SOCKET + NOTIFICATIONS ---
   const [socket, setSocket] = useState(null);
