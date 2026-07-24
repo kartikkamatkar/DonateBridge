@@ -1,6 +1,6 @@
 # DonateBridge
 
-DonateBridge is a full-stack platform designed to facilitate transparent, accountable, and geographically-optimized donations between individual donors and vetted Non-Governmental Organizations (NGOs).
+DonateBridge is a full-stack platform designed to facilitate transparent, accountable, and geographically-optimized donations between individual donors and vetted Non-Governmental Organizations (NGOs)..
 
 The project is structured into a monorepo containing a Django REST framework backend (`server`) and a React + Vite frontend (`client`).
 
