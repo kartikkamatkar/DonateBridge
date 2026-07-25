@@ -1,7 +1,11 @@
 import math
+# pyrefly: ignore [missing-import]
 from rest_framework import status, permissions, generics, viewsets
+# pyrefly: ignore [missing-import]
 from rest_framework.response import Response
+# pyrefly: ignore [missing-import]
 from rest_framework.views import APIView
+# pyrefly: ignore [missing-import]
 from rest_framework.exceptions import ValidationError
 
 from .models import NGO, NGODocument, NGOReview, Need, EmergencyCampaign, VolunteerEvent, VolunteerRegistration
@@ -15,9 +19,12 @@ from .serializers import (
     VolunteerRegistrationSerializer
 )
 from donation.models import Donation, DonationStatus
+# pyrefly: ignore [missing-import]
 from django.utils import timezone
 from datetime import timedelta
+# pyrefly: ignore [missing-import]
 from django.db.models import Count
+# pyrefly: ignore [missing-import]
 from django.db.models.functions import TruncMonth
 
 def get_distance_km(lat1, lon1, lat2, lon2):
@@ -121,6 +128,7 @@ class NGODetailsCurrentUserView(generics.RetrieveAPIView):
 
     def get_object(self):
         if not hasattr(self.request.user, 'ngo_details'):
+            # pyrefly: ignore [missing-import]
             from rest_framework.exceptions import NotFound
             raise NotFound("No NGO profile found for this user.")
         return NGO.objects.prefetch_related('documents', 'reviews', 'needs').get(user=self.request.user)
@@ -217,6 +225,7 @@ class NeedViewSet(viewsets.ModelViewSet):
         
         # Security Sync: Only show needs from APPROVED NGOs, unless the user is the NGO itself looking at their own needs
         if self.request.user.is_authenticated and self.request.user.role == 'ngo' and hasattr(self.request.user, 'ngo_details'):
+            # pyrefly: ignore [missing-import]
             from django.db import models
             queryset = Need.objects.filter(models.Q(ngo__verification_status='approved') | models.Q(ngo=self.request.user.ngo_details))
         else:
@@ -228,6 +237,7 @@ class NeedViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(campaign_id=campaign_id)
             
         if unfulfilled_only and unfulfilled_only.lower() == 'true':
+            # pyrefly: ignore [missing-import]
             from django.db.models import F
             queryset = queryset.filter(fulfilled_quantity__lt=F('quantity'))
             
@@ -256,6 +266,7 @@ class VolunteerEventViewSet(viewsets.ModelViewSet):
         
         # Security Sync: Only show events from APPROVED NGOs, unless the user is the NGO itself
         if self.request.user.is_authenticated and self.request.user.role == 'ngo' and hasattr(self.request.user, 'ngo_details'):
+            # pyrefly: ignore [missing-import]
             from django.db import models
             queryset = VolunteerEvent.objects.filter(models.Q(ngo__verification_status='approved') | models.Q(ngo=self.request.user.ngo_details))
         else:
