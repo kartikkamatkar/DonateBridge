@@ -174,6 +174,15 @@ class Command(BaseCommand):
         p1.address = '456 Donor Villa, Bandra West, Mumbai, MH, 400050'
         p1.save()
 
+        donor_test = User.objects.create_user(
+            username='donortest', email='donor@test.com',
+            password='password123', role='donor', avatar='🙋‍♂️'
+        )
+        p_test, _ = Profile.objects.get_or_create(user=donor_test)
+        p_test.phone = '+91 9998887770'
+        p_test.address = '789 Test Colony, Civil Lines, Nagpur, MH, 440001'
+        p_test.save()
+
         donor2 = User.objects.create_user(
             username='amitkumar', email='amit@gmail.com',
             password='donor123', role='donor', avatar='🧑‍💼'

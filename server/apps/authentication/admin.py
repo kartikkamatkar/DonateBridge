@@ -14,8 +14,17 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('email', 'username')
     ordering = ('-date_joined',)
     
-    fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {'fields': ('role', 'avatar')}),
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('username', 'first_name', 'last_name', 'role', 'avatar')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'username', 'role', 'password', 'is_staff', 'is_superuser'),
+        }),
     )
 
 admin.site.register(CustomUser, CustomUserAdmin)

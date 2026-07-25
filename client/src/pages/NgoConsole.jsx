@@ -11,13 +11,13 @@ import { useToast } from '../components/ui/Toast';
 import LeafletMap from '../components/ui/LeafletMap';
 import { 
   ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, 
-  LineChart, Line, PieChart, Pie, Cell, Legend 
+  LineChart, Line, PieChart, Pie, Cell 
 } from 'recharts';
 import { 
   ShieldCheck, Package, Clock, AlertTriangle, Plus, MapPin, 
   BarChart3, Activity, Trash2, Zap, Radar, CheckCircle2, 
   Sparkles, TrendingUp, Radio, Building2, RefreshCw, Send,
-  ShieldAlert, ArrowRight, Check, Leaf, Sun
+  ShieldAlert, ArrowRight, Check, Leaf, Sun, Layers, Globe, Award, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -92,7 +92,7 @@ export default function NgoConsole() {
           setMonthlyData(res.data.monthly || []);
           setCategoryData((res.data.categories || []).map((c, i) => ({
             ...c,
-            color: ['#4A7C59', '#6B9976', '#3B6647', '#88B090', '#2C352E'][i % 5]
+            color: ['#2E5B3D', '#4A7C59', '#6B9976', '#88B090', '#3B6647'][i % 5]
           })));
         })
         .catch(() => toast.error('Failed to load analytics'))
@@ -156,36 +156,36 @@ export default function NgoConsole() {
   // Screen for Rejected NGOs
   if (verStatus === 'rejected') {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F5F1E8] text-[#2C352E] font-sans">
+      <div className="min-h-screen flex flex-col bg-[#FAFAF7] text-[#1E2923] font-sans">
         <Navbar />
         <div className="flex-1 flex items-center justify-center p-6 pt-28">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-lg bg-white border border-[#E5E0D5] p-10 rounded-3xl shadow-sm text-center space-y-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-lg bg-white border border-[#E8EDE9] p-8 md:p-10 rounded-3xl shadow-sm text-center space-y-6"
           >
-            <div className="w-16 h-16 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-center mx-auto text-rose-600">
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto text-rose-600 shadow-2xs">
               <ShieldAlert className="w-8 h-8" />
             </div>
             <div className="space-y-2">
-              <h1 className="font-display font-black text-2xl text-[#2C352E]">NGO Access Restricted</h1>
-              <p className="text-[#6B7280] text-sm leading-relaxed">
+              <h1 className="font-display font-bold text-2xl text-[#1E2923]">NGO Access Restricted</h1>
+              <p className="text-[#64748B] text-sm leading-relaxed max-w-md mx-auto">
                 Your NGO registration requires official audit verification before you can claim matches and broadcast demands.
               </p>
             </div>
-            <div className="p-5 rounded-2xl border border-rose-200 bg-rose-50/50 text-left space-y-1">
-              <p className="font-bold text-rose-800 uppercase tracking-widest text-[10px] flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5" /> Rejection Reason
+            <div className="p-4 rounded-2xl border border-rose-200 bg-rose-50/60 text-left space-y-1.5">
+              <p className="font-bold text-rose-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5" /> Audit Feedback
               </p>
-              <p className="text-[#2C352E] text-xs font-medium">
-                {currentNgo?.rejectionReason || 'Invalid registration license number or missing certificate.'}
+              <p className="text-[#1E2923] text-xs font-medium leading-relaxed">
+                {currentNgo?.rejectionReason || 'Invalid registration license number or missing certificate verification.'}
               </p>
             </div>
             <div className="flex justify-center gap-3 pt-2">
-              <Button variant="secondary" onClick={() => navigate('/settings')} className="bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 hover:bg-[#4A7C59] hover:text-white rounded-xl px-5 h-11 text-xs font-bold transition-all">
-                Update License
+              <Button variant="secondary" onClick={() => navigate('/settings')} className="bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/15 hover:bg-[#2E5B3D] hover:text-white rounded-xl px-5 h-11 text-xs font-semibold transition-all">
+                Update Documents
               </Button>
-              <Button variant="primary" onClick={() => navigate('/chat')} className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl px-5 h-11 text-xs font-bold">
+              <Button variant="primary" onClick={() => navigate('/chat')} className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl px-5 h-11 text-xs font-semibold">
                 Contact Support
               </Button>
             </div>
@@ -203,148 +203,176 @@ export default function NgoConsole() {
   }));
 
   const mapMarkers = [
-    { lat: currentNgo.lat, lng: currentNgo.lng, popupContent: `<strong>${currentNgo.name} (Hub)</strong>` },
+    { lat: currentNgo.lat, lng: currentNgo.lng, popupContent: `<strong>${currentNgo.name} (Headquarters)</strong>` },
     ...incomingMarkers
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 font-sans selection:bg-[#4A7C59]/20">
+    <div className="min-h-screen flex flex-col bg-[#FAFAF8] text-[#1E2923] font-sans antialiased selection:bg-[#2E5B3D]/15">
       <Navbar />
 
-      <main className="flex-grow max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 pt-24 space-y-8 relative z-10">
+      <main className="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-8 relative z-10">
         
-        {/* TOP STATUS BAR (MINIMALIST) */}
-        <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-medium text-[#6B7280]">
-          <div className="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full border border-[#E5E0D5] shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-[#4A7C59] animate-pulse" />
-            <span>Hub Location: <strong className="text-[#2C352E]">{currentNgo.city || 'Regional Zone'}</strong></span>
-          </div>
+        {/* SERENE HERO PROFILE BANNER */}
+        <section className="bg-white border border-[#E8EDE9] rounded-3xl p-6 md:p-8 shadow-xs relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#EBF3EE] to-transparent rounded-full blur-3xl opacity-60 pointer-events-none -mr-20 -mt-20" />
 
-          <div className="flex items-center gap-3">
-            <span>Last updated: Just now</span>
-            <button 
-              onClick={handleRefreshData}
-              disabled={isRefreshing}
-              className="inline-flex items-center gap-1.5 bg-[#4A7C59] hover:bg-[#3B6647] text-white px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all shadow-xs cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh Data
-            </button>
-          </div>
-        </div>
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            
+            {/* Left NGO Identity */}
+            <div className="flex items-start gap-4 sm:gap-5">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#EBF3EE] border border-[#2E5B3D]/15 flex items-center justify-center text-[#2E5B3D] shrink-0 shadow-2xs font-bold text-xl">
+                {currentNgo.name ? currentNgo.name.charAt(0).toUpperCase() : 'N'}
+              </div>
 
-        {/* CENTERED HERO HEADER SECTION */}
-        <section className="text-center space-y-3 py-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#E8F3EC] border border-[#4A7C59]/25 text-[#4A7C59] font-bold text-xs uppercase tracking-wider">
-            <Leaf className="w-3.5 h-3.5" /> NGO Command Hub
-          </div>
-          
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#2C352E] tracking-tight font-display">
-            {currentNgo.name}
-          </h1>
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold ${
+                    verStatus === 'approved' 
+                      ? 'bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/20' 
+                      : 'bg-amber-50 text-amber-800 border border-amber-200'
+                  }`}>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {verStatus === 'approved' ? 'Verified Organization' : 'Pending Audit'}
+                  </span>
 
-          <p className="text-[#6B7280] font-medium text-sm md:text-base max-w-xl mx-auto">
-            Real-time inventory management, demand broadcasting & AI-powered donor matching
-          </p>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                    <MapPin className="w-3 h-3 text-slate-500" />
+                    {currentNgo.city || currentNgo.district || 'Regional Zone'}
+                  </span>
+                </div>
 
-          <div className="pt-1 text-xs text-[#6B7280] flex items-center justify-center gap-3">
-            <span>Hub ID: <strong className="text-[#2C352E]">#{currentNgo.id || 'NGO-8802'}</strong></span>
-            <span>&bull;</span>
-            <span>Trust Score: <strong className="text-[#4A7C59]">{currentNgo.trustScore || 95}%</strong></span>
-            <span>&bull;</span>
-            <span className="text-[#4A7C59] font-bold">{verStatus === 'approved' ? '✓ Verified Partner' : '⏳ Pending Audit'}</span>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E2923] tracking-tight">
+                  {currentNgo.name}
+                </h1>
+
+                <p className="text-xs sm:text-sm text-[#64748B] max-w-xl font-normal leading-relaxed">
+                  Direct physical supply logistics, real-time demand ledger & AI-driven spatial donor matching.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Status Badges & Quick Action */}
+            <div className="flex flex-wrap lg:flex-col items-start lg:items-end gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-[#F0F4F1]">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={handleRefreshData}
+                  disabled={isRefreshing}
+                  className="inline-flex items-center gap-1.5 bg-white hover:bg-[#F3F6F4] text-[#2E5B3D] border border-[#E8EDE9] px-3.5 py-2 rounded-xl font-semibold text-xs transition-all shadow-2xs cursor-pointer"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync Network
+                </button>
+                <button
+                  onClick={() => navigate('/settings')}
+                  className="inline-flex items-center gap-1.5 bg-[#EBF3EE] hover:bg-[#2E5B3D] hover:text-white text-[#2E5B3D] border border-[#2E5B3D]/15 px-3.5 py-2 rounded-xl font-semibold text-xs transition-all shadow-2xs cursor-pointer"
+                >
+                  Hub Settings
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs text-[#64748B] pt-1">
+                <span>Trust Score: <strong className="text-[#2E5B3D] font-bold">{currentNgo.trustScore || 95}%</strong></span>
+                <span>&bull;</span>
+                <span>Response Time: <strong className="text-[#1E2923] font-semibold">{currentNgo.responseTime || '2 hrs'}</strong></span>
+              </div>
+            </div>
+
           </div>
         </section>
 
-        {/* 3 TOP STAT CARDS (CLEAN ROW) */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {/* 4 ELEGANT KPI METRIC CARDS */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           {/* Card 1 */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E5E0D5] shadow-xs space-y-3">
+          <div className="bg-white p-5 rounded-2xl border border-[#E8EDE9] shadow-2xs space-y-3 hover:border-[#2E5B3D]/30 transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#6B7280]">Units Received</span>
-              <div className="w-8 h-8 rounded-xl bg-[#E8F3EC] text-[#4A7C59] flex items-center justify-center">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Inventory Received</span>
+              <div className="w-9 h-9 rounded-xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center">
                 <Package className="w-4.5 h-4.5" />
               </div>
             </div>
             <div>
-              <span className="text-3xl font-black text-[#2C352E] block tracking-tight">{totalReceived} <span className="text-sm text-[#6B7280] font-normal">units</span></span>
-              <p className="text-xs text-[#6B7280] mt-1">Verified & fulfilled inventory</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-bold text-[#1E2923] tracking-tight">{totalReceived}</span>
+                <span className="text-xs text-[#64748B]">units</span>
+              </div>
+              <p className="text-xs text-[#64748B] mt-1">Verified & fulfilled supplies</p>
             </div>
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E5E0D5] shadow-xs space-y-3">
+          <div className="bg-white p-5 rounded-2xl border border-[#E8EDE9] shadow-2xs space-y-3 hover:border-[#2E5B3D]/30 transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#6B7280]">Cargo In Transit</span>
-              <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Cargo In-Transit</span>
+              <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center">
                 <Clock className="w-4.5 h-4.5" />
               </div>
             </div>
             <div>
-              <span className="text-3xl font-black text-sky-700 block tracking-tight">{totalInTransit} <span className="text-sm text-[#6B7280] font-normal">units</span></span>
-              <p className="text-xs text-[#6B7280] mt-1">Active shipment logistics</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-bold text-sky-800 tracking-tight">{totalInTransit}</span>
+                <span className="text-xs text-[#64748B]">units</span>
+              </div>
+              <p className="text-xs text-[#64748B] mt-1">Active shipment dispatches</p>
             </div>
           </div>
 
           {/* Card 3 */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E5E0D5] shadow-xs space-y-3">
+          <div className="bg-white p-5 rounded-2xl border border-[#E8EDE9] shadow-2xs space-y-3 hover:border-[#2E5B3D]/30 transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#6B7280]">Active Needs</span>
-              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Active Demands</span>
+              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
                 <Radio className="w-4.5 h-4.5" />
               </div>
             </div>
             <div>
-              <span className="text-3xl font-black text-amber-800 block tracking-tight">{activeNeedsCount} <span className="text-sm text-[#6B7280] font-normal">broadcasts</span></span>
-              <p className="text-xs text-[#6B7280] mt-1">Registered demand specs</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-bold text-amber-800 tracking-tight">{activeNeedsCount}</span>
+                <span className="text-xs text-[#64748B]">broadcasts</span>
+              </div>
+              <p className="text-xs text-[#64748B] mt-1">Registered demand specs</p>
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div className="bg-white p-5 rounded-2xl border border-[#E8EDE9] shadow-2xs space-y-3 hover:border-[#2E5B3D]/30 transition-all">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Spatial Match Rate</span>
+              <div className="w-9 h-9 rounded-xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center">
+                <Radar className="w-4.5 h-4.5" />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-bold text-[#2E5B3D] tracking-tight">98.4%</span>
+                <span className="text-xs text-[#64748B]">accuracy</span>
+              </div>
+              <p className="text-xs text-[#64748B] mt-1">Within 4km local radius</p>
             </div>
           </div>
 
         </section>
 
-        {/* MIDDLE INSIGHT BANNER */}
-        <section className="bg-[#E8F3EC]/70 border border-[#4A7C59]/30 rounded-2xl p-5 md:p-6 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-[#4A7C59]">
-              <Sparkles className="w-4 h-4 text-[#4A7C59]" /> Smart Hub Insights
-            </span>
-            <span className="text-xs font-bold text-[#4A7C59] bg-white px-2.5 py-1 rounded-full border border-[#4A7C59]/20">
-              4km Radius Matching
-            </span>
-          </div>
-
-          <p className="text-xs md:text-sm text-[#2C352E] font-medium leading-relaxed">
-            Real-time donor listings are automatically matched with your active supply demands using spatial proximity and item category scores.
-          </p>
-
-          <div className="flex flex-wrap gap-2 pt-1">
-            {['Clothing', 'Food', 'Medical', 'Books', 'Furniture', 'Electronics'].map(cat => (
-              <span key={cat} className="bg-white text-[#4A7C59] font-bold text-[11px] px-3 py-1 rounded-lg border border-[#4A7C59]/20 shadow-2xs">
-                {cat}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* MAIN TAB SELECTOR (CENTERED PILL BAR) */}
-        <div className="flex justify-center">
-          <div className="inline-flex p-1 bg-white border border-[#E5E0D5] rounded-2xl shadow-xs max-w-full overflow-x-auto">
+        {/* ELEGANT SEGMENTED NAVIGATION TABS */}
+        <div className="flex justify-center pt-2">
+          <div className="inline-flex p-1.5 bg-white border border-[#E8EDE9] rounded-2xl shadow-2xs max-w-full overflow-x-auto gap-1">
             {[
-              { id: 'matches', label: `Smart Matches (${smartMatches.length})`, icon: Zap },
+              { id: 'matches', label: `AI Smart Matches (${smartMatches.length})`, icon: Zap },
               { id: 'needs', label: `Broadcast Demands (${ngoNeeds.length})`, icon: Radio },
               { id: 'geo', label: `Coverage Map`, icon: Radar },
-              { id: 'analytics', label: `Analytics`, icon: BarChart3 }
+              { id: 'analytics', label: `Analytics & Impact`, icon: BarChart3 }
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-2.5 font-bold text-xs rounded-xl transition-all duration-200 cursor-pointer ${
+                className={`flex items-center gap-2 px-5 py-2.5 font-semibold text-xs rounded-xl transition-all duration-150 cursor-pointer ${
                   activeTab === tab.id
-                    ? 'bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/30 shadow-2xs'
-                    : 'text-[#6B7280] hover:text-[#2C352E] hover:bg-[#F9F7F2]'
+                    ? 'bg-[#2E5B3D] text-white shadow-2xs'
+                    : 'text-[#64748B] hover:text-[#1E2923] hover:bg-[#F3F6F4]'
                 }`}
               >
-                <tab.icon className={`w-3.5 h-3.5 ${activeTab === tab.id ? 'text-[#4A7C59]' : 'text-[#6B7280]'}`} />
+                <tab.icon className={`w-3.5 h-3.5 ${activeTab === tab.id ? 'text-white' : 'text-[#64748B]'}`} />
                 {tab.label}
               </button>
             ))}
@@ -358,77 +386,74 @@ export default function NgoConsole() {
           {activeTab === 'matches' && (
             <motion.div
               key="matches"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              exit={{ opacity: 0, y: -6 }}
               className="space-y-6"
             >
-              {/* Bottom Quick Action Grid inspired by prompt image */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Quick Hub Guidance Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                {/* Green Highlight Box */}
-                <div className="bg-[#4A7C59] text-white p-6 rounded-2xl space-y-4 shadow-sm relative overflow-hidden">
+                {/* Highlight Card 1 */}
+                <div className="bg-gradient-to-br from-[#2E5B3D] to-[#1E3B27] text-white p-6 rounded-2xl space-y-3 shadow-2xs md:col-span-2 relative overflow-hidden">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">AI Match Engine</span>
-                    <Zap className="w-5 h-5 text-emerald-200" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-emerald-200 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" /> Spatial Proximity Engine
+                    </span>
+                    <span className="bg-white/10 text-white text-[11px] px-2.5 py-0.5 rounded-full border border-white/15">4km Radius</span>
                   </div>
                   <div>
-                    <h3 className="font-display font-black text-xl text-white">Recommended Listings</h3>
-                    <p className="text-emerald-100 text-xs mt-1">Review donor dispatches matching your needs with high accuracy.</p>
-                  </div>
-                  <div className="pt-2">
-                    <span className="inline-flex items-center gap-1 text-xs font-bold bg-white text-[#4A7C59] px-3.5 py-2 rounded-xl">
-                      {smartMatches.length} Matches Ready <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                    </span>
+                    <h3 className="font-bold text-xl text-white">Recommended Donor Dispatches</h3>
+                    <p className="text-emerald-100 text-xs mt-1 max-w-lg leading-relaxed font-normal">
+                      Listings submitted by local donors that match your active demand specifications are automatically ranked by distance and item category compatibility.
+                    </p>
                   </div>
                 </div>
 
-                {/* White Card */}
-                <div className="bg-white p-6 rounded-2xl border border-[#E5E0D5] space-y-4 shadow-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#6B7280]">Broadcast Demand</span>
-                    <Radio className="w-5 h-5 text-[#4A7C59]" />
+                {/* Highlight Card 2 */}
+                <div className="bg-white p-6 rounded-2xl border border-[#E8EDE9] space-y-3 shadow-2xs flex flex-col justify-between">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Demand Broadcasting</span>
+                    <h3 className="font-bold text-lg text-[#1E2923]">Need More Supplies?</h3>
+                    <p className="text-[#64748B] text-xs leading-relaxed">Broadcast specific category needs to attract nearby donors.</p>
                   </div>
-                  <div>
-                    <h3 className="font-display font-black text-xl text-[#2C352E]">Post Inventory Need</h3>
-                    <p className="text-[#6B7280] text-xs mt-1">Add specific supply items to your live hub request ledger.</p>
-                  </div>
-                  <div className="pt-2">
-                    <button 
-                      onClick={() => setActiveTab('needs')}
-                      className="inline-flex items-center gap-1 text-xs font-bold bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 px-3.5 py-2 rounded-xl hover:bg-[#4A7C59] hover:text-white transition-all"
-                    >
-                      Post New Need <Plus className="w-3.5 h-3.5 ml-1" />
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => setActiveTab('needs')}
+                    className="inline-flex items-center justify-center gap-1 text-xs font-semibold bg-[#EBF3EE] hover:bg-[#2E5B3D] text-[#2E5B3D] hover:text-white border border-[#2E5B3D]/15 px-4 py-2.5 rounded-xl transition-all shadow-2xs cursor-pointer"
+                  >
+                    Post New Demand <Plus className="w-3.5 h-3.5 ml-0.5" />
+                  </button>
                 </div>
 
               </div>
 
               {/* Match List */}
               {loadingMatches ? (
-                <div className="bg-white border border-[#E5E0D5] rounded-2xl p-12 text-center text-xs font-bold text-[#6B7280]">
-                  Scanning matching matrix...
+                <div className="bg-white border border-[#E8EDE9] rounded-2xl p-12 text-center text-xs font-semibold text-[#64748B]">
+                  Calculating spatial proximity matrix...
                 </div>
               ) : verStatus === 'approved' && smartMatches.length === 0 ? (
-                <div className="bg-white border border-[#E5E0D5] rounded-2xl p-12 text-center space-y-3">
-                  <p className="font-bold text-[#2C352E]">No active match recommendations</p>
-                  <p className="text-xs text-[#6B7280]">Broadcast a new demand item to trigger algorithm recommendations.</p>
-                  <Button variant="primary" onClick={() => setActiveTab('needs')} className="bg-[#4A7C59] text-white text-xs h-10 px-5 rounded-xl font-bold">
-                    Create Broadcast
+                <div className="bg-white border border-[#E8EDE9] rounded-2xl p-12 text-center space-y-3 shadow-2xs">
+                  <div className="w-12 h-12 rounded-2xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center mx-auto">
+                    <Zap className="w-6 h-6" />
+                  </div>
+                  <p className="font-bold text-[#1E2923]">No active match recommendations</p>
+                  <p className="text-xs text-[#64748B] max-w-sm mx-auto">Broadcast a new demand specification to trigger automated spatial matching.</p>
+                  <Button variant="primary" onClick={() => setActiveTab('needs')} className="bg-[#2E5B3D] hover:bg-[#1E3B27] text-white text-xs h-10 px-5 rounded-xl font-semibold">
+                    Create Demand Broadcast
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {smartMatches.map(({ donation, need, scoreBreakdown }) => (
-                    <div key={donation.id} className="bg-white border border-[#E5E0D5] rounded-2xl overflow-hidden shadow-xs">
+                    <div key={donation.id} className="bg-white border border-[#E8EDE9] rounded-2xl overflow-hidden shadow-2xs hover:border-[#2E5B3D]/30 transition-all">
                       <DonationCard
                         donation={donation}
                         matchScoreDetails={scoreBreakdown}
                         onClaim={() => handleClaimDonation(donation.id)}
                         actions={
-                          <span className="font-mono text-[#4A7C59] bg-[#E8F3EC] px-3 py-1 rounded-lg border border-[#4A7C59]/20 text-xs font-bold">
-                            Matches: {need.item}
+                          <span className="font-mono text-[#2E5B3D] bg-[#EBF3EE] px-3 py-1 rounded-lg border border-[#2E5B3D]/15 text-xs font-semibold">
+                            Matched Demand: {need.item}
                           </span>
                         }
                       />
@@ -443,44 +468,55 @@ export default function NgoConsole() {
           {activeTab === 'needs' && (
             <motion.div
               key="needs"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="grid grid-cols-1 md:grid-cols-12 gap-6"
+              exit={{ opacity: 0, y: -6 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6"
             >
               {/* Needs Table */}
-              <div className="md:col-span-7 bg-white rounded-2xl p-6 border border-[#E5E0D5] shadow-xs space-y-4">
-                <h3 className="font-display font-black text-lg text-[#2C352E]">Active Demand Ledger</h3>
+              <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-[#E8EDE9] shadow-2xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-[#1E2923]">Active Demand Ledger</h3>
+                  <span className="text-xs font-medium text-[#64748B]">{ngoNeeds.length} items registered</span>
+                </div>
                 
                 {ngoNeeds.length === 0 ? (
-                  <p className="text-xs text-[#6B7280] text-center py-8">No demand broadcasts registered yet.</p>
+                  <p className="text-xs text-[#64748B] text-center py-12 border border-dashed border-[#E8EDE9] rounded-xl bg-[#FAFAF8]">
+                    No demand specs broadcasted yet. Use the form to post new supply needs.
+                  </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto border border-[#E8EDE9] rounded-xl">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="border-b border-[#E5E0D5] bg-[#F9F7F2] text-[#6B7280] font-bold">
-                          <th className="p-3">Category</th>
-                          <th className="p-3">Item</th>
-                          <th className="p-3 text-center">Qty</th>
-                          <th className="p-3">Urgency</th>
-                          <th className="p-3 text-right">Action</th>
+                        <tr className="border-b border-[#E8EDE9] bg-[#F8FAF8] text-[#64748B] font-semibold">
+                          <th className="p-3.5">Category</th>
+                          <th className="p-3.5">Item Specification</th>
+                          <th className="p-3.5 text-center">Qty</th>
+                          <th className="p-3.5">Urgency</th>
+                          <th className="p-3.5 text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E5E0D5]">
+                      <tbody className="divide-y divide-[#E8EDE9]">
                         {ngoNeeds.map(need => (
-                          <tr key={need.id} className="hover:bg-[#F9F7F2]">
-                            <td className="p-3 font-bold text-[#4A7C59]">{need.category}</td>
-                            <td className="p-3 font-bold text-[#2C352E]">{need.item}</td>
-                            <td className="p-3 text-center font-mono font-bold">{need.quantity}</td>
-                            <td className="p-3">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                need.urgency === 'High' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
+                          <tr key={need.id} className="hover:bg-[#F8FAF8] transition-colors">
+                            <td className="p-3.5 font-semibold text-[#2E5B3D]">{need.category}</td>
+                            <td className="p-3.5 font-bold text-[#1E2923]">{need.item}</td>
+                            <td className="p-3.5 text-center font-mono font-bold text-[#1E2923]">{need.quantity}</td>
+                            <td className="p-3.5">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                                need.urgency === 'High' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 
+                                need.urgency === 'Medium' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                                'bg-slate-50 text-slate-700 border border-slate-200'
                               }`}>
                                 {need.urgency}
                               </span>
                             </td>
-                            <td className="p-3 text-right">
-                              <button onClick={() => handleDeleteNeed(need.id)} className="text-rose-600 hover:text-rose-800 p-1">
+                            <td className="p-3.5 text-right">
+                              <button 
+                                onClick={() => handleDeleteNeed(need.id)} 
+                                className="text-rose-600 hover:text-rose-800 hover:bg-rose-50 p-1.5 rounded-lg transition-all cursor-pointer"
+                                title="Remove Demand"
+                              >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </td>
@@ -493,15 +529,19 @@ export default function NgoConsole() {
               </div>
 
               {/* Need Poster Form */}
-              <div className="md:col-span-5 bg-white rounded-2xl p-6 border border-[#E5E0D5] shadow-xs space-y-4">
-                <h3 className="font-display font-black text-lg text-[#2C352E]">Broadcast New Need</h3>
+              <div className="lg:col-span-5 bg-white rounded-2xl p-6 border border-[#E8EDE9] shadow-2xs space-y-4">
+                <div>
+                  <h3 className="font-bold text-lg text-[#1E2923]">Broadcast New Demand</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5">Post supply specifications to be indexed by spatial donor matching.</p>
+                </div>
+
                 <form onSubmit={handlePostNeed} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#6B7280]">Category</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#64748B]">Supply Category</label>
                     <select
                       value={needCategory}
                       onChange={(e) => setNeedCategory(e.target.value)}
-                      className="w-full bg-[#F9F7F2] border border-[#E5E0D5] p-3 rounded-xl text-xs font-bold text-[#2C352E]"
+                      className="w-full bg-[#F8FAF8] border border-[#E8EDE9] p-3 rounded-xl text-xs font-medium text-[#1E2923] focus:border-[#2E5B3D] outline-none"
                     >
                       {['Clothing', 'Food', 'Books', 'Furniture', 'Electronics', 'Medical Equipment'].map(c => (
                         <option key={c} value={c}>{c}</option>
@@ -510,18 +550,18 @@ export default function NgoConsole() {
                   </div>
 
                   <InputField
-                    label="Item Name"
+                    label="Item Title & Specs"
                     id="item-name"
-                    placeholder="e.g. Blankets"
+                    placeholder="e.g. Warm Blankets (Double Bed)"
                     value={needItem}
                     onChange={(e) => setNeedItem(e.target.value)}
                     required
-                    className="!bg-[#F9F7F2] border-[#E5E0D5] text-xs rounded-xl"
+                    className="!bg-[#F8FAF8] border-[#E8EDE9] text-xs rounded-xl"
                   />
 
                   <div className="grid grid-cols-2 gap-3">
                     <InputField
-                      label="Quantity"
+                      label="Quantity Needed"
                       id="qty"
                       type="number"
                       min="1"
@@ -529,19 +569,19 @@ export default function NgoConsole() {
                       value={needQty}
                       onChange={(e) => setNeedQty(e.target.value)}
                       required
-                      className="!bg-[#F9F7F2] border-[#E5E0D5] text-xs rounded-xl"
+                      className="!bg-[#F8FAF8] border-[#E8EDE9] text-xs rounded-xl"
                     />
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-[#6B7280]">Urgency</label>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-[#64748B]">Urgency Level</label>
                       <select
                         value={needUrgency}
                         onChange={(e) => setNeedUrgency(e.target.value)}
-                        className="w-full bg-[#F9F7F2] border border-[#E5E0D5] p-3 rounded-xl text-xs font-bold text-[#2C352E]"
+                        className="w-full bg-[#F8FAF8] border border-[#E8EDE9] p-3 rounded-xl text-xs font-medium text-[#1E2923] focus:border-[#2E5B3D] outline-none"
                       >
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
+                        <option value="High">High Urgency</option>
+                        <option value="Medium">Medium Urgency</option>
+                        <option value="Low">Low Urgency</option>
                       </select>
                     </div>
                   </div>
@@ -550,9 +590,9 @@ export default function NgoConsole() {
                     type="submit" 
                     variant="primary"
                     disabled={submittingNeed}
-                    className="w-full h-11 bg-[#4A7C59] hover:bg-[#3B6647] text-white text-xs font-bold rounded-xl shadow-xs"
+                    className="w-full h-11 bg-[#2E5B3D] hover:bg-[#1E3B27] text-white text-xs font-semibold rounded-xl shadow-2xs"
                   >
-                    {submittingNeed ? 'Broadcasting...' : 'Broadcast Need'}
+                    {submittingNeed ? 'Broadcasting Spec...' : 'Broadcast Demand Spec'}
                   </Button>
                 </form>
               </div>
@@ -563,21 +603,26 @@ export default function NgoConsole() {
           {activeTab === 'geo' && (
             <motion.div
               key="geo"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="bg-white p-4 rounded-2xl border border-[#E5E0D5] shadow-xs space-y-3"
+              exit={{ opacity: 0, y: -6 }}
+              className="bg-white p-5 rounded-2xl border border-[#E8EDE9] shadow-2xs space-y-4"
             >
-              <div className="flex items-center justify-between px-2">
-                <span className="font-bold text-xs text-[#2C352E]">Hub Coverage Radius (4km)</span>
-                <span className="text-xs text-[#4A7C59] font-bold">● Active Radius</span>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-base text-[#1E2923]">Headquarters & Spatial Matching Radius</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5">4km radius active spatial coverage for donor pickups.</p>
+                </div>
+                <span className="text-xs text-[#2E5B3D] bg-[#EBF3EE] px-3 py-1 rounded-full font-semibold border border-[#2E5B3D]/15">
+                  ● Active 4km Radius
+                </span>
               </div>
-              <div className="h-[450px] w-full rounded-xl overflow-hidden border border-[#E5E0D5]">
+              <div className="h-[480px] w-full rounded-xl overflow-hidden border border-[#E8EDE9]">
                 <LeafletMap
                   center={[currentNgo.lat, currentNgo.lng]}
                   zoom={13}
                   markers={mapMarkers}
-                  circles={[{ lat: currentNgo.lat, lng: currentNgo.lng, radius: 4000, color: '#4A7C59', fillColor: '#4A7C59', fillOpacity: 0.15 }]}
+                  circles={[{ lat: currentNgo.lat, lng: currentNgo.lng, radius: 4000, color: '#2E5B3D', fillColor: '#2E5B3D', fillOpacity: 0.12 }]}
                   className="h-full w-full border-none"
                 />
               </div>
@@ -588,37 +633,37 @@ export default function NgoConsole() {
           {activeTab === 'analytics' && (
             <motion.div
               key="analytics"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              exit={{ opacity: 0, y: -6 }}
               className="grid grid-cols-1 md:grid-cols-2 gap-5"
             >
-              <div className="bg-white p-6 rounded-2xl border border-[#E5E0D5] shadow-xs space-y-4">
-                <h4 className="font-bold text-sm text-[#2C352E]">Inbound Trajectory</h4>
-                <div className="h-60">
+              <div className="bg-white p-6 rounded-2xl border border-[#E8EDE9] shadow-2xs space-y-4">
+                <h4 className="font-bold text-sm text-[#1E2923]">Monthly Supply Inbound Trajectory</h4>
+                <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E0D5" />
-                      <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#6B7280' }} />
-                      <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} />
-                      <Tooltip contentStyle={{ fontSize: 11, borderRadius: '8px', border: '1px solid #E5E0D5' }} />
-                      <Line type="monotone" dataKey="received" stroke="#4A7C59" strokeWidth={2.5} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E8EDE9" />
+                      <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748B' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#64748B' }} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: '12px', border: '1px solid #E8EDE9', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
+                      <Line type="monotone" dataKey="received" stroke="#2E5B3D" strokeWidth={2.5} dot={{ r: 4, fill: '#2E5B3D' }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-[#E5E0D5] shadow-xs space-y-4">
-                <h4 className="font-bold text-sm text-[#2C352E]">Category Composition</h4>
-                <div className="h-60 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-2xl border border-[#E8EDE9] shadow-2xs space-y-4">
+                <h4 className="font-bold text-sm text-[#1E2923]">Supply Category Distribution</h4>
+                <div className="h-64 flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={categoryData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value">
+                      <Pie data={categoryData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value">
                         {categoryData.map((e, i) => (
                           <Cell key={i} fill={e.color} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ fontSize: 11, borderRadius: '8px', border: '1px solid #E5E0D5' }} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: '12px', border: '1px solid #E8EDE9', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -628,11 +673,11 @@ export default function NgoConsole() {
 
         </AnimatePresence>
 
-        {/* BOTTOM HIGHLIGHT BULLETS inspired by picture */}
-        <div className="pt-6 border-t border-[#E5E0D5] flex flex-wrap items-center justify-center gap-6 text-xs text-[#6B7280] font-medium">
-          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#4A7C59]" /> Real-time network sync</span>
-          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#4A7C59]" /> Direct donor matching</span>
-          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#4A7C59]" /> Built for verified NGOs</span>
+        {/* BOTTOM ELEGANT TRUST FOOTER */}
+        <div className="pt-6 border-t border-[#E8EDE9] flex flex-wrap items-center justify-center gap-6 text-xs text-[#64748B] font-medium">
+          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#2E5B3D]" /> Real-time network sync</span>
+          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#2E5B3D]" /> Direct spatial donor matching</span>
+          <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#2E5B3D]" /> Verified NGO audit network</span>
         </div>
 
       </main>

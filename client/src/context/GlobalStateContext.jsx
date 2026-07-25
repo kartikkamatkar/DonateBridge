@@ -19,6 +19,7 @@ export const api = axios.create({
 });
 
 let refreshPromise = null;
+let isNotifiedSessionExpired = false;
 
 // ─────────────────────────────────────────────
 // GlobalStateProvider
@@ -43,24 +44,32 @@ export const GlobalStateProvider = ({ children }) => {
   });
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [refreshToken, setRefreshToken] = useState(() => localStorage.getItem('refreshToken') || null);
-  const [authMessage, setAuthMessage] = useState(() => localStorage.getItem('authMessage') || '');
+  const [authMessage, setAuthMessage] = useState('');
 
   const clearAuthMessage = useCallback(() => {
     setAuthMessage('');
-    localStorage.removeItem('authMessage');
   }, []);
 
   const setSessionExpired = useCallback(() => {
-    const msg = 'Session expired. Please sign in again.';
-    setAuthMessage(msg);
-    localStorage.setItem('authMessage', msg);
+    const existingToken = localStorage.getItem('token');
+    const existingUser = localStorage.getItem('user');
+
     setUser(null);
     setToken(null);
     setRefreshToken(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
-    toast.error(msg);
+
+    if ((existingToken || existingUser) && !isNotifiedSessionExpired) {
+      isNotifiedSessionExpired = true;
+      const msg = 'Session expired. Please sign in again.';
+      setAuthMessage(msg);
+      toast.error(msg);
+      setTimeout(() => {
+        isNotifiedSessionExpired = false;
+      }, 5000);
+    }
   }, [toast]);
 
   /**
@@ -138,7 +147,20 @@ export const GlobalStateProvider = ({ children }) => {
     const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        const originalRequest = error.config;
+        const originalRequest = error.config || {};
+        const url = originalRequest.url || '';
+
+        // DO NOT trigger session expiration logic for auth endpoints
+        if (
+          url.includes('/api/auth/login') ||
+          url.includes('/api/auth/register') ||
+          url.includes('/api/auth/token') ||
+          url.includes('/api/auth/refresh') ||
+          url.includes('/api/auth/otp')
+        ) {
+          return Promise.reject(error);
+        }
+
         const liveRefreshToken = localStorage.getItem('refreshToken');
 
         if (error.response?.status === 401 && !originalRequest._retry) {

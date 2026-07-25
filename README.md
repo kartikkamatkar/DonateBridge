@@ -92,3 +92,17 @@ Once the database is seeded (`python manage.py seed_db`), you can log in to the 
 
 - **`client/`**: The frontend React application. Powered by Vite, styled with Tailwind CSS, and using Leaflet for interactive logistics maps.
 - **`server/`**: The backend Django API. Handles JWT authentication, automated donation-to-need smart matching algorithms, logistics tracking, and an extensive admin moderation panel.
+
+
+
+
+------------------------------------------------
+
+3. Ready Test Accounts (Database Seeded)
+Aap neeche diye gaye kisi bhi account se direct sign-in kar sakte hain:
+
+Role	Email / Username	Password
+Donor (Test)	donor@test.com / donortest	password123
+Donor	donor@gmail.com / johndoe	donor123
+Superuser / Admin	admin@donatebridge.org / admin	admin123
+NGO	contact@hopefoundation.org / hopefoundation	ngo12345

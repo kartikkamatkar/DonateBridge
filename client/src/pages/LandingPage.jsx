@@ -6,7 +6,7 @@ import {
   Search, ShieldCheck, MapPin, Heart, ArrowRight, Star, Award, Leaf, 
   Users, ChevronRight, Check, BookOpen, Clock, Gift, Activity, ArrowUpRight,
   TrendingUp, Sparkles, Building, Calendar, Info, Sliders, Truck, AlertTriangle,
-  Plus, Minus
+  Plus, Minus, RefreshCw
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import Navbar from '../components/layout/Navbar';
@@ -243,54 +243,59 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F1F5F9] selection:bg-emerald-500/30">
+    <div className="min-h-screen flex flex-col bg-[#FAFAF8] text-[#1E2923] font-sans antialiased selection:bg-[#2E5B3D]/15">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-16 pb-16 lg:pt-24 lg:pb-20 bg-[#F5F1E8] text-stone-900 border-b border-[#E5E0D5]">
+      <section className="relative pt-24 pb-16 lg:pt-28 lg:pb-20 bg-[#FAFAF8] text-[#1E2923] border-b border-[#E8EDE9]">
+        
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-[#EBF3EE] to-transparent rounded-full blur-3xl opacity-70 pointer-events-none -mt-20" />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
           
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-md bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-4 h-4 text-[#4A7C59]" /> National Humanitarian Match Ledger
+          {/* Header Title Stack */}
+          <div className="max-w-3xl mx-auto text-center space-y-4">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/15 text-xs font-semibold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" /> Direct Humanitarian Logistics Platform
             </span>
             
-            <h1 className="text-4xl lg:text-6xl font-bold text-stone-900 leading-[1.15] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1E2923] leading-tight tracking-tight">
               Bridging Donors &amp; NGOs <br />
-              <span className="text-[#4A7C59]">One Need at a Time.</span>
+              <span className="text-[#2E5B3D]">One Need at a Time.</span>
             </h1>
             
-            <p className="text-base lg:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed font-normal">
-              Coordinate physical item donation logistics directly. No cash escrow leakages. Vetted logistics verification, real-time georadial mapping, and instant 80G tax invoice emissions.
+            <p className="text-xs sm:text-sm lg:text-base text-[#64748B] max-w-xl mx-auto leading-relaxed font-normal">
+              Direct physical supply logistics without cash escrow leakages. Vetted verification, real-time spatial mapping, and instant 80G tax invoice generation.
             </p>
 
             <div className="max-w-xl mx-auto space-y-3 pt-2">
-              <form onSubmit={handleSearchSubmit} className="flex items-center bg-white border border-stone-300 rounded-lg p-1.5 shadow-sm focus-within:border-[#4A7C59] focus-within:ring-2 focus-within:ring-[#4A7C59]/20 transition-all">
-                <div className="flex items-center pl-3 pr-2 text-stone-400 shrink-0">
-                  <Search className="w-5 h-5" />
+              <form onSubmit={handleSearchSubmit} className="flex items-center bg-white border border-[#E8EDE9] rounded-2xl p-1.5 shadow-2xs focus-within:border-[#2E5B3D] transition-all">
+                <div className="flex items-center pl-3 pr-2 text-[#64748B] shrink-0">
+                  <Search className="w-4 h-4" />
                 </div>
                 <input 
                   type="text"
                   placeholder="Search Registry (e.g. Blankets, Medicine, Textbooks)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-sm text-stone-900 placeholder-stone-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 !min-h-0 !h-auto !bg-transparent !border-none !shadow-none !py-2 !px-1"
+                  className="w-full text-xs sm:text-sm text-[#1E2923] placeholder-[#94A3B8] bg-transparent border-none outline-none focus:outline-none focus:ring-0 !min-h-0 !h-auto !bg-transparent !border-none !shadow-none !py-2 !px-1"
                 />
                 <Button
                   type="submit"
-                  className="bg-[#4A7C59] hover:bg-[#3B6647] text-white font-medium text-sm py-2 px-5 rounded-md shrink-0 shadow-xs transition-all"
+                  className="bg-[#2E5B3D] hover:bg-[#1E3B27] text-white font-semibold text-xs py-2 px-5 rounded-xl shrink-0 shadow-2xs transition-all"
                 >
                   Search
                 </Button>
               </form>
 
-              <div className="flex flex-wrap justify-center gap-3 text-xs text-stone-500 font-medium">
-                <span className="text-stone-400">Popular:</span>
+              <div className="flex flex-wrap justify-center gap-3 text-xs text-[#64748B] font-medium">
+                <span className="text-[#94A3B8]">Popular:</span>
                 {['Blankets', 'Dry Rations', 'Laptops', 'Gloves'].map((tag) => (
                   <button 
                     key={tag} 
                     onClick={() => handleTagClick(tag)}
-                    className="hover:text-[#4A7C59] hover:underline transition-colors cursor-pointer"
+                    className="hover:text-[#2E5B3D] font-semibold transition-colors cursor-pointer"
                   >
                     {tag}
                   </button>
@@ -299,27 +304,28 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch pt-4">
+          {/* Hero Dual Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch pt-2">
             
-            {/* Left Console */}
-            <div className="lg:col-span-6 bg-white border border-stone-200 rounded-xl p-6 lg:p-7 flex flex-col justify-between shadow-sm text-left">
-              <div className="space-y-5">
-                <div className="flex justify-between items-center pb-3 border-b border-stone-200">
-                  <h3 className="text-xs font-semibold text-[#4A7C59] uppercase tracking-wider flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-[#4A7C59]" /> Donor Dispatch Center
+            {/* Left Dispatch Simulator Console */}
+            <div className="lg:col-span-6 bg-white border border-[#E8EDE9] rounded-3xl p-6 lg:p-7 flex flex-col justify-between shadow-2xs text-left space-y-5">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center pb-3 border-b border-[#E8EDE9]">
+                  <h3 className="text-xs font-bold text-[#2E5B3D] uppercase tracking-wider flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-[#2E5B3D]" /> Donor Dispatch Center
                   </h3>
-                  <span className="text-xs bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 font-medium py-0.5 px-2.5 rounded-md">
-                    Simulate Input
+                  <span className="text-xs bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/15 font-semibold py-0.5 px-2.5 rounded-full">
+                    Interactive Simulator
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-left">
-                  <div>
-                    <label className="text-xs font-medium text-stone-600 uppercase tracking-wider">Item Category</label>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#64748B]">Item Category</label>
                     <select 
                       value={simCategory}
                       onChange={(e) => setSimCategory(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-stone-50 border border-stone-300 text-stone-900 rounded-md text-sm font-medium focus:outline-none focus:border-[#4A7C59] focus:ring-1 focus:ring-[#4A7C59] !min-h-0 !h-auto transition-all"
+                      className="w-full bg-[#F8FAF8] border border-[#E8EDE9] p-2.5 rounded-xl text-xs font-medium text-[#1E2923] focus:border-[#2E5B3D] outline-none"
                     >
                       <option value="Food">Food / Staples</option>
                       <option value="Books">Books / Learning Kits</option>
@@ -327,12 +333,12 @@ export default function LandingPage() {
                       <option value="Medical">Medical Supplies</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="text-xs font-medium text-stone-600 uppercase tracking-wider">Item Condition</label>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-[#64748B]">Item Condition</label>
                     <select 
                       value={simCondition}
                       onChange={(e) => setSimCondition(e.target.value)}
-                      className="w-full mt-1.5 px-3 py-2 bg-stone-50 border border-stone-300 text-stone-900 rounded-md text-sm font-medium focus:outline-none focus:border-[#4A7C59] focus:ring-1 focus:ring-[#4A7C59] !min-h-0 !h-auto transition-all"
+                      className="w-full bg-[#F8FAF8] border border-[#E8EDE9] p-2.5 rounded-xl text-xs font-medium text-[#1E2923] focus:border-[#2E5B3D] outline-none"
                     >
                       <option value="New">Brand New</option>
                       <option value="Like New">Like New / Cleaned</option>
@@ -341,53 +347,56 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="text-left bg-stone-50 p-3.5 rounded-lg border border-stone-200">
-                  <label className="text-xs font-medium text-stone-600 uppercase tracking-wider block mb-2">Quantity to Pledge</label>
+                <div className="text-left bg-[#F8FAF8] p-4 rounded-2xl border border-[#E8EDE9] space-y-2">
+                  <label className="text-xs font-semibold text-[#64748B] block">Quantity to Pledge</label>
                   <div className="flex items-center gap-3">
                     <button 
                       onClick={() => setSimQty(Math.max(1, simQty - 5))}
-                      className="w-9 h-9 rounded-md bg-white border border-stone-300 flex items-center justify-center hover:bg-stone-100 transition-colors cursor-pointer shadow-xs"
+                      className="w-8 h-8 rounded-xl bg-white border border-[#E8EDE9] flex items-center justify-center hover:bg-[#F3F6F4] transition-colors cursor-pointer shadow-2xs text-[#1E2923]"
                     >
-                      <Minus className="w-4 h-4 text-stone-600" />
+                      <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="text-2xl font-bold text-stone-900 w-14 text-center">{simQty}</span>
+                    <span className="text-xl font-bold text-[#1E2923] w-12 text-center">{simQty}</span>
                     <button 
                       onClick={() => setSimQty(simQty + 5)}
-                      className="w-9 h-9 rounded-md bg-white border border-stone-300 flex items-center justify-center hover:bg-stone-100 transition-colors cursor-pointer shadow-xs"
+                      className="w-8 h-8 rounded-xl bg-white border border-[#E8EDE9] flex items-center justify-center hover:bg-[#F3F6F4] transition-colors cursor-pointer shadow-2xs text-[#1E2923]"
                     >
-                      <Plus className="w-4 h-4 text-stone-600" />
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="text-xs text-stone-500 font-medium ml-2">units matching need list</span>
+                    <span className="text-xs text-[#64748B] font-medium ml-2">units matching active need</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 p-4 bg-[#E8F3EC] border border-[#4A7C59]/20 rounded-lg text-left space-y-3">
-                <p className="text-xs font-semibold text-[#4A7C59] uppercase tracking-wider flex items-center gap-2">
-                  <Activity className="w-4 h-4" /> Live Match Engine Output
-                </p>
-                <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="p-4 bg-[#EBF3EE] border border-[#2E5B3D]/15 rounded-2xl text-left space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-[#2E5B3D] uppercase tracking-wider flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5" /> Live Spatial Match Output
+                  </p>
+                  <span className="text-[11px] font-bold text-[#2E5B3D] bg-white px-2 py-0.5 rounded-full">
+                    Match Rating: {heroSimOutput.score}%
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 text-xs">
                   <div>
-                    <span className="text-stone-500 block font-medium uppercase mb-0.5">Partner NGO</span>
-                    <span className="font-semibold text-stone-900">{heroSimOutput.ngoName}</span>
+                    <span className="text-[#64748B] block text-[10px] uppercase font-semibold">Partner NGO</span>
+                    <span className="font-bold text-[#1E2923]">{heroSimOutput.ngoName}</span>
                   </div>
                   <div>
-                    <span className="text-stone-500 block font-medium uppercase mb-0.5">Radius</span>
-                    <span className="font-semibold text-stone-900">{heroSimOutput.distance} (Local Match)</span>
+                    <span className="text-[#64748B] block text-[10px] uppercase font-semibold">Local Proximity</span>
+                    <span className="font-bold text-[#1E2923]">{heroSimOutput.distance}</span>
                   </div>
                   <div>
-                    <span className="text-stone-500 block font-medium uppercase mb-0.5">Target Need</span>
-                    <span className="font-semibold text-stone-900">{simQty}x {heroSimOutput.needItem}</span>
-                  </div>
-                  <div>
-                    <span className="text-stone-500 block font-medium uppercase mb-0.5">Match Score</span>
-                    <span className="font-bold text-[#4A7C59] text-base">{heroSimOutput.score}%</span>
+                    <span className="text-[#64748B] block text-[10px] uppercase font-semibold">Carbon Offset</span>
+                    <span className="font-bold text-[#2E5B3D]">{heroSimOutput.co2} kg CO2</span>
                   </div>
                 </div>
-                <div className="pt-3 border-t border-[#4A7C59]/20 flex justify-between items-center text-xs">
-                  <span className="text-stone-700 font-medium">Carbon saved: <strong className="text-[#4A7C59]">{heroSimOutput.co2} kg CO2</strong></span>
+
+                <div className="pt-2 border-t border-[#2E5B3D]/15 flex justify-between items-center text-xs">
+                  <span className="text-[#64748B] text-[11px]">Direct handover scheduled</span>
                   <Button
-                    className="bg-[#4A7C59] hover:bg-[#3B6647] text-white font-medium py-2 px-4 rounded-md shadow-xs transition-all"
+                    className="bg-[#2E5B3D] hover:bg-[#1E3B27] text-white font-semibold text-xs py-2 px-4 rounded-xl shadow-2xs transition-all"
                     onClick={() => navigate(isAuthenticated ? '/donor' : '/auth')}
                   >
                     Pledge Dispatch
@@ -396,61 +405,61 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Console */}
-            <div className="lg:col-span-6 bg-white border border-stone-200 rounded-xl p-6 lg:p-7 flex flex-col justify-between shadow-sm text-left">
-              <div className="space-y-5">
-                <div className="flex justify-between items-center pb-3 border-b border-stone-200">
-                  <h3 className="text-xs font-semibold text-stone-700 uppercase tracking-wider flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-[#4A7C59]" /> Live Matching Ledger
+            {/* Right Live Matching Ledger Console */}
+            <div className="lg:col-span-6 bg-white border border-[#E8EDE9] rounded-3xl p-6 lg:p-7 flex flex-col justify-between shadow-2xs text-left space-y-5">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center pb-3 border-b border-[#E8EDE9]">
+                  <h3 className="text-xs font-bold text-[#1E2923] uppercase tracking-wider flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-[#2E5B3D]" /> Live Matching Ledger
                   </h3>
-                  <span className="w-2.5 h-2.5 bg-[#4A7C59] rounded-full" />
+                  <span className="w-2.5 h-2.5 bg-[#2E5B3D] rounded-full animate-pulse" />
                 </div>
 
                 <div className="space-y-3">
                   {ledgerActivity.length > 0 ? (
                     ledgerActivity.map((donation) => (
-                      <div key={donation.id} className="p-3.5 bg-stone-50 border border-stone-200 hover:border-stone-300 rounded-lg flex items-center justify-between gap-4 text-left transition-colors">
+                      <div key={donation.id} className="p-3.5 bg-[#F8FAF8] border border-[#E8EDE9] hover:border-[#2E5B3D]/30 rounded-2xl flex items-center justify-between gap-4 text-left transition-colors">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 ${
-                            donation.status === 'DELIVERED' ? 'bg-[#E8F3EC] text-[#4A7C59]' :
-                            donation.status === 'MATCHED' ? 'bg-blue-50 text-blue-700' : 'bg-stone-200 text-stone-600'
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                            donation.status === 'DELIVERED' ? 'bg-[#EBF3EE] text-[#2E5B3D]' :
+                            donation.status === 'MATCHED' ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-700'
                           }`}>
-                            {donation.status === 'DELIVERED' ? <Check className="w-5 h-5" /> : <Activity className="w-5 h-5" />}
+                            {donation.status === 'DELIVERED' ? <Check className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
                           </div>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="text-sm font-bold text-white truncate">{donation.itemName || `${donation.quantity}x ${donation.category}`}</p>
-                              <span className={`text-[10px] px-2 py-0.5 rounded-md font-black uppercase tracking-widest ${
-                                donation.status === 'DELIVERED' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                                donation.status === 'MATCHED' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-slate-700 text-slate-300'
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <p className="text-xs font-bold text-[#1E2923] truncate">{donation.itemName || `${donation.quantity}x ${donation.category}`}</p>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ${
+                                donation.status === 'DELIVERED' ? 'bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/15' :
+                                donation.status === 'MATCHED' ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-slate-100 text-slate-700'
                               }`}>
                                 {donation.status}
                               </span>
                             </div>
-                            <p className="text-xs text-slate-400 truncate font-medium">
-                              Recipient: {donation.matchedNgoId === 'ngo-1' ? 'Hope Foundation' : donation.matchedNgoId === 'ngo-3' ? 'Care Society' : 'Feeding Hand'} &bull; {donation.location.address}
+                            <p className="text-[11px] text-[#64748B] truncate font-medium">
+                              Recipient: {donation.matchedNgoId === 'ngo-1' ? 'Hope Foundation' : donation.matchedNgoId === 'ngo-3' ? 'Care Society' : 'Feeding Hand'} &bull; {donation.location?.address || 'Local Hub'}
                             </p>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-[10px] font-mono text-slate-500 font-bold block mb-1">LEDGER ID</span>
-                          <span className="text-xs font-mono font-bold text-slate-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">{donation.id.substring(0, 8)}</span>
+                          <span className="text-[10px] font-mono text-[#94A3B8] font-semibold block mb-0.5">LEDGER ID</span>
+                          <span className="text-xs font-mono font-bold text-[#1E2923] bg-white px-2 py-0.5 rounded-lg border border-[#E8EDE9]">{donation.id.substring(0, 8)}</span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-12 text-xs text-stone-500 font-medium bg-stone-50 rounded-lg border border-stone-200">
+                    <div className="text-center py-10 text-xs text-[#64748B] font-medium bg-[#F8FAF8] rounded-2xl border border-[#E8EDE9]">
                       No live donation dispatches logged yet.
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="pt-4 mt-4 border-t border-stone-200 flex justify-between items-center text-xs font-semibold text-stone-600">
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-[#4A7C59]" /> SECURE HANDSHAKES
+              <div className="pt-3 border-t border-[#E8EDE9] flex justify-between items-center text-xs font-semibold text-[#64748B]">
+                <span className="flex items-center gap-1.5 text-[11px]">
+                  <ShieldCheck className="w-4 h-4 text-[#2E5B3D]" /> SECURE HANDSHAKES
                 </span>
-                <span className="text-[#4A7C59] bg-[#E8F3EC] px-2.5 py-1 rounded-md border border-[#4A7C59]/20">99.8% DELIVERY SUCCESS RATE</span>
+                <span className="text-[#2E5B3D] bg-[#EBF3EE] px-3 py-1 rounded-full border border-[#2E5B3D]/15 font-bold text-[11px]">99.8% DELIVERY SUCCESS RATE</span>
               </div>
             </div>
 
@@ -459,122 +468,118 @@ export default function LandingPage() {
       </section>
 
       {/* Sandbox Section */}
-      <section className="py-20 bg-slate-50 border-b border-slate-200/60 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-100/40 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
+      <section className="py-16 lg:py-20 bg-[#FAFAF8] border-b border-[#E8EDE9] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 relative z-10">
           
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-200/50 text-slate-700 text-sm font-bold uppercase tracking-wider backdrop-blur-sm border border-slate-300/50">
-              <Sparkles className="w-4 h-4 text-slate-600" /> Interactive Sandbox
+          <div className="text-center space-y-3 max-w-xl mx-auto">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/15 text-xs font-semibold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" /> Interactive Sandbox
             </span>
-            <h2 className="text-3xl lg:text-5xl font-display font-black text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E2923] tracking-tight">
               Simulate Match Integrity &amp; Eco-Impact
             </h2>
-            <p className="text-sm lg:text-base text-slate-500 leading-relaxed font-medium">
-              Explore how our georadial algorithms coordinate physical deliveries, reduce CO2, and track audit ledgers in real-time.
+            <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed font-normal">
+              Explore how spatial algorithms coordinate physical deliveries, reduce carbon footprints, and maintain audit trails in real-time.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             
             {/* Tab Selectors */}
-            <div className="lg:col-span-5 flex flex-col space-y-4">
+            <div className="lg:col-span-5 flex flex-col space-y-3">
               <button
                 onClick={() => setSandboxTab('match')}
-                className={`w-full p-5 rounded-2xl text-left border transition-all duration-300 flex gap-5 items-center ${
+                className={`w-full p-4 rounded-2xl text-left border transition-all duration-150 flex gap-4 items-center cursor-pointer ${
                   sandboxTab === 'match'
-                    ? 'bg-white border-emerald-200 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-500/20 scale-[1.02]'
-                    : 'bg-white/50 border-slate-200 hover:bg-white hover:border-slate-300 shadow-sm'
+                    ? 'bg-white border-[#2E5B3D] shadow-2xs ring-1 ring-[#2E5B3D]/20'
+                    : 'bg-white/70 border-[#E8EDE9] hover:bg-white'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${
-                  sandboxTab === 'match' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                  sandboxTab === 'match' ? 'bg-[#2E5B3D] text-white' : 'bg-[#EBF3EE] text-[#2E5B3D]'
                 }`}>
-                  <Sliders className="w-5 h-5" />
+                  <Sliders className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Smart-Match Matcher</h3>
-                  <p className="text-sm text-slate-500 mt-1 font-medium leading-relaxed">Select a category and neighborhood to compute real proximity fit ratings.</p>
+                  <h3 className="text-sm font-bold text-[#1E2923]">Smart-Match Engine</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5 font-normal leading-relaxed">Select category & locality to calculate spatial fit score.</p>
                 </div>
               </button>
 
               <button
                 onClick={() => setSandboxTab('impact')}
-                className={`w-full p-5 rounded-2xl text-left border transition-all duration-300 flex gap-5 items-center ${
+                className={`w-full p-4 rounded-2xl text-left border transition-all duration-150 flex gap-4 items-center cursor-pointer ${
                   sandboxTab === 'impact'
-                    ? 'bg-white border-emerald-200 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-500/20 scale-[1.02]'
-                    : 'bg-white/50 border-slate-200 hover:bg-white hover:border-slate-300 shadow-sm'
+                    ? 'bg-white border-[#2E5B3D] shadow-2xs ring-1 ring-[#2E5B3D]/20'
+                    : 'bg-white/70 border-[#E8EDE9] hover:bg-white'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${
-                  sandboxTab === 'impact' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                  sandboxTab === 'impact' ? 'bg-[#2E5B3D] text-white' : 'bg-[#EBF3EE] text-[#2E5B3D]'
                 }`}>
-                  <Leaf className="w-5 h-5" />
+                  <Leaf className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Eco-Impact Estimator</h3>
-                  <p className="text-sm text-slate-500 mt-1 font-medium leading-relaxed">Measure the beneficiary reach and shipping CO2 carbon offsets saved.</p>
+                  <h3 className="text-sm font-bold text-[#1E2923]">Eco-Impact Calculator</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5 font-normal leading-relaxed">Estimate beneficiary reach and CO2 carbon offset metrics.</p>
                 </div>
               </button>
 
               <button
                 onClick={() => setSandboxTab('tracker')}
-                className={`w-full p-5 rounded-2xl text-left border transition-all duration-300 flex gap-5 items-center ${
+                className={`w-full p-4 rounded-2xl text-left border transition-all duration-150 flex gap-4 items-center cursor-pointer ${
                   sandboxTab === 'tracker'
-                    ? 'bg-white border-emerald-200 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-500/20 scale-[1.02]'
-                    : 'bg-white/50 border-slate-200 hover:bg-white hover:border-slate-300 shadow-sm'
+                    ? 'bg-white border-[#2E5B3D] shadow-2xs ring-1 ring-[#2E5B3D]/20'
+                    : 'bg-white/70 border-[#E8EDE9] hover:bg-white'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${
-                  sandboxTab === 'tracker' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                  sandboxTab === 'tracker' ? 'bg-[#2E5B3D] text-white' : 'bg-[#EBF3EE] text-[#2E5B3D]'
                 }`}>
-                  <Truck className="w-5 h-5" />
+                  <Truck className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Logistics Pathway Tracker</h3>
-                  <p className="text-sm text-slate-500 mt-1 font-medium leading-relaxed">Step through the physical audit compliance lifecycle steps.</p>
+                  <h3 className="text-sm font-bold text-[#1E2923]">Logistics Lifecycle Tracker</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5 font-normal leading-relaxed">Walkthrough physical audit handshakes step-by-step.</p>
                 </div>
               </button>
             </div>
 
             {/* Widget Container */}
             <div className="lg:col-span-7">
-              <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] p-8 shadow-2xl shadow-slate-200/50 h-full flex flex-col justify-between text-left relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 pointer-events-none" />
+              <div className="bg-white border border-[#E8EDE9] rounded-3xl p-6 sm:p-7 shadow-2xs h-full flex flex-col justify-between text-left relative overflow-hidden">
                 
                 {/* 1. MATCH SIMULATOR WIDGET */}
                 {sandboxTab === 'match' && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 h-full flex flex-col justify-between relative z-10">
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 h-full flex flex-col justify-between relative z-10">
                     <div>
-                      <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                        <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                          <Sliders className="w-4 h-4 text-emerald-500" /> Smart Match Simulator
+                      <div className="flex justify-between items-center pb-3 border-b border-[#E8EDE9]">
+                        <h4 className="text-xs font-bold text-[#1E2923] uppercase tracking-wider flex items-center gap-2">
+                          <Sliders className="w-4 h-4 text-[#2E5B3D]" /> Smart Match Simulator
                         </h4>
-                        <span className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg border border-emerald-100 font-bold tracking-wide">Category: 40% | Distance: 30%</span>
+                        <span className="text-[11px] bg-[#EBF3EE] text-[#2E5B3D] px-2.5 py-0.5 rounded-full border border-[#2E5B3D]/15 font-semibold">Category: 40% | Distance: 30%</span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-6 mt-6">
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Category to Donate</label>
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-[#64748B]">Category</label>
                           <select 
                             value={matchCategory} 
                             onChange={(e) => setMatchCategory(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm"
+                            className="w-full p-2.5 bg-[#F8FAF8] border border-[#E8EDE9] rounded-xl text-xs font-medium text-[#1E2923] outline-none"
                           >
-                            <option value="Food">Food &amp; Staple Rations</option>
+                            <option value="Food">Food &amp; Rations</option>
                             <option value="Books">Books &amp; Learning Kits</option>
-                            <option value="Clothing">Warm Clothes &amp; Blankets</option>
+                            <option value="Clothing">Clothing &amp; Blankets</option>
                             <option value="Medical Equipment">Medical Supplies</option>
                           </select>
                         </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Donor Location</label>
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-[#64748B]">Donor Location</label>
                           <select 
                             value={matchLocation} 
                             onChange={(e) => setMatchLocation(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm"
+                            className="w-full p-2.5 bg-[#F8FAF8] border border-[#E8EDE9] rounded-xl text-xs font-medium text-[#1E2923] outline-none"
                           >
                             <option value="Indiranagar">Indiranagar, Bengaluru</option>
                             <option value="Koramangala">Koramangala, Bengaluru</option>
@@ -585,29 +590,29 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-4 my-6 flex-grow overflow-y-auto pr-2 custom-scrollbar">
-                      <p className="text-xs font-black text-slate-400 tracking-widest uppercase mb-2">Recommended Destinations</p>
+                    <div className="space-y-3 my-4 flex-grow overflow-y-auto pr-1">
+                      <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Recommended Hub Destinations</p>
                       
                       {simulationResults.length > 0 ? (
                         simulationResults.map((res, i) => (
-                          <div key={i} className="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-4 hover:border-emerald-300 hover:shadow-md transition-all group">
+                          <div key={i} className="p-3.5 bg-[#F8FAF8] border border-[#E8EDE9] rounded-2xl flex items-center justify-between gap-4 hover:border-[#2E5B3D]/30 transition-all">
                             <div className="min-w-0">
-                              <div className="flex items-center gap-3 mb-1.5">
-                                <h5 className="text-base font-black text-slate-900 truncate">{res.ngo.name}</h5>
-                                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <h5 className="text-xs font-bold text-[#1E2923] truncate">{res.ngo.name}</h5>
+                                <span className="text-[10px] bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/15 font-semibold px-2 py-0.5 rounded-full">
                                   {res.distance} km away
                                 </span>
                               </div>
-                              <p className="text-sm text-slate-500 truncate font-medium">Need: {res.need.quantity}x {res.need.item}</p>
+                              <p className="text-xs text-[#64748B] truncate font-medium">Need: {res.need.quantity}x {res.need.item}</p>
                             </div>
 
-                            <div className="flex items-center gap-5 shrink-0">
+                            <div className="flex items-center gap-3 shrink-0">
                               <div className="text-right">
-                                <span className="text-lg font-black text-emerald-600">{res.score}%</span>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Match Score</p>
+                                <span className="text-sm font-bold text-[#2E5B3D]">{res.score}%</span>
+                                <p className="text-[9px] text-[#64748B] font-medium uppercase">Score</p>
                               </div>
                               <Button 
-                                className="bg-slate-900 hover:bg-emerald-500 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-md group-hover:shadow-emerald-500/20"
+                                className="bg-[#2E5B3D] hover:bg-[#1E3B27] text-white font-semibold text-xs py-1.5 px-3.5 rounded-xl shadow-2xs"
                                 onClick={() => navigate('/auth')}
                               >
                                 Pledge
@@ -616,38 +621,37 @@ export default function LandingPage() {
                           </div>
                         ))
                       ) : (
-                        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-sm font-medium">
-                          <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500" />
-                          <span>No urgent demands logged in the database matching {matchCategory} currently. Select another category.</span>
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-xs font-medium">
+                          No active demands registered matching {matchCategory} in database.
                         </div>
                       )}
                     </div>
 
-                    <div className="text-[10px] font-bold text-slate-400 pt-4 border-t border-slate-100 uppercase tracking-widest text-center">
-                      Dynamic weighting: Category Fit (40%) + Distance (30%) + Urgency (20%) + Freshness (10%)
+                    <div className="text-[10px] font-medium text-[#64748B] pt-3 border-t border-[#E8EDE9] text-center">
+                      Algorithm Weighting: Category Fit (40%) + Distance (30%) + Urgency (20%) + Freshness (10%)
                     </div>
                   </motion.div>
                 )}
 
                 {/* 2. ECO-IMPACT ESTIMATOR WIDGET */}
                 {sandboxTab === 'impact' && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 h-full flex flex-col justify-between relative z-10">
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 h-full flex flex-col justify-between relative z-10">
                     <div>
-                      <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                        <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                          <Leaf className="w-4 h-4 text-emerald-500" /> Eco-Impact Estimator
+                      <div className="flex justify-between items-center pb-3 border-b border-[#E8EDE9]">
+                        <h4 className="text-xs font-bold text-[#1E2923] uppercase tracking-wider flex items-center gap-2">
+                          <Leaf className="w-4 h-4 text-[#2E5B3D]" /> Eco-Impact Estimator
                         </h4>
-                        <span className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg border border-emerald-100 font-bold tracking-wide">100% Non-Monetary</span>
+                        <span className="text-[11px] bg-[#EBF3EE] text-[#2E5B3D] px-2.5 py-0.5 rounded-full border border-[#2E5B3D]/15 font-semibold">100% Non-Monetary</span>
                       </div>
 
-                      <div className="space-y-6 mt-6">
-                        <div className="grid grid-cols-2 gap-6">
-                          <div>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Item Category</label>
+                      <div className="space-y-4 mt-4">
+                        <div className="grid grid-cols-2 gap-4 items-center">
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-[#64748B]">Item Category</label>
                             <select 
                               value={impactCategory} 
                               onChange={(e) => setImpactCategory(e.target.value)}
-                              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm"
+                              className="w-full p-2.5 bg-[#F8FAF8] border border-[#E8EDE9] rounded-xl text-xs font-medium text-[#1E2923] outline-none"
                             >
                               <option value="Food">Staple Rations</option>
                               <option value="Books">Textbooks &amp; Learning Tools</option>
@@ -656,12 +660,12 @@ export default function LandingPage() {
                             </select>
                           </div>
                           <div className="text-right">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Item Quantity</label>
-                            <p className="text-3xl font-black text-emerald-500 font-display mt-1 tracking-tight">{impactQuantity} <span className="text-sm text-slate-400 font-bold uppercase tracking-wider ml-1">Units</span></p>
+                            <label className="text-xs font-semibold text-[#64748B] block">Quantity</label>
+                            <p className="text-2xl font-bold text-[#2E5B3D] tracking-tight">{impactQuantity} <span className="text-xs text-[#64748B] font-medium">Units</span></p>
                           </div>
                         </div>
 
-                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                        <div className="bg-[#F8FAF8] p-4 rounded-2xl border border-[#E8EDE9]">
                           <input 
                             type="range" 
                             min="5" 
@@ -669,9 +673,9 @@ export default function LandingPage() {
                             step="5"
                             value={impactQuantity} 
                             onChange={(e) => setImpactQuantity(e.target.value)}
-                            className="w-full h-2.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-500 focus:outline-none"
+                            className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#2E5B3D]"
                           />
-                          <div className="flex justify-between text-xs text-slate-400 font-bold uppercase tracking-wider mt-3">
+                          <div className="flex justify-between text-[10px] text-[#64748B] font-semibold uppercase mt-2">
                             <span>5 min</span>
                             <span>500 max</span>
                           </div>
@@ -679,81 +683,80 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 my-6">
-                      <div className="p-5 bg-white border border-slate-200 rounded-2xl text-center shadow-sm hover:shadow-md hover:border-emerald-200 transition-all">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Beneficiaries</p>
-                        <p className="text-3xl font-black text-slate-900 tracking-tight">{impactMetrics.beneficiaries}</p>
-                        <p className="text-xs font-bold text-emerald-600 mt-1">{impactMetrics.beneficiaryLabel}</p>
+                    <div className="grid grid-cols-3 gap-3 my-4">
+                      <div className="p-4 bg-[#F8FAF8] border border-[#E8EDE9] rounded-2xl text-center">
+                        <p className="text-[10px] text-[#64748B] font-semibold uppercase mb-1">Beneficiaries</p>
+                        <p className="text-xl font-bold text-[#1E2923] tracking-tight">{impactMetrics.beneficiaries}</p>
+                        <p className="text-[11px] font-semibold text-[#2E5B3D] mt-0.5">{impactMetrics.beneficiaryLabel}</p>
                       </div>
 
-                      <div className="p-5 bg-white border border-slate-200 rounded-2xl text-center shadow-sm hover:shadow-md hover:border-blue-200 transition-all">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">CO2 Offset</p>
-                        <p className="text-3xl font-black text-slate-900 tracking-tight">{impactMetrics.co2} <span className="text-lg text-slate-400">kg</span></p>
-                        <p className="text-xs font-bold text-blue-600 mt-1">Greenhouse Gas saved</p>
+                      <div className="p-4 bg-[#F8FAF8] border border-[#E8EDE9] rounded-2xl text-center">
+                        <p className="text-[10px] text-[#64748B] font-semibold uppercase mb-1">CO2 Offset</p>
+                        <p className="text-xl font-bold text-[#1E2923] tracking-tight">{impactMetrics.co2} <span className="text-xs text-[#64748B]">kg</span></p>
+                        <p className="text-[11px] font-semibold text-sky-700 mt-0.5">Emissions Avoided</p>
                       </div>
 
-                      <div className="p-5 bg-slate-900 rounded-2xl text-center shadow-lg shadow-slate-900/20">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Process Speed</p>
-                        <p className="text-2xl font-black text-white tracking-tight mt-1">Local Match</p>
-                        <p className="text-xs font-bold text-emerald-400 mt-2">&lt; 3h pickup window</p>
+                      <div className="p-4 bg-[#EBF3EE] border border-[#2E5B3D]/15 rounded-2xl text-center">
+                        <p className="text-[10px] text-[#2E5B3D] font-semibold uppercase mb-1">Turnaround</p>
+                        <p className="text-base font-bold text-[#2E5B3D] tracking-tight mt-0.5">&lt; 3 hrs</p>
+                        <p className="text-[11px] font-semibold text-[#2E5B3D] mt-0.5">Local Match</p>
                       </div>
                     </div>
 
-                    <div className="text-xs font-medium text-slate-500 leading-relaxed border-t border-slate-100 pt-4 text-center px-4">
-                      Eco-Impact rates compiled using local radial courier dispatches. Zero packing wrappers and sorting depots reduces carbon waste footprint by 75% per batch.
+                    <div className="text-[10px] font-medium text-[#64748B] pt-3 border-t border-[#E8EDE9] text-center">
+                      Impact metrics computed from local radial courier dispatches. Zero sorting depots reduces packaging waste.
                     </div>
                   </motion.div>
                 )}
 
                 {/* 3. LOGISTICS PATHWAY TRACKER WIDGET */}
                 {sandboxTab === 'tracker' && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 h-full flex flex-col justify-between relative z-10">
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 h-full flex flex-col justify-between relative z-10">
                     <div>
-                      <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                        <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                          <Truck className="w-4 h-4 text-emerald-500" /> Fulfillment Lifecycle Tracker
+                      <div className="flex justify-between items-center pb-3 border-b border-[#E8EDE9]">
+                        <h4 className="text-xs font-bold text-[#1E2923] uppercase tracking-wider flex items-center gap-2">
+                          <Truck className="w-4 h-4 text-[#2E5B3D]" /> Fulfillment Lifecycle Tracker
                         </h4>
-                        <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-lg border border-blue-100 font-bold tracking-wide">Secure Delivery Ledger</span>
+                        <span className="text-[11px] bg-[#EBF3EE] text-[#2E5B3D] px-2.5 py-0.5 rounded-full border border-[#2E5B3D]/15 font-semibold">Audit Ledger</span>
                       </div>
 
-                      <div className="grid grid-cols-4 gap-3 mt-6">
+                      <div className="grid grid-cols-4 gap-2 mt-4">
                         {TRACKER_STAGES.map((st, i) => (
                           <button
                             key={i}
                             onClick={() => setTrackerStep(i)}
-                            className={`p-3 rounded-xl text-center border transition-all duration-200 flex flex-col items-center gap-2 ${
+                            className={`p-2.5 rounded-xl text-center border transition-all duration-150 flex flex-col items-center gap-1.5 cursor-pointer ${
                               trackerStep === i
-                                ? 'bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-900/20 scale-105'
-                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
+                                ? 'bg-[#2E5B3D] border-[#2E5B3D] text-white shadow-2xs'
+                                : 'bg-[#F8FAF8] border-[#E8EDE9] text-[#64748B] hover:bg-white'
                             }`}
                           >
-                            <p className="text-xs font-bold truncate w-full">{st.title.split(' ')[1] || st.title}</p>
+                            <p className="text-[11px] font-semibold truncate w-full">{st.title.split(' ')[1] || st.title}</p>
                             <span className={`inline-block w-2 h-2 rounded-full ${
-                              st.status === 'COMPLETED' ? 'bg-emerald-500' :
-                              st.status === 'ACTIVE' ? 'bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'bg-slate-300'
+                              st.status === 'COMPLETED' ? 'bg-emerald-400' :
+                              st.status === 'ACTIVE' ? 'bg-amber-400 animate-pulse' : 'bg-slate-300'
                             }`} />
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <div className="p-6 bg-white border border-slate-200 rounded-3xl text-left my-6 space-y-4 flex-grow flex flex-col justify-center shadow-sm">
+                    <div className="p-5 bg-[#F8FAF8] border border-[#E8EDE9] rounded-2xl text-left my-4 space-y-3 flex-grow flex flex-col justify-center">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded-md">STAGE DETAILS ({trackerStep + 1}/4)</span>
-                        <span className="text-xs font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">{TRACKER_STAGES[trackerStep].time}</span>
+                        <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider bg-white px-2 py-0.5 rounded border border-[#E8EDE9]">STAGE ({trackerStep + 1}/4)</span>
+                        <span className="text-xs font-semibold text-[#64748B]">{TRACKER_STAGES[trackerStep].time}</span>
                       </div>
-                      <h4 className="text-xl font-black text-slate-900 tracking-tight">{TRACKER_STAGES[trackerStep].title}</h4>
-                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 relative overflow-hidden">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />
-                        <p className="text-sm font-medium text-slate-600 leading-relaxed font-mono">
+                      <h4 className="text-base font-bold text-[#1E2923]">{TRACKER_STAGES[trackerStep].title}</h4>
+                      <div className="bg-white p-3.5 rounded-xl border border-[#E8EDE9] relative">
+                        <p className="text-xs font-medium text-[#64748B] leading-relaxed font-mono">
                           {TRACKER_STAGES[trackerStep].log}
                         </p>
                       </div>
                     </div>
 
-                    <div className="text-[10px] text-slate-400 pt-4 border-t border-slate-100 flex justify-between items-center font-bold uppercase tracking-widest">
-                      <span>Secure Match Ledger Signature</span>
-                      <span className="text-emerald-500 bg-emerald-50/50 px-2 py-1 rounded border border-emerald-100">ECDSA-SHA256 SECURED</span>
+                    <div className="text-[10px] text-[#64748B] pt-3 border-t border-[#E8EDE9] flex justify-between items-center font-medium">
+                      <span>Secure Audit Ledger Signature</span>
+                      <span className="text-[#2E5B3D] bg-[#EBF3EE] px-2 py-0.5 rounded font-semibold border border-[#2E5B3D]/15">ECDSA-SHA256 SECURED</span>
                     </div>
                   </motion.div>
                 )}
@@ -767,152 +770,145 @@ export default function LandingPage() {
       </section>
 
       {/* Projects and Campaigns Section */}
-      <section className="py-24 bg-white border-b border-slate-100 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4 text-left">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider">
+      <section className="py-16 lg:py-20 bg-white border-b border-[#E8EDE9] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="space-y-2 text-left">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/15 text-xs font-semibold uppercase tracking-wider">
                 <Building className="w-3.5 h-3.5" /> Active Campaigns
               </span>
-              <h2 className="text-4xl lg:text-5xl font-display font-black text-slate-900 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E2923] tracking-tight">
                 Featured NGO Projects
               </h2>
-              <p className="text-base text-slate-500 max-w-xl font-medium leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#64748B] max-w-xl font-normal leading-relaxed">
                  Vetted campaigns posting urgent, specific physical needs. Directly pledge items to fund their completion.
               </p>
             </div>
             <Link 
               to="/discover" 
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FAFAF8] border border-[#E8EDE9] text-xs font-semibold text-[#1E2923] hover:bg-[#F3F6F4] transition-all shrink-0"
             >
-              Browse all needs <ArrowRight className="w-4 h-4" />
+              Browse all needs <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {needs.length > 0 ? needs.slice(0, 3).map((need) => {
               const target = need.quantity || 1;
               const received = need.fulfilledQuantity || 0;
               const progress = Math.min(100, Math.round((received / target) * 100));
               const image = CATEGORY_IMAGES[need.category] || "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=600";
               return (
-                <div key={need.id} className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden flex flex-col justify-between shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300 group">
+                <div key={need.id} className="bg-white border border-[#E8EDE9] rounded-3xl overflow-hidden flex flex-col justify-between shadow-2xs hover:border-[#2E5B3D]/30 transition-all group">
                   <div>
-                    <div className="relative h-56 w-full overflow-hidden bg-slate-100">
+                    <div className="relative h-48 w-full overflow-hidden bg-[#FAFAF8]">
                       <img 
                         src={image} 
                         alt={need.item} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
-                      <div className="absolute top-4 left-4 flex gap-2">
-                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-md ${
-                          need.urgency === 'High' ? 'bg-red-500/90 text-white border border-red-400/50' : 'bg-amber-500/90 text-white border border-amber-400/50'
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <div className="absolute top-3 left-3 flex gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                          need.urgency === 'High' ? 'bg-rose-600 text-white' : 'bg-amber-600 text-white'
                         }`}>
                           {need.urgency} Priority
                         </span>
-                        <span className="px-3 py-1 bg-slate-900/80 text-white rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-md border border-slate-700/50">
-                          <MapPin className="w-3 h-3 text-emerald-400" /> Local Hub
-                        </span>
                       </div>
-                      <div className="absolute bottom-4 left-4 right-4 text-left">
-                        <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1 shadow-sm">{need.category}</p>
-                        <h4 className="text-white font-display font-black text-xl truncate">{need.ngoName}</h4>
+                      <div className="absolute bottom-3 left-3 right-3 text-left">
+                        <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-0.5">{need.category}</p>
+                        <h4 className="text-white font-bold text-base truncate">{need.ngoName}</h4>
                       </div>
                     </div>
 
-                    <div className="p-6 text-left space-y-5">
-                      <div className="space-y-2">
-                        <h3 className="text-lg font-bold text-slate-900 leading-snug line-clamp-1 group-hover:text-emerald-600 transition-colors">
+                    <div className="p-5 text-left space-y-4">
+                      <div className="space-y-1">
+                        <h3 className="text-base font-bold text-[#1E2923] leading-snug line-clamp-1">
                           {need.item} Drive
                         </h3>
-                        <p className="text-sm text-slate-500 font-medium line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-[#64748B] font-normal line-clamp-2 leading-relaxed">
                           {need.description || `Providing ${need.item} to support local community members in need.`}
                         </p>
                       </div>
 
-                      <div className="space-y-2.5 pt-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Matching Progress</span>
-                          <span className="font-black text-emerald-600 text-sm">{progress}%</span>
+                      <div className="space-y-2 pt-1">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-semibold text-[#64748B]">Matching Progress</span>
+                          <span className="font-bold text-[#2E5B3D]">{progress}%</span>
                         </div>
-                        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/60">
+                        <div className="w-full h-2 bg-[#F3F6F4] rounded-full overflow-hidden border border-[#E8EDE9]">
                           <div 
-                            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-1000 ease-out relative" 
+                            className="h-full bg-[#2E5B3D] rounded-full transition-all duration-700" 
                             style={{ width: `${progress}%` }}
-                          >
-                            <div className="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]" />
-                          </div>
+                          />
                         </div>
-                        <div className="flex justify-between items-center text-xs text-slate-500 font-medium pt-1">
-                          <span>Received: <strong className="text-slate-800">{received}</strong></span>
-                          <span>Target: <strong className="text-slate-800">{target} {need.item}</strong></span>
+                        <div className="flex justify-between items-center text-[11px] text-[#64748B]">
+                          <span>Received: <strong className="text-[#1E2923]">{received}</strong></span>
+                          <span>Target: <strong className="text-[#1E2923]">{target} {need.item}</strong></span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 pt-0 mt-2">
+                  <div className="p-5 pt-0">
                     <Button 
-                      className="w-full h-12 bg-slate-900 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group-hover:shadow-emerald-500/25"
+                      className="w-full h-10 bg-[#2E5B3D] hover:bg-[#1E3B27] text-white text-xs font-semibold rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5"
                       onClick={() => navigate(`/ngo/${need.ngoId}`)}
                     >
-                      Pledge Items <ArrowUpRight className="w-4 h-4" />
+                      Pledge Items <ArrowUpRight className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </div>
               );
             }) : (
-              <div className="col-span-3 text-center py-16 bg-slate-50 rounded-[2rem] border border-slate-200 border-dashed">
-                <p className="text-slate-500 font-medium">No active needs found at the moment.</p>
+              <div className="col-span-3 text-center py-12 bg-[#FAFAF8] rounded-3xl border border-[#E8EDE9] border-dashed text-xs text-[#64748B]">
+                No active needs found at the moment.
               </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* Process Lifecycle Section */}
-      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay" />
-        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      {/* Direct Aid Integrity Section */}
+      <section className="py-16 lg:py-20 bg-[#FAFAF8] border-b border-[#E8EDE9]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
-            <div className="lg:col-span-5 space-y-8 text-left">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+            <div className="lg:col-span-5 space-y-5 text-left">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/15 text-xs font-semibold uppercase tracking-wider">
                 Audited Logistics
               </span>
-              <h2 className="text-4xl lg:text-5xl font-display font-black text-white leading-[1.1] tracking-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E2923] leading-tight tracking-tight">
                 How We Maintain Direct Aid Integrity
               </h2>
-              <p className="text-base text-slate-400 leading-relaxed font-medium">
-                By focusing exclusively on physical supplies and cutting out monetary routing, DonateBridge ensures that every single resource item connects straight to school classrooms, community kitchens, and disaster response teams.
+              <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed font-normal">
+                By focusing exclusively on physical supplies and eliminating monetary routing, DonateBridge ensures every resource item reaches school classrooms, shelters, and disaster response teams directly.
               </p>
               
-              <div className="space-y-5 pt-4">
-                <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                    <Check className="w-5 h-5" />
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-[#E8EDE9] shadow-2xs">
+                  <div className="w-8 h-8 rounded-xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center shrink-0">
+                    <Check className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-white">Zero Financial Escrows</h4>
-                    <p className="text-sm text-slate-400 mt-1 font-medium leading-relaxed">Direct coordinator pickup. There are no platform commission fees.</p>
+                    <h4 className="text-xs font-bold text-[#1E2923]">Zero Financial Escrows</h4>
+                    <p className="text-xs text-[#64748B] mt-0.5 font-normal">Direct coordinator pickup without platform commission fees.</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                    <Check className="w-5 h-5" />
+
+                <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-[#E8EDE9] shadow-2xs">
+                  <div className="w-8 h-8 rounded-xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center shrink-0">
+                    <Check className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-white">Georadial Optimization</h4>
-                    <p className="text-sm text-slate-400 mt-1 font-medium leading-relaxed">Matches are ranked using logistical proximity to minimize local transport costs.</p>
+                    <h4 className="text-xs font-bold text-[#1E2923]">Georadial Optimization</h4>
+                    <p className="text-xs text-[#64748B] mt-0.5 font-normal">Matches ranked using physical proximity to reduce local transport costs.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { 
                   step: '01', 
@@ -941,16 +937,16 @@ export default function LandingPage() {
               ].map((item, idx) => {
                 const IconComponent = item.icon || Award;
                 return (
-                  <div key={idx} className="p-6 bg-slate-800/40 border border-slate-700/50 rounded-3xl relative text-left flex flex-col justify-between min-h-[180px] hover:bg-slate-800/80 hover:border-slate-600 transition-all duration-300 backdrop-blur-sm group">
+                  <div key={idx} className="p-5 bg-white border border-[#E8EDE9] rounded-2xl text-left flex flex-col justify-between min-h-[160px] shadow-2xs hover:border-[#2E5B3D]/30 transition-all">
                     <div>
-                      <div className="flex justify-between items-start mb-6">
-                        <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-colors">
-                          <IconComponent className="w-6 h-6" />
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center">
+                          <IconComponent className="w-5 h-5" />
                         </div>
-                        <span className="text-4xl font-display font-black text-white/5 group-hover:text-white/10 transition-colors">{item.step}</span>
+                        <span className="text-2xl font-bold text-[#94A3B8]">{item.step}</span>
                       </div>
-                      <h3 className="font-display font-bold text-lg text-white mb-2">{item.title}</h3>
-                      <p className="text-sm text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+                      <h3 className="font-bold text-sm text-[#1E2923] mb-1">{item.title}</h3>
+                      <p className="text-xs text-[#64748B] leading-relaxed font-normal">{item.desc}</p>
                     </div>
                   </div>
                 );
@@ -961,56 +957,53 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative z-10 space-y-8">
-          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-emerald-500/20 mb-8">
-            <Heart className="w-10 h-10" />
+      {/* CTA & Newsletter Section */}
+      <section className="py-16 lg:py-20 bg-white relative overflow-hidden">
+        <div className="max-w-3xl mx-auto text-center px-4 sm:px-6 lg:px-8 space-y-6 relative z-10">
+          <div className="w-14 h-14 mx-auto bg-[#EBF3EE] border border-[#2E5B3D]/15 rounded-2xl flex items-center justify-center text-[#2E5B3D] shadow-2xs">
+            <Heart className="w-7 h-7" />
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-display font-black text-slate-900 leading-[1.1] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E2923] tracking-tight">
             Ready to bridge needs in your neighborhood?
           </h2>
-          <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium">
-            Create your account today. Log in as a donor to submit item listings, or register your NGO credentials to post supply campaign requests.
+          <p className="text-xs sm:text-sm text-[#64748B] max-w-lg mx-auto leading-relaxed font-normal">
+            Create your account today. Log in as a donor to submit item dispatches, or register your NGO credentials to post supply campaign requests.
           </p>
 
-          <div className="pt-4 flex flex-wrap justify-center gap-4">
+          <div className="pt-2 flex flex-wrap justify-center gap-3">
             <Button
-              className="bg-slate-900 text-white hover:bg-emerald-600 border-none px-8 h-14 rounded-2xl font-bold text-base shadow-xl shadow-slate-900/10 hover:shadow-emerald-500/25 transition-all"
+              className="bg-[#2E5B3D] text-white hover:bg-[#1E3B27] px-6 h-11 rounded-xl font-semibold text-xs shadow-2xs transition-all"
               onClick={() => navigate('/auth?tab=register')}
             >
               Register Account
             </Button>
             <Button
               variant="outline"
-              className="bg-white text-slate-700 hover:bg-slate-50 border-slate-200 px-8 h-14 rounded-2xl font-bold text-base shadow-sm hover:border-slate-300 transition-all"
+              className="bg-white text-[#1E2923] hover:bg-[#F3F6F4] border-[#E8EDE9] px-6 h-11 rounded-xl font-semibold text-xs shadow-2xs transition-all"
               onClick={() => navigate('/discover')}
             >
               Browse Active Demands
             </Button>
           </div>
 
-          <div className="pt-12 mt-12 border-t border-slate-200 max-w-md mx-auto">
-            <form onSubmit={handleSubscribe} className="space-y-4">
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+          <div className="pt-8 mt-8 border-t border-[#E8EDE9] max-w-md mx-auto">
+            <form onSubmit={handleSubscribe} className="space-y-3">
+              <p className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wider">
                 Subscribe to local NGO campaign notifications
               </p>
-              <div className="flex bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/20 transition-all">
+              <div className="flex bg-[#F8FAF8] border border-[#E8EDE9] rounded-2xl p-1.5 focus-within:border-[#2E5B3D] transition-all">
                 <input 
                   type="email"
                   placeholder="Enter your email address"
                   value={emailSub}
                   onChange={(e) => setEmailSub(e.target.value)}
-                  className="bg-transparent border-none text-sm text-slate-900 outline-none w-full px-4 py-2 placeholder-slate-400 focus:ring-0 focus:outline-none font-medium"
+                  className="bg-transparent border-none text-xs text-[#1E2923] outline-none w-full px-3 py-2 placeholder-[#94A3B8] font-medium"
                   required
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-emerald-500 text-white text-sm font-bold rounded-xl hover:bg-emerald-600 shrink-0 transition-colors cursor-pointer shadow-md shadow-emerald-500/20"
+                  className="px-4 py-2 bg-[#2E5B3D] text-white text-xs font-semibold rounded-xl hover:bg-[#1E3B27] shrink-0 transition-colors cursor-pointer"
                 >
                   {subscribed ? 'Subscribed!' : 'Notify Me'}
                 </button>

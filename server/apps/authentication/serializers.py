@@ -5,6 +5,8 @@ from .models import Profile
 
 User = get_user_model()
 
+from django.db import models
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -17,6 +19,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
+        username_or_email = attrs.get(self.username_field)
+        password = attrs.get('password')
+
+        if username_or_email and password:
+            matched_user = User.objects.filter(
+                models.Q(email__iexact=username_or_email) | models.Q(username__iexact=username_or_email)
+            ).first()
+            if matched_user:
+                attrs[self.username_field] = matched_user.email
+
         data = super().validate(attrs)
         data['user'] = {
             'id': self.user.id,

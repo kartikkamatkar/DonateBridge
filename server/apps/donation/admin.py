@@ -8,37 +8,35 @@ class DonationPhotoInline(admin.TabularInline):
     extra = 0
     readonly_fields = ('uploaded_at',)
 
-@admin.action(description="Approve selected pending donations")
+@admin.action(description="Approve selected donations")
 def approve_pending_donations(modeladmin, request, queryset):
     for donation in queryset:
-        if donation.status == DonationStatus.PENDING:
-            donation.status = DonationStatus.VERIFIED
-            donation.reviewed_at = timezone.now()
-            donation.rejection_reason = None
-            donation.save()
-            AuditLog.objects.create(
-                user=request.user,
-                action_type="DONATION_AUDIT",
-                description=f"Donation listing '{donation.title}' (ID: {donation.id}) moderated: APPROVE via Admin Action.",
-                ip_address=request.META.get('REMOTE_ADDR')
-            )
-    modeladmin.message_user(request, "Selected pending donations were approved.")
+        donation.status = DonationStatus.VERIFIED
+        donation.reviewed_at = timezone.now()
+        donation.rejection_reason = None
+        donation.save()
+        AuditLog.objects.create(
+            user=request.user,
+            action_type="DONATION_AUDIT",
+            description=f"Donation listing '{donation.title}' (ID: {donation.id}) moderated: APPROVE via Admin Action.",
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+    modeladmin.message_user(request, "Selected donations were approved.")
 
-@admin.action(description="Reject selected pending donations")
+@admin.action(description="Reject selected donations")
 def reject_pending_donations(modeladmin, request, queryset):
     for donation in queryset:
-        if donation.status == DonationStatus.PENDING:
-            donation.status = DonationStatus.REJECTED
-            donation.reviewed_at = timezone.now()
-            donation.rejection_reason = "Rejected via Admin Action."
-            donation.save()
-            AuditLog.objects.create(
-                user=request.user,
-                action_type="DONATION_AUDIT",
-                description=f"Donation listing '{donation.title}' (ID: {donation.id}) moderated: REJECT via Admin Action. Remarks/Reason: Rejected via Admin Action.",
-                ip_address=request.META.get('REMOTE_ADDR')
-            )
-    modeladmin.message_user(request, "Selected pending donations were rejected.")
+        donation.status = DonationStatus.REJECTED
+        donation.reviewed_at = timezone.now()
+        donation.rejection_reason = "Rejected via Admin Action."
+        donation.save()
+        AuditLog.objects.create(
+            user=request.user,
+            action_type="DONATION_AUDIT",
+            description=f"Donation listing '{donation.title}' (ID: {donation.id}) moderated: REJECT via Admin Action. Remarks/Reason: Rejected via Admin Action.",
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+    modeladmin.message_user(request, "Selected donations were rejected.")
 
 
 @admin.register(Donation)

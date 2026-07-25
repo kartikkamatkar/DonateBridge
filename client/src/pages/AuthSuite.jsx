@@ -67,6 +67,7 @@ export default function AuthSuite() {
 
   const onSubmitCredentials = async (data) => {
     setAuthError('');
+    clearAuthMessage();
     setLoading(true);
 
     try {

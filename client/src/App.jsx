@@ -7,7 +7,6 @@ const LandingPage = lazy(() => import('./pages/LandingPage'));
 const AuthSuite = lazy(() => import('./pages/AuthSuite'));
 const DonorDashboard = lazy(() => import('./pages/DonorDashboard'));
 const NgoConsole = lazy(() => import('./pages/NgoConsole'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SearchDirectory = lazy(() => import('./pages/SearchDirectory'));
 const NgoProfile = lazy(() => import('./pages/NgoProfile'));
 const RequestWizard = lazy(() => import('./pages/RequestWizard'));
