@@ -208,7 +208,7 @@ export default function NgoConsole() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F1E8] text-[#2C352E] font-sans selection:bg-[#4A7C59]/20">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 font-sans selection:bg-[#4A7C59]/20">
       <Navbar />
 
       <main className="flex-grow max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 pt-24 space-y-8 relative z-10">

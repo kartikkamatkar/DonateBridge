@@ -1,52 +1,141 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/GlobalStateContext';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/GlobalStateContext';
 import { useToast } from '../components/ui/Toast';
-import { Download, ShieldCheck, Lock, Mail, Star, Heart, Leaf, Check, Activity, Sparkles, MapPin, Phone, LogOut } from 'lucide-react';
+import { 
+  Download, Edit2, Check, Mail, Phone, MapPin, 
+  ShieldCheck, Lock, Package, FileText, ArrowUpRight, 
+  RefreshCw, Leaf, LogOut, CheckCircle2, Plus, Key, Shield,
+  Upload, Camera, User, X
+} from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
 import Navbar from '../components/layout/Navbar';
-import { authAPI, getApiError } from '../api/index';
-import { motion, AnimatePresence } from 'framer-motion';
+import { authAPI, donationAPI, getApiError } from '../api/index';
+import { motion } from 'framer-motion';
+
+const AVATAR_PRESETS = [
+  { id: 'av-1', label: 'Default', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=donor&backgroundColor=e8f3ec' },
+  { id: 'av-2', label: 'Professional', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah&backgroundColor=b6e3f4' },
+  { id: 'av-3', label: 'Executive', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex&backgroundColor=c0aede' },
+  { id: 'av-4', label: 'Leader', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=michael&backgroundColor=ffdfbf' },
+  { id: 'av-5', label: 'Hero', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=hero&backgroundColor=d1d4f9' },
+  { id: 'av-6', label: 'Eco', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=eco&backgroundColor=ffd5dc' },
+];
 
 export default function UserProfile() {
-  const { user, logout } = useAuth();
+  const { user, setUser, logout, refreshUserData } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
-  const [activeTab, setActiveTab] = useState('account');
-  const [profileName, setProfileName] = useState(user?.name || 'Sarah Jenkins');
-  const [profilePhone, setProfilePhone] = useState(user?.phone || '+1 (555) 019-2831');
-  const [profileLocation, setProfileLocation] = useState(user?.location || 'East End, Sector 4');
-  const [isSaved, setIsSaved] = useState(false);
+  // UI Modes
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Form State
+  const [profileName, setProfileName] = useState(user?.name || user?.username || '');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileLocation, setProfileLocation] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || AVATAR_PRESETS[0].url);
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  
+  // Data & Upload States
+  const [myDonations, setMyDonations] = useState([]);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [togglingMfa, setTogglingMfa] = useState(false);
+
+  // Load profile & donations from backend DB
+  const loadUserData = async () => {
+    setLoadingProfile(true);
+    try {
+      const [meRes, donationsRes] = await Promise.all([
+        authAPI.getMe().catch(() => null),
+        donationAPI.getMyDonations().catch(() => null)
+      ]);
+
+      if (meRes?.data) {
+        const u = meRes.data;
+        setProfileName(u.username || u.name || '');
+        if (u.avatar && (u.avatar.startsWith('http') || u.avatar.startsWith('/media'))) {
+          setSelectedAvatar(u.avatar);
+        } else {
+          setSelectedAvatar(AVATAR_PRESETS[0].url);
+        }
+
+        if (u.profile) {
+          setProfilePhone(u.profile.phone || '');
+          setProfileLocation(u.profile.address || '');
+          setMfaEnabled(!!u.profile.mfa_enabled);
+        }
+      }
+
+      if (donationsRes?.data) {
+        setMyDonations(Array.isArray(donationsRes.data) ? donationsRes.data : (donationsRes.data.results || []));
+      }
+    } catch (err) {
+      console.error('Failed to load user profile', err);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
 
   useEffect(() => {
-    if (user) {
-      setProfileName(user.name || '');
-      setProfilePhone(user.phone || '');
-      setProfileLocation(user.location || '');
+    loadUserData();
+  }, []);
+
+  // Custom Profile Image Upload Handler (End-to-End API Integration)
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image file size must be under 5MB');
+      return;
     }
-  }, [user]);
 
-  const [receipts] = useState([
-    { id: 'TX-9901', item: '25 Wool Blankets', date: '2026-06-25', size: '148 KB', code: '501C3-Hope' },
-    { id: 'TX-9844', item: '40 School Textbooks', date: '2026-06-18', size: '162 KB', code: '501C3-Green' },
-    { id: 'TX-9721', item: '1 Oxygen Concentrator', date: '2026-05-10', size: '135 KB', code: '501C3-Hope' },
-  ]);
+    setIsUploading(true);
+    try {
+      const res = await authAPI.uploadFile(file);
+      if (res?.data?.url) {
+        setSelectedAvatar(res.data.url);
+        toast.success('Profile photo uploaded! Click "Save Profile Details" to apply.');
+      }
+    } catch (err) {
+      toast.error(getApiError(err));
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
+  // Save updated profile details to backend
   const handleSaveProfile = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setIsSaving(true);
     try {
-      await authAPI.updateMe({
+      const updatedRes = await authAPI.updateMe({
         name: profileName,
         phone: profilePhone,
-        location: profileLocation
+        address: profileLocation,
+        location: profileLocation,
+        avatar: selectedAvatar,
+        mfa_enabled: mfaEnabled,
       });
-      setIsSaved(true);
+
+      if (updatedRes?.data) {
+        const freshUser = {
+          ...user,
+          name: updatedRes.data.username || profileName,
+          avatar: updatedRes.data.avatar || selectedAvatar,
+        };
+        setUser(freshUser);
+        localStorage.setItem('user', JSON.stringify(freshUser));
+      }
+
+      await refreshUserData();
+      setIsEditing(false);
       toast.success('Profile details saved successfully!');
-      setTimeout(() => setIsSaved(false), 2000);
     } catch (err) {
       toast.error(getApiError(err));
     } finally {
@@ -54,8 +143,32 @@ export default function UserProfile() {
     }
   };
 
-  const handleDownload = (id) => {
-    toast.info(`Downloading Receipt: ${id}.pdf`);
+  // Toggle MFA Handler
+  const handleToggleMFA = async () => {
+    setTogglingMfa(true);
+    const newMfaState = !mfaEnabled;
+    try {
+      await authAPI.updateMe({ mfa_enabled: newMfaState });
+      setMfaEnabled(newMfaState);
+      toast.success(`MFA Authentication ${newMfaState ? 'Enabled' : 'Disabled'}`);
+    } catch (err) {
+      toast.error(getApiError(err));
+    } finally {
+      setTogglingMfa(false);
+    }
+  };
+
+  const handleSendResetPassword = async () => {
+    try {
+      await authAPI.forgotPassword(user?.email);
+      toast.success(`Password reset OTP sent to ${user?.email}`);
+    } catch (err) {
+      toast.error(getApiError(err));
+    }
+  };
+
+  const handleDownloadReceipt = (id, title) => {
+    toast.info(`Downloading 80G Tax Receipt for ${title} (${id}.pdf)`);
   };
 
   const handleLogout = () => {
@@ -63,367 +176,426 @@ export default function UserProfile() {
     navigate('/auth');
   };
 
-  const contributionGrid = Array.from({ length: 52 }, (_, i) => {
-    const weights = [0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 1, 0, 0, 2, 0, 0, 0, 4, 0, 1];
-    return weights[i % weights.length];
-  });
+  // Metrics
+  const deliveredDonations = myDonations.filter(d => d.status === 'DELIVERED');
+  const totalItemsCount = myDonations.reduce((acc, d) => acc + (d.quantity || 1), 0);
+  const carbonOffsetKg = totalItemsCount * 10;
+  const userLevel = Math.min(5, Math.floor(myDonations.length / 3) + 1);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F1F5F9] selection:bg-emerald-500/30">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 font-sans selection:bg-[#4A7C59]/20">
       <Navbar />
 
-      {/* Hero Header Section */}
-      <div className="relative h-72 md:h-96 w-full overflow-hidden bg-slate-900 rounded-b-[3rem] lg:rounded-b-[5rem]">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 via-slate-900 to-teal-900 opacity-90" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-        <div className="absolute inset-0 flex items-center justify-center">
-           <div className="w-[800px] h-[400px] bg-emerald-500/20 blur-[120px] rounded-full pointer-events-none" />
-        </div>
-      </div>
-
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 pb-20 -mt-40 md:-mt-48 relative z-10 space-y-8">
+      <main className="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-6">
         
-        {/* Profile Card Overlay */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white/80 backdrop-blur-2xl border border-white rounded-[2rem] p-6 md:p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-2xl shadow-slate-200/50"
-        >
-          {/* Glassmorphic Shine */}
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
-          
-          <div className="relative group shrink-0">
-            <div className="absolute inset-0 bg-emerald-400 rounded-full blur-xl opacity-40 group-hover:opacity-70 transition-opacity duration-500" />
-            <img
-              src={user?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=donor&backgroundColor=e2e8f0'}
-              alt="avatar"
-              className="w-32 h-32 md:w-44 md:h-44 rounded-full border-[6px] border-white shadow-xl relative z-10 bg-slate-100 object-cover group-hover:scale-105 transition-transform duration-500"
-            />
+        {/* HEADER SECTION */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+          <div className="space-y-1">
+            <h1 className="font-display font-black text-2xl md:text-3xl text-slate-900 tracking-tight">
+              My Profile &amp; Settings
+            </h1>
+            <p className="text-xs text-slate-500 font-medium">
+              View your account details, manage security preferences, and track your contribution history.
+            </p>
           </div>
 
-          <div className="space-y-5 text-center md:text-left flex-1 min-w-0 z-10">
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
-              <h2 className="text-3xl md:text-5xl font-display font-black text-slate-900 tracking-tight">{profileName}</h2>
-              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 rounded-full font-bold text-xs uppercase tracking-widest mt-2 md:mt-0">
-                <Sparkles className="w-3.5 h-3.5" />
-                Level 4 Donor
-              </span>
-            </div>
-            
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-5 text-slate-600 font-medium text-sm">
-              <span className="flex items-center gap-2"><Mail className="w-4 h-4 text-emerald-500" /> {user?.email || 'sarah@donor.org'}</span>
-              <span className="flex items-center gap-2"><Phone className="w-4 h-4 text-emerald-500" /> {profilePhone}</span>
-              <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-emerald-500" /> {profileLocation}</span>
-            </div>
-
-            <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-              <div className="px-5 py-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3 hover:shadow-md hover:border-emerald-200 transition-all">
-                <span className="text-3xl font-black text-slate-800">12</span>
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-tight">Total<br/>Dispatches</span>
-              </div>
-              <div className="px-5 py-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3 hover:shadow-md hover:border-emerald-200 transition-all">
-                <span className="text-3xl font-black text-emerald-600">1.2k</span>
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-tight">Eco<br/>Points</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3 w-full md:w-auto shrink-0 mt-4 md:mt-0 z-10">
-            {user?.role === 'ngo' && (
-              <Button variant="primary" onClick={() => navigate('/ngo-register')} className="shadow-lg shadow-emerald-500/20 h-12 px-6 rounded-xl font-bold">
-                Manage NGO License
-              </Button>
-            )}
-            <Button variant="secondary" onClick={() => navigate('/settings')} className="bg-white hover:bg-slate-50 h-12 px-6 rounded-xl font-bold border border-slate-200 shadow-sm">
-              Account Preferences
-            </Button>
-            <Button variant="ghost" onClick={handleLogout} className="text-red-500 hover:bg-red-50 hover:text-red-600 h-12 px-6 rounded-xl font-bold flex items-center justify-center gap-2">
-              <LogOut className="w-4 h-4" /> Sign Out
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Tab Selection */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex p-2 bg-white/60 backdrop-blur-xl border border-slate-200/60 rounded-[1.25rem] w-full max-w-2xl mx-auto md:mx-0 overflow-x-auto hide-scrollbar shadow-sm"
-        >
-          {['account', 'receipts', 'achievements'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 min-w-[140px] px-6 py-3 font-bold text-sm rounded-xl transition-all duration-300 relative ${
-                activeTab === tab
-                  ? 'text-slate-900 shadow-sm bg-white'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
-              }`}
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={loadUserData}
+              disabled={loadingProfile}
+              className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
             >
-              {activeTab === tab && (
-                <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl shadow-sm border border-slate-200/50 -z-10" />
-              )}
-              {tab === 'account' ? 'Profile Details' : tab === 'receipts' ? 'Tax Receipts' : 'Achievements'}
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingProfile ? 'animate-spin' : ''}`} /> Refresh
             </button>
-          ))}
-        </motion.div>
+            
+            <button 
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" /> Sign Out
+            </button>
+          </div>
+        </div>
 
-        {/* Tab Panels */}
-        <div className="relative">
-          <AnimatePresence mode="wait">
-            {activeTab === 'account' && (
-              <motion.div 
-                key="account"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
-              >
-                
-                <div className="lg:col-span-8 space-y-8">
-                  {/* Form Card */}
-                  <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-[80px] -mr-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+        {/* 2-COLUMN MAIN CONTENT GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* LEFT COLUMN: PROFILE (READ-ONLY BY DEFAULT, EDITABLE ON CLICK) & SECURITY */}
+          <div className="lg:col-span-7 space-y-6">
+            
+            {/* Personal Details Card */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+                  Personal Details
+                </h3>
+
+                {!isEditing ? (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="inline-flex items-center gap-1.5 bg-[#4A7C59] hover:bg-[#3B6647] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" /> Edit Profile
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" /> Cancel
+                  </button>
+                )}
+              </div>
+
+              {/* READ-ONLY VIEW (DEFAULT) */}
+              {!isEditing ? (
+                <div className="space-y-6">
+                  {/* Avatar & Name Header */}
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={selectedAvatar}
+                      alt="Profile Avatar"
+                      className="w-20 h-20 rounded-2xl object-cover border-2 border-[#4A7C59]/30 bg-slate-50 shadow-sm"
+                      onError={(e) => { e.target.src = AVATAR_PRESETS[0].url; }}
+                    />
+                    <div className="space-y-1">
+                      <h4 className="font-extrabold text-slate-900 text-xl tracking-tight">
+                        {profileName || 'Member User'}
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A7C59] bg-[#E8F3EC] px-2.5 py-0.5 rounded-full border border-[#4A7C59]/20">
+                          {user?.role || 'Donor'}
+                        </span>
+                        <span className="text-slate-400 text-xs flex items-center gap-1 font-medium">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#4A7C59]" /> Account Verified
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Info Table Rows */}
+                  <div className="space-y-3 pt-2 text-sm border-t border-slate-100">
+                    <div className="flex items-center justify-between py-2 border-b border-slate-50">
+                      <span className="text-slate-500 font-medium text-xs flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-slate-400" /> Account Email
+                      </span>
+                      <span className="font-bold text-slate-800 text-xs font-mono">{user?.email}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2 border-b border-slate-50">
+                      <span className="text-slate-500 font-medium text-xs flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-slate-400" /> Contact Telephone
+                      </span>
+                      <span className="font-bold text-slate-800 text-xs">
+                        {profilePhone || <span className="text-slate-400 italic">Not provided</span>}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-slate-500 font-medium text-xs flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-slate-400" /> Primary Location
+                      </span>
+                      <span className="font-bold text-slate-800 text-xs">
+                        {profileLocation || <span className="text-slate-400 italic">Not provided</span>}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* EDIT FORM VIEW (SHOWN ONLY WHEN isEditing === true) */
+                <form onSubmit={handleSaveProfile} className="space-y-6">
+                  
+                  {/* Profile Photo & Avatar Chooser */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Profile Picture</label>
                     
-                    <h3 className="text-2xl font-display font-black text-slate-900 mb-8 relative z-10 tracking-tight">Personal Information</h3>
-                    
-                    <form onSubmit={handleSaveProfile} className="space-y-6 relative z-10">
-                      <InputField
-                        label="Full Name / Brand Title"
-                        id="profileName"
-                        value={profileName}
-                        onChange={(e) => setProfileName(e.target.value)}
-                        required
-                        className="!bg-slate-50 border-slate-200 rounded-xl"
+                    <div className="flex flex-col sm:flex-row items-center gap-5">
+                      {/* Active Photo Preview */}
+                      <div className="relative group shrink-0">
+                        <img
+                          src={selectedAvatar}
+                          alt="Profile Avatar"
+                          className="w-20 h-20 rounded-2xl object-cover border-2 border-[#4A7C59]/30 bg-slate-50 shadow-sm"
+                          onError={(e) => { e.target.src = AVATAR_PRESETS[0].url; }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                          className="absolute -bottom-1 -right-1 p-1.5 bg-[#4A7C59] text-white rounded-lg shadow-md hover:bg-[#3B6647] transition-all cursor-pointer"
+                          title="Upload Custom Photo"
+                        >
+                          <Camera className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        className="hidden"
                       />
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <InputField
-                          label="Contact Telephone"
-                          id="profilePhone"
-                          value={profilePhone}
-                          onChange={(e) => setProfilePhone(e.target.value)}
-                          required
-                          className="!bg-slate-50 border-slate-200 rounded-xl"
-                        />
-                        <InputField
-                          label="Location Area"
-                          id="profileLocation"
-                          value={profileLocation}
-                          onChange={(e) => setProfileLocation(e.target.value)}
-                          required
-                          className="!bg-slate-50 border-slate-200 rounded-xl"
-                        />
-                      </div>
-
-                      <div className="flex justify-end pt-4">
-                        <Button type="submit" variant="primary" icon={isSaved ? Check : undefined} loading={isSaving} className="px-8 h-12 text-sm font-bold shadow-lg shadow-emerald-500/25 rounded-xl transition-all">
-                          {isSaved ? 'Details Saved' : isSaving ? 'Saving…' : 'Save Changes'}
-                        </Button>
-                      </div>
-                    </form>
-                  </div>
-
-                  {/* Heatmap Card */}
-                  <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 relative overflow-hidden">
-                    <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-blue-50 rounded-full blur-[60px] opacity-60" />
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-8 gap-4 relative z-10">
-                      <div>
-                        <h4 className="text-xl font-display font-black text-slate-900 flex items-center gap-2 tracking-tight">
-                          <Activity className="w-6 h-6 text-emerald-500" /> Dispatch Heatmap
-                        </h4>
-                        <p className="text-slate-500 text-sm mt-1 font-medium">Your logistics contribution frequency mapped across 52 weeks.</p>
-                      </div>
-                      <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 shadow-sm">12 Active Weeks</span>
-                    </div>
-
-                    <div className="border border-slate-100 p-6 rounded-3xl bg-slate-50/50 shadow-inner relative z-10">
-                      <div className="grid grid-cols-13 gap-2">
-                        {contributionGrid.map((level, idx) => (
-                          <div
-                            key={idx}
-                            className={`aspect-square rounded-md transition-all duration-300 hover:scale-125 cursor-pointer ${
-                              level === 0 ? 'bg-slate-200/70 hover:bg-slate-300' :
-                              level === 1 ? 'bg-emerald-200' :
-                              level === 2 ? 'bg-emerald-400' :
-                              level === 3 ? 'bg-emerald-500' : 'bg-emerald-600 shadow-sm shadow-emerald-500/40'
-                            }`}
-                            title={`Week ${idx + 1}: ${level} donations`}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex justify-between items-center text-[10px] font-black text-slate-400 mt-6 uppercase tracking-widest">
-                        <span>1 Year Ago</span>
-                        <div className="flex items-center gap-2">
-                          <span>Less</span>
-                          <span className="w-3.5 h-3.5 bg-slate-200 rounded-[4px]" />
-                          <span className="w-3.5 h-3.5 bg-emerald-200 rounded-[4px]" />
-                          <span className="w-3.5 h-3.5 bg-emerald-400 rounded-[4px]" />
-                          <span className="w-3.5 h-3.5 bg-emerald-500 rounded-[4px]" />
-                          <span className="w-3.5 h-3.5 bg-emerald-600 rounded-[4px]" />
-                          <span>More</span>
+                      {/* Presets & Custom Upload Button */}
+                      <div className="space-y-2 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {AVATAR_PRESETS.map((preset) => (
+                            <button
+                              key={preset.id}
+                              type="button"
+                              onClick={() => setSelectedAvatar(preset.url)}
+                              className={`relative w-10 h-10 rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${
+                                selectedAvatar === preset.url
+                                  ? 'border-[#4A7C59] ring-2 ring-[#4A7C59]/20 scale-105 shadow-2xs'
+                                  : 'border-slate-200 hover:border-slate-300 opacity-80 hover:opacity-100'
+                              }`}
+                              title={preset.label}
+                            >
+                              <img src={preset.url} alt={preset.label} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
                         </div>
-                        <span>Today</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="lg:col-span-4 space-y-6">
-                  
-                  {/* Progression Card */}
-                  <div className="bg-slate-900 rounded-[2rem] p-8 shadow-2xl shadow-slate-900/20 text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-[60px] -mr-10 -mt-10 pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500/20 rounded-full blur-[60px] -ml-10 -mb-10 pointer-events-none" />
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none" />
-                    
-                    <div className="flex justify-between items-center mb-8 relative z-10">
-                      <span className="text-emerald-400 font-bold text-[10px] uppercase tracking-widest font-mono bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">Tier Progression</span>
-                      <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
-                    </div>
-                    <div className="space-y-4 relative z-10">
-                      <div className="flex justify-between font-black text-xl tracking-tight">
-                        <span>Carbon Hero Lvl 5</span>
-                        <span className="text-emerald-400">75%</span>
-                      </div>
-                      <div className="w-full bg-slate-800/80 h-4 rounded-full overflow-hidden backdrop-blur-sm border border-slate-700 shadow-inner">
-                        <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full relative w-[75%] transition-all duration-1000 ease-out">
-                          <div className="absolute inset-0 bg-white/20 w-full h-full rounded-full animate-[shimmer_2s_infinite]" style={{ backgroundImage: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)', backgroundSize: '200% 100%' }} />
-                        </div>
-                      </div>
-                      <p className="text-slate-400 text-sm mt-3 leading-relaxed font-medium">Fulfill <b className="text-white">2 more items</b> to unlock the prestigious Gold Badge milestone!</p>
-                    </div>
-                  </div>
-
-                  {/* Security Card */}
-                  <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 relative overflow-hidden">
-                    <h3 className="font-display font-black text-slate-900 mb-6 text-xl tracking-tight">Security & Trust</h3>
-                    
-                    <div className="space-y-4 relative z-10">
-                      <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex gap-4 hover:border-emerald-200 hover:shadow-md transition-all group">
-                        <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-200 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                          <Lock className="w-5 h-5 text-slate-700" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-slate-900">MFA Login</span>
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md text-[10px] font-black tracking-widest uppercase">Active</span>
-                          </div>
-                          <p className="text-slate-500 text-xs leading-relaxed font-medium">OTP verification is securing your account.</p>
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex gap-4 hover:border-emerald-200 hover:shadow-md transition-all group">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                          <ShieldCheck className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-slate-900">License Badge</span>
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md text-[10px] font-black tracking-widest uppercase">Verified</span>
-                          </div>
-                          <p className="text-slate-500 text-xs leading-relaxed font-medium">Identity verified successfully.</p>
+                        <div className="flex items-center gap-2 pt-1">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 hover:bg-[#4A7C59] hover:text-white text-xs h-8 px-3 rounded-lg font-bold transition-all"
+                          >
+                            <Upload className="w-3 h-3 mr-1" /> {isUploading ? 'Uploading...' : 'Upload Custom Image'}
+                          </Button>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                </div>
-              </motion.div>
-            )}
+                  <InputField
+                    label="Full Name / Display Name"
+                    id="profileName"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    required
+                    className="!bg-slate-50 border-slate-200 text-sm rounded-xl"
+                  />
 
-            {activeTab === 'receipts' && (
-              <motion.div 
-                key="receipts"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl shadow-slate-200/40 border border-slate-100"
-              >
-                <div className="mb-10 text-center max-w-2xl mx-auto">
-                  <h3 className="text-3xl font-display font-black text-slate-900 tracking-tight">Tax Exemption Certificates</h3>
-                  <p className="text-slate-500 mt-3 font-medium leading-relaxed">Every successfully claimed and delivered donation triggers a tax receipt token. Download these for your annual 80G deductions.</p>
-                </div>
-
-                <div className="overflow-hidden border border-slate-200/80 rounded-3xl shadow-sm">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50/80 text-slate-500 font-bold text-[10px] uppercase tracking-widest">
-                          <th className="p-6">Certificate ID</th>
-                          <th className="p-6">Items Summary</th>
-                          <th className="p-6">Date Approved</th>
-                          <th className="p-6">NGO Stamp</th>
-                          <th className="p-6">Size</th>
-                          <th className="p-6 text-right">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {receipts.map((rec) => (
-                          <tr key={rec.id} className="hover:bg-emerald-50/30 transition-colors group">
-                            <td className="p-6 font-mono font-bold text-slate-400 text-sm group-hover:text-emerald-500 transition-colors">{rec.id}</td>
-                            <td className="p-6 font-bold text-slate-900">{rec.item}</td>
-                            <td className="p-6 font-mono text-slate-500 text-sm font-medium">{rec.date}</td>
-                            <td className="p-6"><span className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg font-mono font-bold text-xs border border-slate-200">{rec.code}</span></td>
-                            <td className="p-6 font-mono text-slate-400 text-sm font-medium">{rec.size}</td>
-                            <td className="p-6 text-right">
-                              <button
-                                onClick={() => handleDownload(rec.id)}
-                                className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 text-slate-600 hover:bg-emerald-500 hover:text-white hover:shadow-lg hover:shadow-emerald-500/30 transition-all cursor-pointer"
-                                title="Download PDF"
-                              >
-                                <Download className="w-5 h-5" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Account Email</label>
+                    <input
+                      type="email"
+                      value={user?.email || ''}
+                      disabled
+                      className="w-full bg-slate-100 border border-slate-200 p-3 rounded-xl text-slate-500 text-sm font-medium cursor-not-allowed"
+                    />
                   </div>
-                </div>
-              </motion.div>
-            )}
 
-            {activeTab === 'achievements' && (
-              <motion.div 
-                key="achievements"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl shadow-slate-200/40 border border-slate-100"
-              >
-                <div className="mb-10 text-center max-w-2xl mx-auto">
-                  <h3 className="text-3xl font-display font-black text-slate-900 tracking-tight">Eco Achievements</h3>
-                  <p className="text-slate-500 mt-3 font-medium leading-relaxed">Gamified eco highlights indicating your environmental contributions and prompt dispatch reflexes.</p>
-                </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <InputField
+                      label="Contact Telephone"
+                      id="profilePhone"
+                      placeholder="+1 (555) 019-2831"
+                      value={profilePhone}
+                      onChange={(e) => setProfilePhone(e.target.value)}
+                      className="!bg-slate-50 border-slate-200 text-sm rounded-xl"
+                    />
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                  {[
-                    { icon: Leaf, color: 'text-emerald-500', bg: 'bg-emerald-50', shadow: 'shadow-emerald-500/10', border: 'border-emerald-100', title: 'Carbon Savior', desc: 'Prevented over 50kg of CO₂ from waste streams.' },
-                    { icon: Heart, color: 'text-rose-500', bg: 'bg-rose-50', shadow: 'shadow-rose-500/10', border: 'border-rose-100', title: 'Critical Responder', desc: 'Helped fulfill an urgent medical demand listing under 3 hours.' },
-                    { icon: Star, color: 'text-amber-500', bg: 'bg-amber-50', shadow: 'shadow-amber-500/10', border: 'border-amber-100', title: 'Fulfillment Star', desc: 'Maintain a perfect 100% completed donation record.' }
-                  ].map((badge, i) => (
-                    <motion.div 
-                      key={i} 
-                      whileHover={{ y: -8 }}
-                      className={`p-8 bg-white border border-slate-100 shadow-lg ${badge.shadow} hover:border-slate-200 rounded-3xl text-center space-y-5 transition-all duration-300 group`}
+                    <InputField
+                      label="Location / Area Address"
+                      id="profileLocation"
+                      placeholder="e.g. Sector 4, East Hub"
+                      value={profileLocation}
+                      onChange={(e) => setProfileLocation(e.target.value)}
+                      className="!bg-slate-50 border-slate-200 text-sm rounded-xl"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
                     >
-                      <div className={`w-24 h-24 mx-auto rounded-3xl ${badge.bg} border ${badge.border} flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
-                        <badge.icon className={`w-12 h-12 ${badge.color}`} />
+                      Cancel
+                    </button>
+
+                    <Button 
+                      type="submit" 
+                      variant="primary" 
+                      loading={isSaving}
+                      className="bg-[#4A7C59] hover:bg-[#3B6647] text-white text-xs font-bold h-11 px-6 rounded-xl shadow-xs"
+                    >
+                      {isSaving ? 'Saving Changes...' : 'Save Profile Details'}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {/* Account Security Card */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#4A7C59]" /> Account Security
+                </h3>
+                <span className="text-xs font-bold text-slate-500">MFA Settings</span>
+              </div>
+
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <span className="font-bold text-xs text-slate-900 block">Multi-Factor Authentication (MFA)</span>
+                  <span className="text-xs text-slate-500 block">Protect login access with OTP email verification</span>
+                </div>
+
+                <button
+                  onClick={handleToggleMFA}
+                  disabled={togglingMfa}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    mfaEnabled ? 'bg-[#4A7C59]' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      mfaEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+                  <Key className="w-4 h-4 text-slate-400" /> Need to update your password?
+                </div>
+                <button
+                  onClick={handleSendResetPassword}
+                  className="text-xs font-bold text-[#4A7C59] hover:underline cursor-pointer"
+                >
+                  Send Reset OTP →
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* RIGHT COLUMN: ACCOUNT OVERVIEW & ACTIVITY */}
+          <div className="lg:col-span-5 space-y-6">
+            
+            {/* Account Summary Metrics Card */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="font-bold text-slate-900 text-base">Account Overview</h3>
+                <span className="px-2.5 py-0.5 bg-[#E8F3EC] text-[#4A7C59] font-bold text-[10px] uppercase rounded-full border border-[#4A7C59]/20">
+                  {user?.role || 'Donor'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Total Dispatches</span>
+                  <span className="text-2xl font-black text-slate-900 block font-mono">{myDonations.length}</span>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Carbon Offset</span>
+                  <span className="text-2xl font-black text-[#4A7C59] block font-mono">{carbonOffsetKg} kg</span>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Contributor Tier:</span>
+                <span className="font-bold text-[#4A7C59]">Level {userLevel} Hero</span>
+              </div>
+            </div>
+
+            {/* Recent Contribution Dispatches List */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <Package className="w-4.5 h-4.5 text-[#4A7C59]" /> Recent Dispatches
+                </h3>
+                <button
+                  onClick={() => navigate('/request-wizard')}
+                  className="text-xs font-bold text-[#4A7C59] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" /> New
+                </button>
+              </div>
+
+              {myDonations.length === 0 ? (
+                <div className="text-center py-6 space-y-2">
+                  <p className="text-xs font-bold text-slate-600">No active dispatches submitted yet</p>
+                  <Button 
+                    variant="primary" 
+                    onClick={() => navigate('/request-wizard')}
+                    className="bg-[#4A7C59] text-white text-xs h-9 px-4 rounded-xl font-bold"
+                  >
+                    Start Donation Wizard
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {myDonations.slice(0, 4).map((d) => (
+                    <div key={d.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs hover:border-[#4A7C59]/40 transition-colors">
+                      <div className="space-y-0.5 truncate max-w-[170px]">
+                        <span className="font-bold text-slate-900 block truncate">{d.title || d.category}</span>
+                        <span className="text-[10px] text-slate-500 font-mono block">ID: {d.id} ({d.quantity} u)</span>
                       </div>
-                      <div>
-                        <h4 className="font-display font-black text-slate-900 text-xl tracking-tight">{badge.title}</h4>
-                        <p className="text-slate-500 text-sm mt-3 leading-relaxed font-medium">{badge.desc}</p>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          d.status === 'DELIVERED' ? 'bg-emerald-100 text-[#4A7C59]' :
+                          d.status === 'MATCHED' ? 'bg-[#E8F3EC] text-[#4A7C59]' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {d.status}
+                        </span>
+                        
+                        <button
+                          onClick={() => navigate(`/tracking/${d.id}`)}
+                          className="p-1 text-[#4A7C59] hover:bg-[#E8F3EC] rounded-lg transition-colors cursor-pointer"
+                          title="Track logistics"
+                        >
+                          <ArrowUpRight className="w-4 h-4" />
+                        </button>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              )}
+            </div>
+
+            {/* Tax Exemption Receipts (80G) */}
+            {deliveredDonations.length > 0 && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <FileText className="w-4.5 h-4.5 text-[#4A7C59]" /> 80G Tax Receipts
+                  </h3>
+                  <span className="text-xs text-[#4A7C59] font-bold">{deliveredDonations.length} Available</span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {deliveredDonations.map((d) => (
+                    <div key={d.id} className="p-3 bg-[#E8F3EC]/50 border border-[#4A7C59]/20 rounded-xl flex items-center justify-between text-xs">
+                      <div className="truncate max-w-[180px]">
+                        <span className="font-bold text-slate-900 block truncate">{d.title || d.category}</span>
+                        <span className="text-[10px] text-[#4A7C59] font-mono block">80G Certificate</span>
+                      </div>
+
+                      <button
+                        onClick={() => handleDownloadReceipt(d.id, d.title || d.category)}
+                        className="inline-flex items-center gap-1 bg-[#4A7C59] text-white px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-[#3B6647] transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3 h-3" /> PDF
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-          </AnimatePresence>
+
+          </div>
+
         </div>
 
       </main>

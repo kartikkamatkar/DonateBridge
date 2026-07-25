@@ -166,6 +166,7 @@ export default function DonorDashboard() {
       setPhotos([]);
       setQuantity(1);
       setSubmissionSuccess(newDnt);
+      await fetchMyDonations();
       toast.success('Donation submitted successfully! Pending admin review.');
     } catch (err) {
       toast.error(err.response?.data ? JSON.stringify(err.response.data) : getApiError(err));
@@ -198,7 +199,7 @@ export default function DonorDashboard() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F1F5F9] selection:bg-emerald-500/30">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 font-sans selection:bg-[#4A7C59]/20">
       <Navbar />
 
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-12 flex flex-col lg:flex-row gap-8 relative z-10 pt-28">
@@ -752,7 +753,7 @@ export default function DonorDashboard() {
 
                             <div className="border-t border-b border-dashed border-slate-200 py-8 w-full space-y-3 bg-slate-50/50 px-6 rounded-xl">
                               <span className="font-mono text-emerald-500 uppercase block font-bold text-[10px] tracking-widest" >DONOR NAME</span>
-                              <p className="font-display font-black text-slate-900 text-xl" >{activeReceiptDonation.donorName}</p>
+                              <p className="font-display font-black text-slate-900 text-xl" >{activeReceiptDonation.donorName || user?.name || user?.username || 'Generous Donor'}</p>
                               <p className="text-slate-600 leading-relaxed font-medium text-sm mt-4" >
                                 Successfully delivered <span className="font-black text-slate-900">{activeReceiptDonation.quantity}x {activeReceiptDonation.category}</span> items to an approved NGO partner.
                                 <br/><br/>

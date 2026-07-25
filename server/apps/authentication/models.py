@@ -9,7 +9,7 @@ class UserRole(models.TextChoices):
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=10, choices=UserRole.choices, default=UserRole.DONOR)
-    avatar = models.CharField(max_length=50, default="👩‍💼")
+    avatar = models.CharField(max_length=500, default="👩‍💼")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

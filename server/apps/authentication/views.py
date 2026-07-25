@@ -138,15 +138,22 @@ class UserMeView(generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         user = self.get_object()
-        # update user avatar and profile details
-        user.avatar = request.data.get('avatar', user.avatar)
+        
+        if 'avatar' in request.data:
+            user.avatar = request.data['avatar']
+        if 'name' in request.data and request.data['name']:
+            user.username = request.data['name']
+        elif 'username' in request.data and request.data['username']:
+            user.username = request.data['username']
         user.save()
         
-        profile = getattr(user, 'profile', None)
-        if not profile:
-            profile, _ = Profile.objects.get_or_create(user=user)
+        profile, _ = Profile.objects.get_or_create(user=user)
+        
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        if 'location' in data and 'address' not in data:
+            data['address'] = data['location']
             
-        profile_serializer = ProfileSerializer(profile, data=request.data, partial=True)
+        profile_serializer = ProfileSerializer(profile, data=data, partial=True)
         profile_serializer.is_valid(raise_exception=True)
         profile_serializer.save()
         
