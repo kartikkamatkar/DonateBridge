@@ -279,7 +279,7 @@ export default function LandingPage() {
                   placeholder="Search Registry (e.g. Blankets, Medicine, Textbooks)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-xs sm:text-sm text-[#1E2923] placeholder-[#94A3B8] bg-transparent border-none outline-none focus:outline-none focus:ring-0 !min-h-0 !h-auto !shadow-none !py-2 !px-1"
+                  className="w-full text-xs sm:text-sm text-[#1E2923] placeholder-[#94A3B8] bg-transparent border-none outline-none focus:outline-none focus:ring-0 min-h-0! h-auto! shadow-none! py-2! px-1!"
                 />
                 <Button
                   type="submit"
