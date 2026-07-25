@@ -34,7 +34,7 @@ export default function Contact() {
    popupContent: (
     <div>
      <strong className="text-primary font-bold">DonateBridge HQ</strong>
-     <p className="text-slate-500 text-[10px] mt-0.5">Lokmanya Nagar, Hingna</p>
+     <p className="text-slate-500 text-xs mt-0.5">Lokmanya Nagar, Hingna</p>
     </div>
    )
   }
@@ -48,13 +48,13 @@ export default function Contact() {
     
     {/* Header Title */}
     <section className="text-center space-y-4 max-w-3xl mx-auto">
-     <span className="px-4 py-1.5 bg-emerald-50 text-primary rounded-full font-bold uppercase tracking-wider border border-emerald-100" style={{ fontSize: '11px' }}>
+     <span className="px-4 py-1.5 bg-emerald-50 text-primary rounded-full font-bold uppercase tracking-wider border border-emerald-100" >
       Get In Touch
      </span>
      <h1 className="font-display font-black text-slate-900 tracking-tight leading-tight">
       We'd love to hear from you
      </h1>
-     <p className="text-slate-500 leading-relaxed max-w-xl mx-auto" style={{ fontSize: '16px' }}>
+     <p className="text-slate-500 leading-relaxed max-w-xl mx-auto" >
       Have questions about donations, NGO verification, or logistics partnerships? Send us a message.
      </p>
     </section>
@@ -65,7 +65,7 @@ export default function Contact() {
      {/* Contact Details & Info */}
      <div className="lg:col-span-5 space-y-6 flex flex-col justify-between">
       <div className="saas-card space-y-8 flex-grow">
-       <h3 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>
+       <h3 className="font-display font-bold text-slate-900" >
         Contact Information
        </h3>
        
@@ -75,8 +75,8 @@ export default function Contact() {
           <Mail className="w-5 h-5" />
          </div>
          <div>
-          <p className="font-bold text-slate-800" style={{ fontSize: '15px' }}>Email Us</p>
-          <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>anglepriya2405@gmail.com</p>
+          <p className="font-bold text-slate-800" >Email Us</p>
+          <p className="text-slate-500 mt-1" >anglepriya2405@gmail.com</p>
        
          </div>
         </div>
@@ -86,8 +86,8 @@ export default function Contact() {
           <Phone className="w-5 h-5" />
          </div>
          <div>
-          <p className="font-bold text-slate-800" style={{ fontSize: '15px' }}>Call Us</p>
-          <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>+91 (80) 4567-8900</p>
+          <p className="font-bold text-slate-800" >Call Us</p>
+          <p className="text-slate-500 mt-1" >+91 (80) 4567-8900</p>
          </div>
         </div>
 
@@ -96,8 +96,8 @@ export default function Contact() {
           <MapPin className="w-5 h-5" />
          </div>
          <div>
-          <p className="font-bold text-slate-800" style={{ fontSize: '15px' }}>Our Office</p>
-          <p className="text-slate-500 mt-1 leading-relaxed" style={{ fontSize: '14px' }}>
+          <p className="font-bold text-slate-800" >Our Office</p>
+          <p className="text-slate-500 mt-1 leading-relaxed" >
            Lokmanya Nagar,Hingna Nagpur,<br />
            Maharashtra
           </p>
@@ -120,7 +120,7 @@ export default function Contact() {
 
      {/* Contact Form */}
      <div className="lg:col-span-7 saas-card">
-      <h3 className="font-display font-bold text-slate-900 mb-6" style={{ fontSize: '18px' }}>
+      <h3 className="font-display font-bold text-slate-900 mb-6" >
        General Feedback
       </h3>
 
@@ -158,7 +158,7 @@ export default function Contact() {
              ? 'border-primary bg-emerald-50 text-primary'
              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
            }`}
-           style={{ fontSize: '14px', minHeight: '48px' }}
+           
           >
            {role}
           </button>
@@ -174,7 +174,7 @@ export default function Contact() {
          placeholder="How can we help you?"
          rows={4}
          className="w-full p-4 text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-primary placeholder-slate-400 bg-white"
-         style={{ fontSize: '16px', minHeight: '120px' }}
+         
          required
         />
        </div>

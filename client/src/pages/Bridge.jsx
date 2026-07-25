@@ -276,10 +276,10 @@ export default function Bridge() {
            <Icon className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
-           <p className={`text-slate-400 font-semibold uppercase tracking-wider ${isActive ? 'text-primary' : ''}`} style={{ fontSize: '11px' }}>
+           <p className={`text-slate-400 font-semibold uppercase tracking-wider ${isActive ? 'text-primary' : ''}`} >
             Step {step.num}
            </p>
-           <p className={`font-semibold truncate ${isActive ? 'text-slate-900 font-bold' : 'text-slate-600'}`} style={{ fontSize: '14px' }}>
+           <p className={`font-semibold truncate ${isActive ? 'text-slate-900 font-bold' : 'text-slate-600'}`} >
             {step.title}
            </p>
           </div>
@@ -300,15 +300,15 @@ export default function Bridge() {
            <StepIcon className="w-5 h-5" />
           </div>
           <div>
-           <p className="text-primary font-semibold uppercase tracking-wider" style={{ fontSize: '12px' }}>
+           <p className="text-primary font-semibold uppercase tracking-wider" >
             Step {currentStep.num} of {STEPS.length}
            </p>
-           <h2 className="font-display font-bold text-slate-900" style={{ fontSize: '22px' }}>
+           <h2 className="font-display font-bold text-slate-900" >
             {currentStep.title}
            </h2>
           </div>
          </div>
-         <p className="text-slate-500 mt-3 leading-relaxed max-w-2xl" style={{ fontSize: '15px' }}>
+         <p className="text-slate-500 mt-3 leading-relaxed max-w-2xl" >
           {currentStep.desc}
          </p>
         </div>
@@ -318,12 +318,12 @@ export default function Bridge() {
          
          {/* Checklist */}
          <div className="space-y-2.5">
-          <h3 className="font-semibold text-slate-400 uppercase tracking-wider" style={{ fontSize: '12px' }}>
+          <h3 className="font-semibold text-slate-400 uppercase tracking-wider" >
            What happens at this step
           </h3>
           <ul className="space-y-2">
            {currentStep.details.map((item, i) => (
-            <li key={i} className="flex items-center gap-3 text-slate-700" style={{ fontSize: '15px' }}>
+            <li key={i} className="flex items-center gap-3 text-slate-700" >
              <CheckCircle className="w-4 h-4 text-primary shrink-0" />
              {item}
             </li>
@@ -333,10 +333,10 @@ export default function Bridge() {
 
          {/* Live Preview Mockup */}
          <div className="space-y-3">
-          <h3 className="font-semibold text-slate-400 uppercase tracking-wider" style={{ fontSize: '12px' }}>
+          <h3 className="font-semibold text-slate-400 uppercase tracking-wider" >
            Preview
           </h3>
-          <div className="border border-border rounded-xl p-5 bg-slate-50/30" style={{ fontSize: '14px' }}>
+          <div className="border border-border rounded-xl p-5 bg-slate-50/30" >
            {currentStep.mockup}
           </div>
          </div>

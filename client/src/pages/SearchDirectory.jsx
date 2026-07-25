@@ -9,8 +9,8 @@ import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../context/GlobalStateContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
- Search, MapPin, Heart, Share2, X, Check, RotateCcw,
- User, Sparkles, Building, CheckCircle2, Truck, Info, ExternalLink, Map, Award, Users
+  Search, MapPin, Heart, X, Check, RotateCcw,
+  User, Sparkles, Building, Truck, Info, Award, Users, Filter, Navigation
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
@@ -18,511 +18,606 @@ const CATEGORIES = ['All', 'Books', 'Clothes', 'Food', 'Furniture', 'Electronics
 const DEFAULT_COORDS = [21.1458, 79.0882]; // Nagpur default
 
 export default function SearchDirectory() {
- const { search } = useLocation();
- const navigate = useNavigate();
- const initialQuery = new URLSearchParams(search).get('query') || '';
+  const { search } = useLocation();
+  const navigate = useNavigate();
+  const initialQuery = new URLSearchParams(search).get('query') || '';
 
- const { ngos, needs, donations, claimDonation, fetchDonations, fetchNgos, loadingDonations, loadingNgos } = useRealDB();
- const { toast } = useToast();
- const { user, isAuthenticated } = useAuth();
- const currentNgo = user?.role === 'ngo' ? ngos.find(n => n.email === user?.email) || ngos[0] : null;
+  const { ngos, needs, donations, claimDonation, fetchDonations, fetchNgos, loadingDonations, loadingNgos } = useRealDB();
+  const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
+  const currentNgo = user?.role === 'ngo' ? ngos.find(n => n.email === user?.email) || ngos[0] : null;
 
- const [searchType, setSearchType] = useState(user?.role === 'ngo' ? 'donations' : 'ngos'); // 'donations' | 'ngos'
- const [query, setQuery] = useState(initialQuery);
- const [selectedCategory, setSelectedCategory] = useState('All');
- const [distanceRange, setDistanceRange] = useState(25);
- const [minTrustScore, setMinTrustScore] = useState(50);
- 
- const [selectedItem, setSelectedItem] = useState(null); // Used for both donation and NGO
- const [hoveredItemId, setHoveredItemId] = useState(null);
- 
- const [isClaiming, setIsClaiming] = useState(false);
- const [claimSuccess, setClaimSuccess] = useState(false);
- const [claimQty, setClaimQty] = useState(1);
- const [claimLogistics, setClaimLogistics] = useState('courier');
- const [claimUseCase, setClaimUseCase] = useState('');
- 
- const [wishlist, setWishlist] = useState(() => {
-  const saved = localStorage.getItem('db_wishlist');
-  return saved ? JSON.parse(saved) : [];
- });
-
- const [userCoords, setUserCoords] = useState(DEFAULT_COORDS);
- const [coordsLoaded, setCoordsLoaded] = useState(false);
-
- useEffect(() => {
-  if (navigator.geolocation) {
-   navigator.geolocation.getCurrentPosition(
-    (position) => {
-     setUserCoords([position.coords.latitude, position.coords.longitude]);
-     setCoordsLoaded(true);
-    },
-    () => {
-     setCoordsLoaded(true); // Fallback
-    }
-   );
-  } else {
-   setCoordsLoaded(true);
-  }
- }, []);
-
- useEffect(() => { localStorage.setItem('db_wishlist', JSON.stringify(wishlist)); }, [wishlist]);
- 
- useEffect(() => { 
-  if (selectedItem) { 
-   setClaimQty(selectedItem.quantity || 1); 
-   setClaimSuccess(false); 
-   setClaimUseCase(''); 
-   setClaimLogistics('courier'); 
-  } 
- }, [selectedItem]);
-
- // Server-side filtering logic
- useEffect(() => {
-  if (!coordsLoaded) return;
+  const [searchType, setSearchType] = useState(user?.role === 'ngo' ? 'donations' : 'ngos'); // 'donations' | 'ngos'
+  const [query, setQuery] = useState(initialQuery);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [distanceRange, setDistanceRange] = useState(25);
+  const [minTrustScore, setMinTrustScore] = useState(50);
   
-  // Debounce the fetch calls slightly to prevent spam on slider drag
-  const timeoutId = setTimeout(() => {
-   const params = {};
-   if (query) params.query = query;
-   if (selectedCategory !== 'All') params.category = selectedCategory;
-   params.lat = userCoords[0];
-   params.lng = userCoords[1];
-   params.distance = distanceRange;
-   
-   if (searchType === 'donations') {
-    fetchDonations(params);
-   } else {
-    if (minTrustScore > 0) params.trust_score = minTrustScore;
-    fetchNgos(params);
-   }
-  }, 500);
+  const [selectedItem, setSelectedItem] = useState(null); 
+  const [hoveredItemId, setHoveredItemId] = useState(null);
+  
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
+  const [claimQty, setClaimQty] = useState(1);
+  const [claimLogistics, setClaimLogistics] = useState('courier');
+  const [claimUseCase, setClaimUseCase] = useState('');
+  
+  const [wishlist, setWishlist] = useState(() => {
+    const saved = localStorage.getItem('db_wishlist');
+    return saved ? JSON.parse(saved) : [];
+  });
 
-  return () => clearTimeout(timeoutId);
- }, [query, selectedCategory, distanceRange, minTrustScore, searchType, userCoords, coordsLoaded, fetchDonations, fetchNgos]);
+  const [userCoords, setUserCoords] = useState(DEFAULT_COORDS);
+  const [coordsLoaded, setCoordsLoaded] = useState(false);
 
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserCoords([position.coords.latitude, position.coords.longitude]);
+          setCoordsLoaded(true);
+        },
+        () => {
+          setCoordsLoaded(true); // Fallback
+        }
+      );
+    } else {
+      setCoordsLoaded(true);
+    }
+  }, []);
 
- const normalizeCategory = (cat) => { if (!cat) return ''; const c = cat.toLowerCase().trim(); if (c === 'clothes' || c === 'clothing') return 'clothes'; if (c === 'medical' || c === 'medical equipment') return 'medical equipment'; return c; };
+  useEffect(() => { localStorage.setItem('db_wishlist', JSON.stringify(wishlist)); }, [wishlist]);
+  
+  useEffect(() => { 
+    if (selectedItem) { 
+      setClaimQty(selectedItem.quantity || 1); 
+      setClaimSuccess(false); 
+      setClaimUseCase(''); 
+      setClaimLogistics('courier'); 
+    } 
+  }, [selectedItem]);
 
- // Calculate distance for UI display (since backend returns standard objects without a 'dist' field dynamically sometimes)
- const displayDonations = donations.map(d => ({
-  ...d, 
-  _dist: d.location ? getDistanceInKm(userCoords[0], userCoords[1], d.location.lat, d.location.lng) : 999
- })).sort((a,b) => a._dist - b._dist);
- 
- const displayNgos = ngos.map(n => ({
-  ...n, 
-  _dist: getDistanceInKm(userCoords[0], userCoords[1], n.lat, n.lng)
- })).sort((a,b) => a._dist - b._dist);
+  // Server-side filtering logic
+  useEffect(() => {
+    if (!coordsLoaded) return;
+    const timeoutId = setTimeout(() => {
+      const params = {};
+      if (query) params.query = query;
+      if (selectedCategory !== 'All') params.category = selectedCategory;
+      params.lat = userCoords[0];
+      params.lng = userCoords[1];
+      params.distance = distanceRange;
+      
+      if (searchType === 'donations') {
+        fetchDonations(params);
+      } else {
+        if (minTrustScore > 0) params.trust_score = minTrustScore;
+        fetchNgos(params);
+      }
+    }, 500);
 
- const toggleWishlist = (id, e) => { if (e) e.stopPropagation(); if (wishlist.includes(id)) { setWishlist(prev => prev.filter(i => i !== id)); toast.success('Removed from saved.'); } else { setWishlist(prev => [...prev, id]); toast.success('Saved!'); } };
- const handleShare = (id, e) => { if (e) e.stopPropagation(); navigator.clipboard.writeText(`${window.location.origin}/discover?item=${id}`); toast.success('Link copied!'); };
+    return () => clearTimeout(timeoutId);
+  }, [query, selectedCategory, distanceRange, minTrustScore, searchType, userCoords, coordsLoaded, fetchDonations, fetchNgos]);
 
- const handleClaimSubmit = async (e) => {
-  e.preventDefault();
-  if (!isAuthenticated || user?.role !== 'ngo') { toast.error('Only NGOs can claim.'); return; }
-  setIsClaiming(true);
-  try {
-   await claimDonation(selectedItem.id);
-   setIsClaiming(false);
-   setClaimSuccess(true);
-   toast.success(`Claim submitted for ${selectedItem.title || selectedItem.category}!`);
-   setWishlist(prev => prev.filter(id => id !== selectedItem.id));
-  } catch (err) {
-   setIsClaiming(false);
+  const normalizeCategory = (cat) => { if (!cat) return ''; const c = cat.toLowerCase().trim(); if (c === 'clothes' || c === 'clothing') return 'clothes'; if (c === 'medical' || c === 'medical equipment') return 'medical equipment'; return c; };
+
+  const displayDonations = donations.map(d => ({
+    ...d, 
+    _dist: d.location ? getDistanceInKm(userCoords[0], userCoords[1], d.location.lat, d.location.lng) : 999
+  })).sort((a,b) => a._dist - b._dist);
+  
+  const displayNgos = ngos.map(n => ({
+    ...n, 
+    _dist: getDistanceInKm(userCoords[0], userCoords[1], n.lat, n.lng)
+  })).sort((a,b) => a._dist - b._dist);
+
+  const toggleWishlist = (id, e) => { if (e) e.stopPropagation(); if (wishlist.includes(id)) { setWishlist(prev => prev.filter(i => i !== id)); toast.success('Removed from saved.'); } else { setWishlist(prev => [...prev, id]); toast.success('Saved!'); } };
+
+  const handleClaimSubmit = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated || user?.role !== 'ngo') { toast.error('Only NGOs can claim.'); return; }
+    setIsClaiming(true);
+    try {
+      await claimDonation(selectedItem.id);
+      setIsClaiming(false);
+      setClaimSuccess(true);
+      toast.success(`Claim submitted for ${selectedItem.title || selectedItem.category}!`);
+      setWishlist(prev => prev.filter(id => id !== selectedItem.id));
+    } catch (err) {
+      setIsClaiming(false);
+    }
+  };
+
+  const getSmartMatchDetails = (donation) => {
+    if (!currentNgo) return null;
+    const matchingNeed = needs.find(n => n.ngoId === currentNgo.id && normalizeCategory(n.category) === normalizeCategory(donation.category));
+    if (!matchingNeed) return null;
+    return calculateMatchScore(donation, { ...matchingNeed, lat: currentNgo.lat, lng: currentNgo.lng });
+  };
+
+  const resetFilters = () => { setQuery(''); setSelectedCategory('All'); setDistanceRange(25); setMinTrustScore(50); };
+  const activeFiltersCount = (selectedCategory !== 'All' ? 1 : 0) + (distanceRange !== 25 ? 1 : 0) + (query ? 1 : 0) + (searchType === 'ngos' && minTrustScore !== 50 ? 1 : 0);
+
+  const mapCenter = selectedItem ? (selectedItem.location ? [selectedItem.location.lat, selectedItem.location.lng] : [selectedItem.lat, selectedItem.lng]) : userCoords;
+  const mapZoom = selectedItem ? 14 : (distanceRange > 30 ? 10 : distanceRange > 15 ? 11 : 12);
+  const mapCircles = selectedItem ? [] : [{ lat: userCoords[0], lng: userCoords[1], radius: distanceRange * 1000, color: '#10B981', fillOpacity: 0.05, weight: 1.5 }];
+  
+  let mapMarkers = [{ lat: userCoords[0], lng: userCoords[1], popupContent: '<strong style="color:#10B981">Your Location</strong>' }];
+  if (searchType === 'donations') {
+    mapMarkers = [...mapMarkers, ...displayDonations.map(d => ({ lat: d.location?.lat, lng: d.location?.lng, popupContent: `<strong>${d.title || d.category}</strong><br/>${d.quantity} units` }))];
+  } else {
+    mapMarkers = [...mapMarkers, ...displayNgos.map(n => ({ lat: n.lat, lng: n.lng, popupContent: `<strong>${n.name}</strong>` }))];
   }
- };
+  
+  const hoveredItem = hoveredItemId ? (searchType === 'donations' ? displayDonations.find(d => d.id === hoveredItemId) : displayNgos.find(n => n.id === hoveredItemId)) : null;
+  const hoveredLat = hoveredItem?.location ? hoveredItem.location.lat : hoveredItem?.lat;
+  const hoveredLng = hoveredItem?.location ? hoveredItem.location.lng : hoveredItem?.lng;
+  const polylines = hoveredLat ? [{ positions: [userCoords, [hoveredLat, hoveredLng]], color: '#10B981', weight: 2, dashArray: '5, 5' }] : [];
 
- const getSmartMatchDetails = (donation) => {
-  if (!currentNgo) return null;
-  const matchingNeed = needs.find(n => n.ngoId === currentNgo.id && normalizeCategory(n.category) === normalizeCategory(donation.category));
-  if (!matchingNeed) return null;
-  return calculateMatchScore(donation, { ...matchingNeed, lat: currentNgo.lat, lng: currentNgo.lng });
- };
+  return (
+    <div className="min-h-screen flex flex-col bg-[#F1F5F9] selection:bg-emerald-500/30">
+      <Navbar />
 
- const resetFilters = () => { setQuery(''); setSelectedCategory('All'); setDistanceRange(25); setMinTrustScore(50); };
- const activeFiltersCount = (selectedCategory !== 'All' ? 1 : 0) + (distanceRange !== 25 ? 1 : 0) + (query ? 1 : 0) + (searchType === 'ngos' && minTrustScore !== 50 ? 1 : 0);
-
- const mapCenter = selectedItem ? (selectedItem.location ? [selectedItem.location.lat, selectedItem.location.lng] : [selectedItem.lat, selectedItem.lng]) : userCoords;
- const mapZoom = selectedItem ? 14 : (distanceRange > 30 ? 10 : distanceRange > 15 ? 11 : 12);
- const mapCircles = selectedItem ? [] : [{ lat: userCoords[0], lng: userCoords[1], radius: distanceRange * 1000, color: '#2E7D32', fillOpacity: 0.05, weight: 1.2 }];
- 
- let mapMarkers = [{ lat: userCoords[0], lng: userCoords[1], popupContent: '<strong style="color:#2E7D32">Your Location</strong>' }];
- if (searchType === 'donations') {
-  mapMarkers = [...mapMarkers, ...displayDonations.map(d => ({ lat: d.location?.lat, lng: d.location?.lng, popupContent: `<strong>${d.title || d.category}</strong><br/>${d.quantity} units` }))];
- } else {
-  mapMarkers = [...mapMarkers, ...displayNgos.map(n => ({ lat: n.lat, lng: n.lng, popupContent: `<strong>${n.name}</strong>` }))];
- }
- 
- const hoveredItem = hoveredItemId ? (searchType === 'donations' ? displayDonations.find(d => d.id === hoveredItemId) : displayNgos.find(n => n.id === hoveredItemId)) : null;
- const hoveredLat = hoveredItem?.location ? hoveredItem.location.lat : hoveredItem?.lat;
- const hoveredLng = hoveredItem?.location ? hoveredItem.location.lng : hoveredItem?.lng;
- const polylines = hoveredLat ? [{ positions: [userCoords, [hoveredLat, hoveredLng]], color: '#2E7D32', weight: 2, dashArray: '5, 5' }] : [];
- 
- return (
-  <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-   <Navbar />
-
-   {/* Header */}
-   <section className="bg-white border-b border-border">
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-5">
-     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-primary border border-emerald-200/60 font-semibold uppercase tracking-wider" style={{ fontSize: '12px' }}>
-        Discover
-       </span>
-       <h1 className="font-display font-extrabold text-slate-900 tracking-tight mt-2">
-        Browse Registry
-       </h1>
-       <p className="text-slate-500 mt-1 max-w-xl leading-relaxed" style={{ fontSize: '15px' }}>
-        Use real-time backend API filtering to find physical donations near you, or explore vetted NGOs to pledge your support.
-       </p>
-      </div>
-      {activeFiltersCount > 0 && (
-       <Button variant="secondary" onClick={resetFilters} icon={RotateCcw}>
-        Clear Filters ({activeFiltersCount})
-       </Button>
-      )}
-     </div>
-
-     {/* Toggle Type */}
-     <div className="flex p-1 bg-slate-100 rounded-lg border border-border w-fit">
-      <button
-       onClick={() => { setSearchType('donations'); setSelectedItem(null); setHoveredItemId(null); }}
-       className={`py-1.5 px-4 text-xs font-semibold rounded-md transition-all flex items-center gap-2 ${
-        searchType === 'donations' ? 'bg-white text-primary shadow-premium-sm font-bold' : 'text-slate-500 hover:text-slate-700'
-       }`}
-      >
-       <Search className="w-3.5 h-3.5" /> Find Donations
-      </button>
-      <button
-       onClick={() => { setSearchType('ngos'); setSelectedItem(null); setHoveredItemId(null); }}
-       className={`py-1.5 px-4 text-xs font-semibold rounded-md transition-all flex items-center gap-2 ${
-        searchType === 'ngos' ? 'bg-white text-primary shadow-premium-sm font-bold' : 'text-slate-500 hover:text-slate-700'
-       }`}
-      >
-       <Building className="w-3.5 h-3.5" /> Find Partner NGOs
-      </button>
-     </div>
-
-     {/* Search + Filters Bar */}
-     <div className="flex flex-col sm:flex-row gap-3">
-      <div className="relative flex-1">
-       <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchType === 'donations' ? "Search donations..." : "Search NGOs..."} className="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary" style={{ fontSize: '15px' }} />
-       <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" />
-       {query && <button onClick={() => setQuery('')} className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"><X className="w-4 h-4" /></button>}
-      </div>
-      
-      <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shrink-0">
-       <MapPin className="w-4 h-4 text-primary shrink-0" />
-       <span className="text-slate-500 whitespace-nowrap" style={{ fontSize: '14px' }}>Radius:</span>
-       <input type="range" min="2" max="45" value={distanceRange} onChange={(e) => setDistanceRange(Number(e.target.value))} className="w-24 accent-primary cursor-pointer" style={{ minHeight: 'auto' }} />
-       <span className="font-bold text-primary whitespace-nowrap" style={{ fontSize: '14px' }}>{distanceRange} km</span>
-      </div>
-      
-      {searchType === 'ngos' && (
-       <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shrink-0">
-        <Award className="w-4 h-4 text-primary shrink-0" />
-        <span className="text-slate-500 whitespace-nowrap" style={{ fontSize: '14px' }}>Min Trust:</span>
-        <input type="range" min="0" max="100" step="5" value={minTrustScore} onChange={(e) => setMinTrustScore(Number(e.target.value))} className="w-24 accent-primary cursor-pointer" style={{ minHeight: 'auto' }} />
-        <span className="font-bold text-primary whitespace-nowrap" style={{ fontSize: '14px' }}>{minTrustScore}%</span>
-       </div>
-      )}
-     </div>
-
-     {/* Category Pills (Only if Donations or if NGO needs category filtering) */}
-     <div className="flex overflow-x-auto gap-2 pb-1">
-      {CATEGORIES.map(cat => (
-       <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-2 rounded-xl border font-semibold whitespace-nowrap transition-all cursor-pointer ${selectedCategory === cat ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`} style={{ fontSize: '14px' }}>
-        {cat}
-       </button>
-      ))}
-     </div>
-    </div>
-   </section>
-
-   {/* Results */}
-   <section className="flex-1 py-8">
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-     <div className="flex flex-col xl:flex-row gap-8">
-
-      {/* Cards Grid */}
-      <div className="flex-1">
-       <p className="text-slate-500 mb-4" style={{ fontSize: '14px' }}>
-        Showing <strong className="text-slate-800">{searchType === 'donations' ? displayDonations.length : displayNgos.length}</strong> results from API
-       </p>
-
-       {(searchType === 'donations' ? loadingDonations : loadingNgos) ? (
-        <div className="saas-card flex flex-col items-center justify-center space-y-4">
-         <div className="w-10 h-10 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
-         <p className="font-bold text-slate-700" style={{ fontSize: '16px' }}>Fetching Results...</p>
-         <p className="text-slate-500 text-center max-w-sm" style={{ fontSize: '14px' }}>Connecting to the live database to find the best local matches based on your filters.</p>
+      {/* Hero Header */}
+      <div className="relative h-96 w-full overflow-hidden bg-slate-900 rounded-b-[3rem] lg:rounded-b-[5rem]">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 via-slate-900 to-teal-900 opacity-90" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        <div className="absolute inset-0 flex items-center justify-center">
+           <div className="w-[800px] h-[400px] bg-emerald-500/20 blur-[120px] rounded-full pointer-events-none" />
         </div>
-       ) : (searchType === 'donations' ? displayDonations : displayNgos).length === 0 ? (
-        <div className="saas-card text-center space-y-4">
-         <Search className="w-10 h-10 text-slate-300 mx-auto" />
-         <p className="font-bold text-slate-900" style={{ fontSize: '16px' }}>No matches found</p>
-         <p className="text-slate-500" style={{ fontSize: '14px' }}>Try widening your search radius or modifying your filters.</p>
-         <Button variant="primary" onClick={resetFilters} icon={RotateCcw}>Reset Filters</Button>
-        </div>
-       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-         <AnimatePresence mode="popLayout">
-          {(searchType === 'donations' ? displayDonations : displayNgos).map(item => {
-           if (searchType === 'donations') {
-            // DONATION CARD
-            const isWishlisted = wishlist.includes(item.id);
-            const dist = item._dist?.toFixed(1) || '0.0';
-            const smartMatch = getSmartMatchDetails(item);
-            return (
-             <motion.div key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-              onClick={() => setSelectedItem(item)} onMouseEnter={() => setHoveredItemId(item.id)} onMouseLeave={() => setHoveredItemId(null)}
-              className="bg-white border border-border rounded-2xl overflow-hidden shadow-premium-sm hover:shadow-premium-md hover:border-primary/20 transition-all cursor-pointer group"
-             >
-              <div className="relative aspect-video bg-slate-100 overflow-hidden">
-               {item.photos?.length > 0 ? (
-                <img src={item.photos[0]} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-               ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-400" style={{ fontSize: '14px' }}>No Photo</div>
-               )}
-               <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-lg font-bold uppercase border ${item.condition === 'New' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : item.condition === 'Like New' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`} style={{ fontSize: '11px' }}>
-                {item.condition}
-               </span>
-               {smartMatch && (
-                <div className="absolute top-3 right-3 px-2.5 py-1 bg-primary text-white rounded-lg font-bold flex items-center gap-1" style={{ fontSize: '11px' }}>
-                 <Sparkles className="w-3 h-3" /> {smartMatch.total}% Match
-                </div>
-               )}
-              </div>
-              <div className="p-4 space-y-3">
-               <div className="flex justify-between items-center">
-                <span className="text-primary font-semibold" style={{ fontSize: '12px' }}>{item.category}</span>
-                <span className="text-slate-400 flex items-center gap-1" style={{ fontSize: '12px' }}><MapPin className="w-3 h-3" /> {dist} km</span>
-               </div>
-               <h3 className="font-bold text-slate-900 line-clamp-1 group-hover:text-primary transition-colors" style={{ fontSize: '16px' }}>{item.title || item.category}</h3>
-               <p className="text-slate-500 line-clamp-2 leading-relaxed" style={{ fontSize: '13px' }}>{item.description}</p>
-               <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                <div className="text-slate-500" style={{ fontSize: '13px' }}>
-                 <span className="text-slate-800 font-semibold">{item.quantity}</span> units · {item.donorName}
-                </div>
-                <div className="flex gap-2">
-                 <button onClick={(e) => toggleWishlist(item.id, e)} className={`p-2 rounded-lg border transition-all cursor-pointer ${isWishlisted ? 'bg-red-50 text-red-500 border-red-200' : 'bg-white text-slate-400 border-slate-200 hover:text-red-500'}`} style={{ minHeight: '36px' }}>
-                  <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-                 </button>
-                </div>
-               </div>
-              </div>
-             </motion.div>
-            );
-           } else {
-            // NGO CARD
-            const dist = item._dist?.toFixed(1) || '0.0';
-            return (
-             <motion.div key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-              onClick={() => setSelectedItem(item)} onMouseEnter={() => setHoveredItemId(item.id)} onMouseLeave={() => setHoveredItemId(null)}
-              className="bg-white border border-border rounded-2xl overflow-hidden shadow-premium-sm hover:shadow-premium-md hover:border-primary/20 transition-all cursor-pointer group p-5"
-             >
-              <div className="flex items-start gap-4">
-               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/10 to-emerald-200 border border-slate-200 flex items-center justify-center shrink-0 text-primary font-bold font-mono">
-                {item.name.substring(0, 2).toUpperCase()}
-               </div>
-               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-slate-900 truncate" style={{ fontSize: '16px' }}>{item.name}</h3>
-                <p className="text-slate-500 flex items-center gap-1 mt-0.5 truncate" style={{ fontSize: '12px' }}><MapPin className="w-3 h-3 text-slate-400" /> {item.city} ({dist} km)</p>
-               </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-3">
-               <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trust Score</p>
-                <p className="text-primary font-bold mt-0.5">{item.trustScore}%</p>
-               </div>
-               <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Type</p>
-                <p className="text-slate-700 font-bold mt-0.5">{item.ngoType}</p>
-               </div>
-              </div>
-              <p className="mt-4 text-xs text-slate-500 line-clamp-2">{item.description}</p>
-             </motion.div>
-            );
-           }
-          })}
-         </AnimatePresence>
-        </div>
-       )}
       </div>
 
-      {/* Map Panel */}
-      <div className="w-full xl:w-[400px] shrink-0 xl:sticky xl:top-24 h-[400px] xl:h-[520px] rounded-2xl overflow-hidden border border-border shadow-premium-sm">
-       <LeafletMap center={mapCenter} zoom={mapZoom} circles={mapCircles} markers={mapMarkers} polylines={polylines} className="h-full w-full border-none" />
-      </div>
-     </div>
-    </div>
-   </section>
-
-   <Footer />
-
-   {/* Wishlist FAB */}
-   {wishlist.length > 0 && searchType === 'donations' && (
-    <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => { const first = donations.find(d => d.id === wishlist[0]); if (first) setSelectedItem(first); }}
-     className="fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-premium-xl z-30 cursor-pointer flex items-center gap-2" style={{ minHeight: '48px' }}>
-     <Heart className="w-5 h-5 fill-white" />
-     <span className="font-bold pr-1">{wishlist.length} Saved</span>
-    </motion.button>
-   )}
-
-   {/* Detail Slide-Over */}
-   <AnimatePresence>
-    {selectedItem && (
-     <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedItem(null)} className="fixed inset-0 bg-black/20 backdrop-blur-xs z-40" />
-      <motion.aside initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-       className="fixed top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl z-50 border-l border-border flex flex-col overflow-hidden">
-       
-       {/* Common Header */}
-       <div className="p-5 border-b border-border flex justify-between items-center bg-slate-50/50 shrink-0">
-        <div>
-         <h2 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>
-          {searchType === 'donations' ? 'Donation Details' : 'NGO Profile'}
-         </h2>
-        </div>
-        <button onClick={() => setSelectedItem(null)} className="p-2 rounded-lg hover:bg-slate-200 text-slate-400 cursor-pointer"><X className="w-5 h-5" /></button>
-       </div>
-
-       {/* Body */}
-       <div className="flex-1 overflow-y-auto p-5 space-y-5">
-        {searchType === 'donations' ? (
-         /* DONATION DETAILS */
-         claimSuccess ? (
-          <div className="flex flex-col items-center text-center space-y-4 py-8">
-           <div className="w-14 h-14 bg-emerald-100 text-primary rounded-full flex items-center justify-center animate-bounce"><Check className="w-7 h-7 stroke-[3]" /></div>
-           <h4 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>Claim Submitted!</h4>
-           <p className="text-slate-500 max-w-sm" style={{ fontSize: '14px' }}>Your allocation request has been confirmed. Logistics instructions have been sent to <strong>{currentNgo?.email || user?.email}</strong>.</p>
-           <div className="flex gap-3 w-full pt-2">
-            <Button variant="secondary" onClick={() => setSelectedItem(null)} className="flex-1">Keep Browsing</Button>
-            <Button variant="primary" onClick={() => navigate('/ngo')} className="flex-1">NGO Console</Button>
-           </div>
-          </div>
-         ) : (
-          <>
-           <div className="aspect-video rounded-xl overflow-hidden bg-slate-100">
-            {selectedItem.photos?.length > 0 ? <img src={selectedItem.photos[0]} alt={selectedItem.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400">No Photo</div>}
-           </div>
-
-           <div>
-            <h3 className="font-bold text-slate-900" style={{ fontSize: '18px' }}>{selectedItem.title || selectedItem.category}</h3>
-            <p className="text-slate-500 mt-1 leading-relaxed" style={{ fontSize: '14px' }}>{selectedItem.description}</p>
-           </div>
-
-           {/* Smart Match */}
-           {getSmartMatchDetails(selectedItem) && (
-            <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl space-y-2">
-             <div className="flex justify-between items-center">
-              <span className="font-semibold text-slate-800 flex items-center gap-1.5" style={{ fontSize: '13px' }}><Sparkles className="w-4 h-4 text-primary" /> Smart Match</span>
-              <span className="font-bold text-primary" style={{ fontSize: '14px' }}>{getSmartMatchDetails(selectedItem).total}%</span>
-             </div>
-             <div className="h-2 rounded-full overflow-hidden flex bg-slate-200">
-              <div style={{ width: `${getSmartMatchDetails(selectedItem).categoryFit}%` }} className="bg-primary h-full" />
-              <div style={{ width: `${getSmartMatchDetails(selectedItem).distanceScore}%` }} className="bg-sky-500 h-full" />
-              <div style={{ width: `${getSmartMatchDetails(selectedItem).urgencyScore}%` }} className="bg-emerald-500 h-full" />
-              <div style={{ width: `${getSmartMatchDetails(selectedItem).freshnessScore}%` }} className="bg-amber-500 h-full" />
-             </div>
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 pb-20 -mt-64 relative z-10 space-y-8">
+        
+        {/* Advanced Filter Box */}
+        <div className="bg-white/80 backdrop-blur-2xl border border-white rounded-[2rem] p-6 md:p-8 shadow-2xl shadow-slate-200/50 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="text-center md:text-left">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-black text-[10px] uppercase tracking-widest shadow-sm" >
+                Global Radar
+              </span>
+              <h1 className="font-display font-black text-3xl md:text-4xl text-slate-900 tracking-tight mt-3">
+                Resource Matrix
+              </h1>
+              <p className="text-slate-500 mt-2 max-w-xl font-medium" >
+                Scan the local network for critical supplies or verify regional logistics partners.
+              </p>
             </div>
-           )}
 
-           {/* Meta */}
-           <div className="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200/50">
-            <div><span className="text-slate-400 block" style={{ fontSize: '12px' }}>Donor</span><div className="font-semibold text-slate-800 flex items-center gap-1 mt-0.5" style={{ fontSize: '14px' }}><User className="w-4 h-4 text-slate-400" />{selectedItem.donorName}</div></div>
-            <div><span className="text-slate-400 block" style={{ fontSize: '12px' }}>Available</span><div className="font-semibold text-slate-800 flex items-center gap-1 mt-0.5" style={{ fontSize: '14px' }}><Building className="w-4 h-4 text-slate-400" />{selectedItem.quantity} units</div></div>
-           </div>
+            <div className="flex bg-slate-100 p-1.5 rounded-2xl shadow-inner border border-slate-200 shrink-0 mx-auto md:mx-0">
+              <button
+                onClick={() => { setSearchType('donations'); setSelectedItem(null); setHoveredItemId(null); }}
+                className={`py-3 px-6 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                  searchType === 'donations' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Search className={`w-4 h-4 ${searchType === 'donations' ? 'text-emerald-500' : ''}`} /> Scan Donations
+              </button>
+              <button
+                onClick={() => { setSearchType('ngos'); setSelectedItem(null); setHoveredItemId(null); }}
+                className={`py-3 px-6 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                  searchType === 'ngos' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Building className={`w-4 h-4 ${searchType === 'ngos' ? 'text-emerald-500' : ''}`} /> Partner NGOs
+              </button>
+            </div>
+          </div>
 
-           {/* Mini Map */}
-           <div className="h-36 rounded-xl overflow-hidden border border-slate-200">
-            {selectedItem.location ? <LeafletMap center={[selectedItem.location.lat, selectedItem.location.lng]} zoom={14} markers={[{ lat: selectedItem.location.lat, lng: selectedItem.location.lng, popupContent: `<strong>${selectedItem.title || 'Donation'}</strong>` }]} className="h-full w-full border-none" /> : <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">No location</div>}
-           </div>
-
-           {/* Claim Form */}
-           <form onSubmit={handleClaimSubmit} className="space-y-4 border-t border-slate-100 pt-4">
-            {!isAuthenticated ? (
-             <div className="p-4 bg-amber-50 border border-amber-200/50 rounded-xl text-center space-y-2">
-              <p className="text-amber-800 font-semibold" style={{ fontSize: '14px' }}>Sign in as an NGO to claim this donation.</p>
-              <a href="/auth" className="inline-block px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg" style={{ fontSize: '14px' }}>Sign In</a>
-             </div>
-            ) : user?.role !== 'ngo' ? (
-             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
-              <p className="text-slate-500 flex items-center justify-center gap-1.5" style={{ fontSize: '14px' }}><Info className="w-4 h-4" /> Only NGO accounts can claim donations.</p>
-             </div>
-            ) : (
-             <>
-              <div className="flex items-center justify-between">
-               <span className="text-slate-700 font-semibold" style={{ fontSize: '14px' }}>Quantity</span>
-               <div className="flex items-center gap-2">
-                <button type="button" disabled={claimQty <= 1} onClick={() => setClaimQty(p => p - 1)} className="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer">-</button>
-                <span className="w-10 text-center font-bold text-slate-900">{claimQty}</span>
-                <button type="button" disabled={claimQty >= selectedItem.quantity} onClick={() => setClaimQty(p => p + 1)} className="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer">+</button>
-               </div>
+          <div className="flex flex-col xl:flex-row gap-4 pt-4 border-t border-slate-100">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchType === 'donations' ? "Search blankets, books, food..." : "Search NGO names..."} className="w-full pl-12 pr-4 h-[56px] border border-slate-200 rounded-[1.25rem] bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-sm font-bold transition-all"  />
+              <Search className="w-5 h-5 text-emerald-500 absolute left-4 top-1/2 -translate-y-1/2" />
+              {query && <button onClick={() => setQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>}
+            </div>
+            
+            {/* Range Filters */}
+            <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-[1.25rem] px-5 h-[56px] shrink-0 shadow-sm">
+              <Navigation className="w-5 h-5 text-emerald-500 shrink-0" />
+              <div className="flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Radius Distance</span>
+                <div className="flex items-center gap-3">
+                  <input type="range" min="2" max="45" value={distanceRange} onChange={(e) => setDistanceRange(Number(e.target.value))} className="w-24 accent-emerald-500 cursor-pointer"  />
+                  <span className="font-mono font-bold text-slate-900 text-sm" >{distanceRange} km</span>
+                </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-               <button type="button" onClick={() => setClaimLogistics('courier')} className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${claimLogistics === 'courier' ? 'bg-primary/5 border-primary' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
-                <Truck className={`w-4 h-4 ${claimLogistics === 'courier' ? 'text-primary' : 'text-slate-400'}`} />
-                <div><span className="font-semibold text-slate-900 block" style={{ fontSize: '13px' }}>Courier</span><span className="text-slate-400" style={{ fontSize: '11px' }}>Platform arranges</span></div>
-               </button>
-               <button type="button" onClick={() => setClaimLogistics('pickup')} className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-all cursor-pointer ${claimLogistics === 'pickup' ? 'bg-primary/5 border-primary' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
-                <MapPin className={`w-4 h-4 ${claimLogistics === 'pickup' ? 'text-primary' : 'text-slate-400'}`} />
-                <div><span className="font-semibold text-slate-900 block" style={{ fontSize: '13px' }}>Self Pickup</span><span className="text-slate-400" style={{ fontSize: '11px' }}>You collect it</span></div>
-               </button>
+            </div>
+            
+            {searchType === 'ngos' && (
+              <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-[1.25rem] px-5 h-[56px] shrink-0 shadow-sm">
+                <Award className="w-5 h-5 text-emerald-500 shrink-0" />
+                <div className="flex flex-col justify-center">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Min Trust Score</span>
+                  <div className="flex items-center gap-3">
+                    <input type="range" min="0" max="100" step="5" value={minTrustScore} onChange={(e) => setMinTrustScore(Number(e.target.value))} className="w-24 accent-emerald-500 cursor-pointer"  />
+                    <span className="font-mono font-bold text-slate-900 text-sm" >{minTrustScore}%</span>
+                  </div>
+                </div>
               </div>
-
-              <textarea value={claimUseCase} onChange={(e) => setClaimUseCase(e.target.value)} placeholder="Why does your NGO need this? (e.g., winter distribution campaign)" required rows={2} className="w-full p-3 border border-slate-200 rounded-xl text-slate-900 bg-slate-50/50 focus:outline-none focus:border-primary" style={{ fontSize: '14px' }} />
-
-              <div className="flex gap-3">
-               <Button variant="secondary" onClick={() => setSelectedItem(null)} className="flex-1">Cancel</Button>
-               <Button variant="primary" type="submit" isDisabled={isClaiming} className="flex-1">
-                {isClaiming ? 'Claiming...' : 'Confirm Claim'}
-               </Button>
-              </div>
-             </>
             )}
-           </form>
+            
+            {activeFiltersCount > 0 && (
+              <button onClick={resetFilters} className="h-[56px] px-6 bg-slate-900 text-white font-bold rounded-[1.25rem] flex items-center gap-2 hover:bg-slate-800 shadow-lg shadow-slate-900/20 shrink-0 transition-all">
+                <RotateCcw className="w-4 h-4" /> Reset Filters
+              </button>
+            )}
+          </div>
+
+          {/* Categories */}
+          {searchType === 'donations' && (
+            <div className="flex overflow-x-auto gap-3 pb-2 hide-scrollbar">
+              {CATEGORIES.map(cat => (
+                <button 
+                  key={cat} 
+                  onClick={() => setSelectedCategory(cat)} 
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap transition-all shadow-sm ${
+                    selectedCategory === cat 
+                      ? 'bg-emerald-500 text-white shadow-emerald-500/25 border border-emerald-400' 
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  }`} 
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Results Container */}
+        <div className="flex flex-col xl:flex-row gap-8">
+          
+          {/* List View */}
+          <div className="flex-1 space-y-6">
+            <div className="flex justify-between items-center px-2">
+              <p className="font-display font-black text-slate-900 text-xl tracking-tight" >
+                Live Matches
+              </p>
+              <span className="font-mono font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-4 py-1.5 rounded-lg text-xs shadow-sm">
+                {searchType === 'donations' ? displayDonations.length : displayNgos.length} results
+              </span>
+            </div>
+
+            {(searchType === 'donations' ? loadingDonations : loadingNgos) ? (
+              <div className="bg-white rounded-[2rem] p-16 flex flex-col items-center justify-center space-y-4 shadow-sm border border-slate-100">
+                <div className="w-12 h-12 border-4 border-slate-100 border-t-emerald-500 rounded-full animate-spin"></div>
+                <p className="font-bold text-slate-500" >Scanning the matrix...</p>
+              </div>
+            ) : (searchType === 'donations' ? displayDonations : displayNgos).length === 0 ? (
+              <div className="bg-white rounded-[2rem] p-16 text-center space-y-5 shadow-xl shadow-slate-200/40 border border-slate-100">
+                <div className="w-20 h-20 bg-slate-50 border border-slate-200 rounded-[1.5rem] flex items-center justify-center mx-auto text-slate-300 shadow-inner">
+                  <Filter className="w-10 h-10" />
+                </div>
+                <div>
+                  <h3 className="font-display font-black text-slate-900 text-2xl tracking-tight" >No records matched</h3>
+                  <p className="text-slate-500 mt-2 font-medium max-w-sm mx-auto" >Increase your scan radius or broaden category filters.</p>
+                </div>
+                <Button variant="primary" onClick={resetFilters} icon={RotateCcw} className="shadow-lg shadow-emerald-500/20 px-8 rounded-xl font-bold mt-2">
+                  Clear Filters
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <AnimatePresence mode="popLayout">
+                  {(searchType === 'donations' ? displayDonations : displayNgos).map(item => {
+                    if (searchType === 'donations') {
+                      const isWishlisted = wishlist.includes(item.id);
+                      const dist = item._dist?.toFixed(1) || '0.0';
+                      const smartMatch = getSmartMatchDetails(item);
+                      
+                      return (
+                        <motion.div 
+                          key={item.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+                          onClick={() => setSelectedItem(item)} onMouseEnter={() => setHoveredItemId(item.id)} onMouseLeave={() => setHoveredItemId(null)}
+                          className="bg-white border border-slate-100 rounded-[1.75rem] overflow-hidden shadow-xl shadow-slate-200/30 hover:border-emerald-200 hover:shadow-emerald-500/10 transition-all cursor-pointer group flex flex-col"
+                        >
+                          <div className="relative aspect-[4/3] bg-slate-50 overflow-hidden shrink-0">
+                            {item.photos?.length > 0 ? (
+                              <img src={item.photos[0]} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                                <Search className="w-8 h-8 mb-2 opacity-50" />
+                                <span className="font-bold text-sm">No Preview</span>
+                              </div>
+                            )}
+                            
+                            {/* Badges Overlay */}
+                            <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                              <span className={`px-3 py-1.5 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-sm backdrop-blur-md ${item.condition === 'New' ? 'bg-emerald-500/90 text-white border border-emerald-400' : item.condition === 'Like New' ? 'bg-sky-500/90 text-white border border-sky-400' : 'bg-amber-500/90 text-white border border-amber-400'}`} >
+                                {item.condition}
+                              </span>
+                              {smartMatch && (
+                                <span className="px-3 py-1.5 bg-slate-900/90 backdrop-blur-md text-emerald-400 border border-slate-700 rounded-xl font-bold flex items-center gap-1.5 shadow-sm text-xs" >
+                                  <Sparkles className="w-3.5 h-3.5" /> {smartMatch.total}% Fit
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="p-6 flex-1 flex flex-col">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-emerald-600 font-bold text-xs uppercase tracking-widest" >{item.category}</span>
+                              <span className="font-mono text-slate-400 text-xs font-bold flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md" ><Navigation className="w-3 h-3 text-emerald-500" /> {dist} km</span>
+                            </div>
+                            
+                            <h3 className="font-display font-black text-slate-900 text-lg group-hover:text-emerald-600 transition-colors tracking-tight line-clamp-1" >{item.title || item.category}</h3>
+                            <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 leading-relaxed font-medium flex-1" >{item.description}</p>
+                            
+                            <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
+                                  <User className="w-4 h-4 text-slate-400" />
+                                </div>
+                                <div>
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Donor</p>
+                                  <p className="text-xs font-bold text-slate-800 line-clamp-1">{item.donorName}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="font-mono font-black text-slate-900 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-sm">
+                                  x{item.quantity}
+                                </span>
+                                <button onClick={(e) => toggleWishlist(item.id, e)} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-sm ${isWishlisted ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100' : 'bg-white text-slate-400 border border-slate-200 hover:text-red-500 hover:border-red-200 hover:bg-red-50'}`} >
+                                  <Heart className={`w-4.5 h-4.5 ${isWishlisted ? 'fill-current' : ''}`} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    } else {
+                      // NGO CARD
+                      const dist = item._dist?.toFixed(1) || '0.0';
+                      return (
+                        <motion.div 
+                          key={item.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+                          onClick={() => setSelectedItem(item)} onMouseEnter={() => setHoveredItemId(item.id)} onMouseLeave={() => setHoveredItemId(null)}
+                          className="bg-white border border-slate-100 rounded-[1.75rem] p-6 shadow-xl shadow-slate-200/30 hover:border-emerald-200 hover:shadow-emerald-500/10 transition-all cursor-pointer group flex flex-col relative overflow-hidden"
+                        >
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full blur-[40px] -mr-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity" />
+                          
+                          <div className="flex items-start gap-5 relative z-10">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 shadow-md flex items-center justify-center shrink-0 text-white font-display font-black text-xl tracking-tight">
+                              {item.name.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-display font-black text-slate-900 text-lg truncate group-hover:text-emerald-600 transition-colors" >{item.name}</h3>
+                              <p className="font-mono text-slate-500 text-xs font-bold mt-1 bg-slate-50 inline-flex items-center gap-1 px-2 py-0.5 rounded border border-slate-200" >
+                                <Navigation className="w-3 h-3 text-emerald-500" /> {item.city} ({dist} km)
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 gap-4 relative z-10">
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1"><Award className="w-3 h-3" /> Trust Score</p>
+                              <p className="text-emerald-600 font-black text-lg mt-0.5">{item.trustScore}%</p>
+                            </div>
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1"><Building className="w-3 h-3" /> Org Type</p>
+                              <p className="text-slate-800 font-bold mt-1 text-sm truncate">{item.ngoType}</p>
+                            </div>
+                          </div>
+                          
+                          <p className="mt-5 text-sm text-slate-500 line-clamp-2 font-medium leading-relaxed flex-1 relative z-10">{item.description}</p>
+                        </motion.div>
+                      );
+                    }
+                  })}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+
+          {/* Sticky Map Panel */}
+          <div className="w-full xl:w-[480px] shrink-0 xl:sticky xl:top-28 h-[500px] xl:h-[calc(100vh-140px)] rounded-[2rem] overflow-hidden border border-slate-200 shadow-xl shadow-slate-200/50 bg-white p-2 z-10">
+            <div className="w-full h-full rounded-[1.5rem] overflow-hidden">
+              <LeafletMap center={mapCenter} zoom={mapZoom} circles={mapCircles} markers={mapMarkers} polylines={polylines} className="h-full w-full border-none" />
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+
+      {/* Wishlist FAB */}
+      {wishlist.length > 0 && searchType === 'donations' && (
+        <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => { const first = donations.find(d => d.id === wishlist[0]); if (first) setSelectedItem(first); }}
+          className="fixed bottom-8 right-8 bg-slate-900 text-white pl-4 pr-6 py-4 rounded-full shadow-2xl shadow-slate-900/30 z-30 cursor-pointer flex items-center gap-3 hover:bg-slate-800 transition-colors border border-slate-700" >
+          <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+            <Heart className="w-4 h-4 fill-white" />
+          </div>
+          <span className="font-bold">{wishlist.length} Saved Items</span>
+        </motion.button>
+      )}
+
+      {/* Detail Slide-Over */}
+      <AnimatePresence>
+        {selectedItem && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedItem(null)} className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40" />
+            
+            <motion.aside initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+              className="fixed top-0 right-0 h-full w-full sm:w-[500px] bg-white shadow-2xl z-50 flex flex-col overflow-hidden">
+              
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-[80px] opacity-50 pointer-events-none" />
+              
+              {/* Header */}
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white/80 backdrop-blur-md relative z-10">
+                <h2 className="font-display font-black text-xl text-slate-900 tracking-tight" >
+                  {searchType === 'donations' ? 'Logistics Details' : 'Partner Profile'}
+                </h2>
+                <button onClick={() => setSelectedItem(null)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 cursor-pointer transition-colors shadow-sm"><X className="w-5 h-5" /></button>
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-8 relative z-10 hide-scrollbar">
+                {searchType === 'donations' ? (
+                  /* DONATION DETAILS */
+                  claimSuccess ? (
+                    <div className="flex flex-col items-center text-center space-y-6 py-12 px-4">
+                      <div className="w-24 h-24 bg-emerald-50 border border-emerald-100 text-emerald-500 rounded-3xl flex items-center justify-center shadow-inner">
+                        <Check className="w-12 h-12 stroke-[3]" />
+                      </div>
+                      <div>
+                        <h4 className="font-display font-black text-slate-900 text-3xl tracking-tight" >Claim Verified</h4>
+                        <p className="text-slate-500 max-w-sm mt-3 font-medium leading-relaxed" >Your logistics allocation request has been approved. Operations have been notified at <strong className="text-slate-800">{currentNgo?.email || user?.email}</strong>.</p>
+                      </div>
+                      <div className="flex flex-col gap-3 w-full pt-4">
+                        <Button variant="primary" onClick={() => navigate('/ngo')} className="h-14 rounded-xl font-bold shadow-lg shadow-emerald-500/25">Go to NGO Console</Button>
+                        <Button variant="secondary" onClick={() => setSelectedItem(null)} className="h-14 rounded-xl font-bold bg-white border border-slate-200">Close Panel</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="aspect-[4/3] rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 shadow-sm relative">
+                        {selectedItem.photos?.length > 0 ? (
+                          <img src={selectedItem.photos[0]} alt={selectedItem.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                            <Search className="w-10 h-10 mb-2 opacity-50" />
+                            <span className="font-bold">No Image Provided</span>
+                          </div>
+                        )}
+                        <span className="absolute top-4 left-4 px-3 py-1.5 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg bg-slate-900/80 backdrop-blur-md text-white border border-slate-700" >
+                          {selectedItem.category}
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3 className="font-display font-black text-3xl text-slate-900 tracking-tight" >{selectedItem.title || selectedItem.category}</h3>
+                        <p className="text-slate-500 mt-2 leading-relaxed font-medium" >{selectedItem.description}</p>
+                      </div>
+
+                      {/* Smart Match */}
+                      {getSmartMatchDetails(selectedItem) && (
+                        <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-2xl space-y-3 shadow-inner">
+                          <div className="flex justify-between items-center">
+                            <span className="font-bold text-emerald-900 flex items-center gap-2" ><Sparkles className="w-5 h-5 text-emerald-500" /> AI Compatibility Match</span>
+                            <span className="font-black text-emerald-600 text-xl" >{getSmartMatchDetails(selectedItem).total}%</span>
+                          </div>
+                          <div className="h-2 rounded-full overflow-hidden flex bg-emerald-200/50">
+                            <div style={{ width: `${getSmartMatchDetails(selectedItem).categoryFit}%` }} className="bg-emerald-600 h-full" />
+                            <div style={{ width: `${getSmartMatchDetails(selectedItem).distanceScore}%` }} className="bg-emerald-500 h-full" />
+                            <div style={{ width: `${getSmartMatchDetails(selectedItem).urgencyScore}%` }} className="bg-emerald-400 h-full" />
+                            <div style={{ width: `${getSmartMatchDetails(selectedItem).freshnessScore}%` }} className="bg-emerald-300 h-full" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Meta */}
+                      <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100 shadow-sm">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block" >Donor</span>
+                          <div className="font-bold text-slate-800 flex items-center gap-1.5 mt-1" ><User className="w-4 h-4 text-emerald-500" />{selectedItem.donorName}</div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block" >Inventory</span>
+                          <div className="font-bold text-slate-800 flex items-center gap-1.5 mt-1" ><Package className="w-4 h-4 text-emerald-500" />{selectedItem.quantity} units</div>
+                        </div>
+                      </div>
+
+                      {/* Mini Map */}
+                      <div className="h-48 rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                        {selectedItem.location ? <LeafletMap center={[selectedItem.location.lat, selectedItem.location.lng]} zoom={14} markers={[{ lat: selectedItem.location.lat, lng: selectedItem.location.lng, popupContent: `<strong>${selectedItem.title || 'Donation'}</strong>` }]} className="h-full w-full border-none" /> : <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400 font-medium">No Coordinates</div>}
+                      </div>
+
+                      {/* Claim Form */}
+                      <form onSubmit={handleClaimSubmit} className="space-y-6 pt-4">
+                        {!isAuthenticated ? (
+                          <div className="p-6 bg-amber-50 border border-amber-200 rounded-2xl text-center space-y-4 shadow-inner">
+                            <Info className="w-8 h-8 text-amber-500 mx-auto" />
+                            <p className="text-amber-800 font-bold" >Authentication required to execute claims.</p>
+                            <Button variant="primary" onClick={() => navigate('/auth')} className="w-full h-12 bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-600/20">Sign In</Button>
+                          </div>
+                        ) : user?.role !== 'ngo' ? (
+                          <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl text-center shadow-inner">
+                            <AlertTriangle className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+                            <p className="text-slate-600 font-bold" >Operation Restricted</p>
+                            <p className="text-slate-500 text-sm mt-1 font-medium">Only verified NGO network partners can claim dispatches.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-6 bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block" >Claim Allocation</span>
+                              <div className="flex items-center gap-3 bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
+                                <button type="button" disabled={claimQty <= 1} onClick={() => setClaimQty(p => p - 1)} className="w-10 h-10 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer transition-colors">-</button>
+                                <span className="w-10 text-center font-black text-slate-900 text-lg">{claimQty}</span>
+                                <button type="button" disabled={claimQty >= selectedItem.quantity} onClick={() => setClaimQty(p => p + 1)} className="w-10 h-10 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer transition-colors">+</button>
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3" >Routing Protocol</span>
+                              <div className="grid grid-cols-2 gap-4">
+                                <button type="button" onClick={() => setClaimLogistics('courier')} className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${claimLogistics === 'courier' ? 'bg-emerald-50 border-emerald-500 shadow-sm' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+                                  <Truck className={`w-6 h-6 ${claimLogistics === 'courier' ? 'text-emerald-500' : 'text-slate-400'}`} />
+                                  <div className="text-center"><span className="font-bold text-slate-900 text-sm block" >Courier Relay</span><span className="text-[10px] text-slate-500 font-bold uppercase" >Automated</span></div>
+                                </button>
+                                <button type="button" onClick={() => setClaimLogistics('pickup')} className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${claimLogistics === 'pickup' ? 'bg-emerald-50 border-emerald-500 shadow-sm' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+                                  <MapPin className={`w-6 h-6 ${claimLogistics === 'pickup' ? 'text-emerald-500' : 'text-slate-400'}`} />
+                                  <div className="text-center"><span className="font-bold text-slate-900 text-sm block" >Self Extract</span><span className="text-[10px] text-slate-500 font-bold uppercase" >Manual</span></div>
+                                </button>
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2" >Operational Justification</span>
+                              <textarea value={claimUseCase} onChange={(e) => setClaimUseCase(e.target.value)} placeholder="State your programmatic requirement for this allocation..." required rows={3} className="w-full p-4 border border-slate-200 rounded-xl text-slate-900 bg-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-sm font-medium transition-all placeholder-slate-400"  />
+                            </div>
+
+                            <Button variant="primary" type="submit" loading={isClaiming} className="w-full h-14 rounded-xl font-bold shadow-lg shadow-emerald-500/25 text-lg">
+                              Confirm Extraction
+                            </Button>
+                          </div>
+                        )}
+                      </form>
+                    </>
+                  )
+                ) : (
+                  /* NGO DETAILS */
+                  <>
+                    <div className="text-center pt-4">
+                      <div className="w-24 h-24 rounded-3xl bg-slate-900 mx-auto shadow-xl flex items-center justify-center font-display font-black text-3xl text-white mb-6">
+                        {selectedItem.name.substring(0, 2).toUpperCase()}
+                      </div>
+                      <h3 className="font-display font-black text-3xl text-slate-900 tracking-tight" >{selectedItem.name}</h3>
+                      <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mt-3">
+                        <Check className="w-3 h-3" /> Verified Partner
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl text-center shadow-inner mt-4">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2" >Core Mission</p>
+                      <p className="text-slate-800 font-bold leading-relaxed italic" >"{selectedItem.mission}"</p>
+                    </div>
+                    
+                    <p className="text-slate-500 leading-relaxed font-medium text-center px-4" >{selectedItem.description}</p>
+
+                    <div className="grid grid-cols-2 gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl text-white">
+                      <div><span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block" >Sector</span><div className="font-black text-lg mt-1" >{selectedItem.ngoType}</div></div>
+                      <div><span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block" >Established</span><div className="font-black text-lg mt-1" >{selectedItem.operatingSince}</div></div>
+                      <div><span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block" >Network</span><div className="font-black text-lg flex items-center gap-2 mt-1" ><Users className="w-4 h-4 text-slate-400" />{selectedItem.volunteersCount}</div></div>
+                      <div><span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block" >Trust Rating</span><div className="font-black text-emerald-500 text-lg flex items-center gap-2 mt-1" ><Award className="w-4 h-4" />{selectedItem.trustScore}%</div></div>
+                    </div>
+
+                    <div className="space-y-3 bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block" >HQ Coordinates</span>
+                      <p className="text-slate-800 font-bold flex items-start gap-3" ><MapPin className="w-5 h-5 shrink-0 text-emerald-500 mt-0.5"/> {selectedItem.address}</p>
+                    </div>
+
+                    <div className="pt-6 border-t border-slate-100 flex">
+                      <Button variant="primary" onClick={() => navigate(`/ngo/${selectedItem.id}`)} className="flex-1 w-full justify-center h-14 rounded-xl font-bold shadow-lg shadow-emerald-500/25">
+                        Open Full Dossier
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.aside>
           </>
-         )
-        ) : (
-         /* NGO DETAILS */
-         <>
-          <div>
-           <h3 className="font-bold text-slate-900" style={{ fontSize: '20px' }}>{selectedItem.name}</h3>
-           <p className="text-slate-500 mt-1 leading-relaxed" style={{ fontSize: '14px' }}>{selectedItem.description}</p>
-          </div>
-
-          <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
-           <p className="text-emerald-800 font-bold" style={{ fontSize: '14px' }}>Mission:</p>
-           <p className="text-emerald-700 mt-1" style={{ fontSize: '13px' }}>"{selectedItem.mission}"</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200/50">
-           <div><span className="text-slate-400 block" style={{ fontSize: '12px' }}>Type</span><div className="font-semibold text-slate-800 mt-0.5" style={{ fontSize: '14px' }}>{selectedItem.ngoType}</div></div>
-           <div><span className="text-slate-400 block" style={{ fontSize: '12px' }}>Est.</span><div className="font-semibold text-slate-800 mt-0.5" style={{ fontSize: '14px' }}>{selectedItem.operatingSince}</div></div>
-           <div><span className="text-slate-400 block" style={{ fontSize: '12px' }}>Volunteers</span><div className="font-semibold text-slate-800 flex items-center gap-1 mt-0.5" style={{ fontSize: '14px' }}><Users className="w-4 h-4 text-slate-400" />{selectedItem.volunteersCount}</div></div>
-           <div><span className="text-slate-400 block" style={{ fontSize: '12px' }}>Trust Score</span><div className="font-semibold text-primary flex items-center gap-1 mt-0.5" style={{ fontSize: '14px' }}><Award className="w-4 h-4" />{selectedItem.trustScore}%</div></div>
-          </div>
-
-          <div className="space-y-2">
-           <h4 className="font-bold text-slate-800" style={{ fontSize: '14px' }}>Contact & Location</h4>
-           <p className="text-slate-600 flex items-start gap-2" style={{ fontSize: '13px' }}><MapPin className="w-4 h-4 shrink-0 text-slate-400 mt-0.5"/> {selectedItem.address}</p>
-          </div>
-
-          <div className="pt-4 border-t border-slate-100 flex gap-3">
-           <Button variant="primary" onClick={() => navigate(`/ngo/${selectedItem.id}`)} className="flex-1 w-full justify-center">
-            View Full Profile
-           </Button>
-          </div>
-         </>
         )}
-       </div>
-      </motion.aside>
-     </>
-    )}
-   </AnimatePresence>
-  </div>
- );
+      </AnimatePresence>
+    </div>
+  );
 }

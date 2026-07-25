@@ -132,9 +132,9 @@ export default function AdminDashboard() {
   {/* Navigation Sidebar */}
   <aside className="w-full lg:w-72 shrink-0 space-y-4">
    <div className="saas-card">
-   <span className="text-slate-400 font-bold uppercase tracking-wider block font-mono" style={{ fontSize: '10px' }}>ADMIN CONSOLE</span>
-   <h3 className="font-display font-black text-slate-900 mt-1 truncate" style={{ fontSize: '18px' }}>{user?.name || 'Administrator'}</h3>
-   <span className="inline-flex mt-2 px-2.5 py-0.5 rounded bg-red-50 border border-red-150 text-red-650 font-mono font-bold" style={{ fontSize: '10px' }}>
+   <span className="text-slate-400 font-bold uppercase tracking-wider block font-mono" >ADMIN CONSOLE</span>
+   <h3 className="font-display font-black text-slate-900 mt-1 truncate" >{user?.name || 'Administrator'}</h3>
+   <span className="inline-flex mt-2 px-2.5 py-0.5 rounded bg-red-50 border border-red-200 text-red-600 font-mono font-bold" >
     SUPERUSER ACCESS
    </span>
    </div>
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
      ? 'bg-primary text-white'
      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
     }`}
-    style={{ fontSize: '14px', minHeight: '46px' }}
+    
    >
     <ShieldCheck className="w-4 h-4" /> Moderation Queue
    </button>
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
      ? 'bg-primary text-white'
      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
     }`}
-    style={{ fontSize: '14px', minHeight: '46px' }}
+    
    >
     <ShieldAlert className="w-4 h-4" /> Fraud Risk Radar
    </button>
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
      ? 'bg-primary text-white'
      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
     }`}
-    style={{ fontSize: '14px', minHeight: '46px' }}
+    
    >
     <TrendingUp className="w-4 h-4" /> System Metrics
    </button>
@@ -186,12 +186,12 @@ export default function AdminDashboard() {
     {/* Donor Submissions Section */}
     <div className="saas-card space-y-6">
     <div>
-     <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" style={{ fontSize: '16px' }}>Donor Shipment Verifications</h3>
-     <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>Verify geocoded physical donation listings before they are made claimable by local NGOs.</p>
+     <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" >Donor Shipment Verifications</h3>
+     <p className="text-slate-500 mt-1" >Verify geocoded physical donation listings before they are made claimable by local NGOs.</p>
     </div>
 
     {pendingDonations.length === 0 ? (
-     <p className="p-12 text-slate-500 text-center font-semibold border border-dashed border-slate-200 rounded-xl bg-slate-50" style={{ fontSize: '14px' }}>No donations pending review.</p>
+     <p className="p-12 text-slate-500 text-center font-semibold border border-dashed border-slate-200 rounded-xl bg-slate-50" >No donations pending review.</p>
     ) : (
      <div className="grid grid-cols-1 gap-6">
      {pendingDonations.map((donation) => (
@@ -210,12 +210,12 @@ export default function AdminDashboard() {
       <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
        <div className="space-y-1.5 flex-grow">
        <div className="flex flex-wrap items-center gap-2">
-        <span className="font-mono font-bold text-primary" style={{ fontSize: '13px' }}>{donation.id}</span>
-        <span className="px-2.5 py-0.5 bg-slate-200/70 text-slate-700 rounded-full font-bold uppercase" style={{ fontSize: '10px' }}>{donation.category}</span>
+        <span className="font-mono font-bold text-primary" >{donation.id}</span>
+        <span className="px-2.5 py-0.5 bg-slate-200/70 text-slate-700 rounded-full font-bold uppercase" >{donation.category}</span>
        </div>
-       <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>{donation.itemName || donation.title || 'Donation Item'}</h4>
-       <p className="text-slate-500" style={{ fontSize: '13px' }}>Donor: <b>{donation.donorName}</b> ({donation.donorEmail})</p>
-       <p className="text-slate-500 flex items-center gap-1" style={{ fontSize: '13px' }}>
+       <h4 className="font-bold text-slate-900" >{donation.itemName || donation.title || 'Donation Item'}</h4>
+       <p className="text-slate-500" >Donor: <b>{donation.donorName}</b> ({donation.donorEmail})</p>
+       <p className="text-slate-500 flex items-center gap-1" >
         <MapPin className="w-4 h-4 text-slate-400 shrink-0" /> {donation.location?.address}
        </p>
        </div>
@@ -235,7 +235,7 @@ export default function AdminDashboard() {
        </Button>
        <Button
         variant="secondary"
-        className="text-red-600 border-red-150 hover:bg-red-50 hover:border-red-200"
+        className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-200"
         onClick={() => {
         setRejectType('donation');
         setRejectItemId(donation.id);
@@ -251,23 +251,23 @@ export default function AdminDashboard() {
        <div className="pt-6 border-t border-slate-200 grid grid-cols-1 lg:grid-cols-2 gap-6">
        <div className="space-y-4">
         <div className="space-y-1.5">
-        <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>Item Description:</span>
-        <p className="text-slate-650 leading-relaxed db-card" style={{ fontSize: '14px' }}>{donation.description}</p>
+        <span className="font-bold text-slate-700 block" >Item Description:</span>
+        <p className="text-slate-600 leading-relaxed db-card" >{donation.description}</p>
         </div>
-        <div className="grid grid-cols-2 gap-4" style={{ fontSize: '13px' }}>
+        <div className="grid grid-cols-2 gap-4" >
         <div>
-         <span className="font-bold text-slate-450 block font-mono text-[10px] uppercase">Condition</span>
+         <span className="font-bold text-slate-500 block font-mono text-xs uppercase">Condition</span>
          <span className="font-bold text-slate-800 block mt-0.5">{donation.condition}</span>
         </div>
         <div>
-         <span className="font-bold text-slate-450 block font-mono text-[10px] uppercase">Quantity</span>
+         <span className="font-bold text-slate-500 block font-mono text-xs uppercase">Quantity</span>
          <span className="font-bold text-slate-800 block mt-0.5">{donation.quantity} units</span>
         </div>
         </div>
 
         {donation.photos?.length > 0 && (
         <div className="space-y-2">
-         <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>Uploaded Item Photos:</span>
+         <span className="font-bold text-slate-700 block" >Uploaded Item Photos:</span>
          <div className="flex gap-3 overflow-x-auto py-1">
          {donation.photos.map((photo, i) => (
           <div
@@ -285,7 +285,7 @@ export default function AdminDashboard() {
 
        {/* Map View */}
        <div className="space-y-2">
-        <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>Pickup Coordinates Location:</span>
+        <span className="font-bold text-slate-700 block" >Pickup Coordinates Location:</span>
         <div className="h-56 rounded-xl overflow-hidden border border-border">
         <LeafletMap
          center={[donation.location?.lat || 12.9716, donation.location?.lng || 77.5946]}
@@ -306,12 +306,12 @@ export default function AdminDashboard() {
     {/* NGO Authority Applications */}
     <div className="saas-card space-y-6">
     <div>
-     <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" style={{ fontSize: '16px' }}>NGO Authority Verification Queue</h3>
-     <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>Verify regulatory filings, NGO registration certificate uploads, and legal status.</p>
+     <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" >NGO Authority Verification Queue</h3>
+     <p className="text-slate-500 mt-1" >Verify regulatory filings, NGO registration certificate uploads, and legal status.</p>
     </div>
 
     {pendingNgos.length === 0 ? (
-     <p className="p-12 text-slate-500 text-center font-semibold border border-dashed border-slate-200 rounded-xl bg-slate-50" style={{ fontSize: '14px' }}>No NGO registrations pending audit.</p>
+     <p className="p-12 text-slate-500 text-center font-semibold border border-dashed border-slate-200 rounded-xl bg-slate-50" >No NGO registrations pending audit.</p>
     ) : (
      <div className="grid grid-cols-1 gap-6">
      {pendingNgos.map((ngo) => (
@@ -329,9 +329,9 @@ export default function AdminDashboard() {
 
       <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
        <div className="space-y-1.5 flex-grow">
-       <h4 className="font-bold text-slate-900" style={{ fontSize: '16px' }}>{ngo.name}</h4>
-       <p className="text-slate-500" style={{ fontSize: '13px' }}>Tax Filing Code: <strong className="font-mono text-primary">{ngo.registrationNumber}</strong></p>
-       <p className="text-slate-550" style={{ fontSize: '13px' }}>Website: <a href={ngo.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">{ngo.website}</a></p>
+       <h4 className="font-bold text-slate-900" >{ngo.name}</h4>
+       <p className="text-slate-500" >Tax Filing Code: <strong className="font-mono text-primary">{ngo.registrationNumber}</strong></p>
+       <p className="text-slate-500" >Website: <a href={ngo.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">{ngo.website}</a></p>
        </div>
 
        <div className="flex flex-wrap gap-2.5 shrink-0 w-full md:w-auto">
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
        </Button>
        <Button
         variant="secondary"
-        className="text-amber-700 border-amber-150 hover:bg-amber-50 hover:border-amber-200"
+        className="text-amber-700 border-amber-200 hover:bg-amber-50 hover:border-amber-200"
         onClick={() => {
         setRejectType('ngo_changes');
         setRejectItemId(ngo.id);
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
        </Button>
        <Button
         variant="secondary"
-        className="text-red-600 border-red-150 hover:bg-red-50 hover:border-red-200"
+        className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-200"
         onClick={() => {
         setRejectType('ngo');
         setRejectItemId(ngo.id);
@@ -375,39 +375,39 @@ export default function AdminDashboard() {
        <div className="pt-6 border-t border-slate-200 space-y-6">
        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4 text-slate-700" style={{ fontSize: '13px' }}>
+        <div className="grid grid-cols-2 gap-4 text-slate-700" >
          <div>
-         <span className="font-mono text-[10px] text-slate-400 font-bold uppercase block">Gov Registration</span>
+         <span className="font-mono text-xs text-slate-400 font-bold uppercase block">Gov Registration</span>
          <span className="font-bold text-slate-800 block mt-0.5">{ngo.govRegistrationNumber}</span>
          </div>
          <div>
-         <span className="font-mono text-[10px] text-slate-400 font-bold uppercase block">NGO Type</span>
+         <span className="font-mono text-xs text-slate-400 font-bold uppercase block">NGO Type</span>
          <span className="font-bold text-slate-800 block mt-0.5">{ngo.ngoType}</span>
          </div>
          <div>
-         <span className="font-mono text-[10px] text-slate-400 font-bold uppercase block">Volunteers</span>
+         <span className="font-mono text-xs text-slate-400 font-bold uppercase block">Volunteers</span>
          <span className="font-bold text-slate-800 block mt-0.5">{ngo.volunteersCount} active</span>
          </div>
          <div>
-         <span className="font-mono text-[10px] text-slate-400 font-bold uppercase block">Active Since</span>
+         <span className="font-mono text-xs text-slate-400 font-bold uppercase block">Active Since</span>
          <span className="font-bold text-slate-800 block mt-0.5">{ngo.operatingSince}</span>
          </div>
         </div>
 
         <div className="space-y-1">
-         <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>NGO Mission Statement:</span>
-         <p className="text-slate-650 leading-relaxed db-card" style={{ fontSize: '14px' }}>{ngo.mission}</p>
+         <span className="font-bold text-slate-700 block" >NGO Mission Statement:</span>
+         <p className="text-slate-600 leading-relaxed db-card" >{ngo.mission}</p>
         </div>
 
         <div className="space-y-1">
-         <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>Core Bio:</span>
-         <p className="text-slate-650 leading-relaxed db-card" style={{ fontSize: '14px' }}>{ngo.description}</p>
+         <span className="font-bold text-slate-700 block" >Core Bio:</span>
+         <p className="text-slate-600 leading-relaxed db-card" >{ngo.description}</p>
         </div>
         </div>
 
         <div className="space-y-3">
         <div className="text-xs">
-         <span className="font-bold text-slate-750 block mb-1" style={{ fontSize: '14px' }}>Registered Headquarters Area:</span>
+         <span className="font-bold text-slate-700 block mb-1" >Registered Headquarters Area:</span>
          <span className="font-mono text-slate-500 block bg-white border border-border p-3 rounded-xl">{ngo.lat.toFixed(5)}, {ngo.lng.toFixed(5)} ({ngo.address})</span>
         </div>
         <div className="h-56 rounded-xl overflow-hidden border border-border">
@@ -423,7 +423,7 @@ export default function AdminDashboard() {
        {/* 11 Document previews grid */}
        {ngo.documents && (
         <div className="space-y-3">
-        <span className="font-bold text-slate-750 block" style={{ fontSize: '14px' }}>NGO Certificates &amp; Filings (11 Slots Audit Checklist):</span>
+        <span className="font-bold text-slate-700 block" >NGO Certificates &amp; Filings (11 Slots Audit Checklist):</span>
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
          {Object.keys(DOCUMENT_LABELS).map((docKey) => {
          const docData = ngo.documents[docKey];
@@ -447,13 +447,13 @@ export default function AdminDashboard() {
            <>
             <img src={firstPageUrl} alt="" className="w-full h-full object-cover" />
             {pages.length > 1 && (
-            <span className="absolute bottom-1 right-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
+            <span className="absolute bottom-1 right-1 bg-primary text-white text-xs font-bold px-1.5 py-0.5 rounded font-mono shadow-sm">
              {pages.length} pgs
             </span>
             )}
            </>
            ) : (
-           <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-[10px]">No File</div>
+           <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs">No File</div>
            )}
            {hasPages && (
            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
@@ -461,7 +461,7 @@ export default function AdminDashboard() {
            </div>
            )}
           </div>
-          <span className="text-[10px] font-bold text-slate-700 leading-tight block truncate w-full mt-2">{label}</span>
+          <span className="text-xs font-bold text-slate-700 leading-tight block truncate w-full mt-2">{label}</span>
           </div>
          );
          })}
@@ -483,10 +483,10 @@ export default function AdminDashboard() {
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
      <div className="bg-white border border-border w-full max-w-md p-6 rounded-2xl shadow-premium-xl space-y-4">
      <div>
-      <h4 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>
+      <h4 className="font-display font-bold text-slate-900" >
       {rejectType === 'donation' ? 'Shipment Rejection Feedback' : rejectType === 'ngo_changes' ? 'Request Changes Filings' : 'NGO Registration Rejection'}
       </h4>
-      <p className="text-slate-500 mt-1" style={{ fontSize: '13px' }}>Submit comments explaining what the NGO must update or correct.</p>
+      <p className="text-slate-500 mt-1" >Submit comments explaining what the NGO must update or correct.</p>
      </div>
      
      <form onSubmit={(e) => {
@@ -519,7 +519,7 @@ export default function AdminDashboard() {
       }}>
        Cancel
       </Button>
-      <Button type="submit" variant="primary" className={rejectType === 'ngo_changes' ? 'bg-amber-600 hover:bg-amber-700 border-none' : 'bg-red-650 hover:bg-red-700 border-none'}>
+      <Button type="submit" variant="primary" className={rejectType === 'ngo_changes' ? 'bg-amber-600 hover:bg-amber-700 border-none' : 'bg-red-600 hover:bg-red-700 border-none'}>
        Confirm Action
       </Button>
       </div>
@@ -534,15 +534,15 @@ export default function AdminDashboard() {
    {activeTab === 'fraud' && (
    <div className="saas-card space-y-6">
     <div>
-    <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" style={{ fontSize: '18px' }}>Security Anomaly Detection</h3>
-    <p className="text-slate-500 mt-1" style={{ fontSize: '14px' }}>Automated scans measuring multiple coordinate profiles, location discrepancies, or registration filings.</p>
+    <h3 className="font-display font-black text-slate-900 uppercase tracking-wider" >Security Anomaly Detection</h3>
+    <p className="text-slate-500 mt-1" >Automated scans measuring multiple coordinate profiles, location discrepancies, or registration filings.</p>
     </div>
 
     <div className="overflow-hidden border border-border rounded-xl">
     <div className="overflow-x-auto">
      <table className="w-full text-left border-collapse">
      <thead>
-      <tr className="border-b border-border bg-slate-50 text-slate-600 font-bold" style={{ fontSize: '13px' }}>
+      <tr className="border-b border-border bg-slate-50 text-slate-600 font-bold" >
       <th className="p-4">Alarm ID</th>
       <th className="p-4">Flagged Entity</th>
       <th className="p-4">Trigger Anomaly</th>
@@ -551,27 +551,27 @@ export default function AdminDashboard() {
       <th className="p-4 text-right">Actions</th>
       </tr>
      </thead>
-     <tbody className="divide-y divide-border" style={{ fontSize: '14px' }}>
+     <tbody className="divide-y divide-border" >
       {fraudLogs.map((log) => (
       <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
        <td className="p-4 font-mono font-semibold text-slate-400">{log.id}</td>
        <td className="p-4 font-bold text-slate-900">{log.entity_name || log.entityName}</td>
-       <td className="p-4 text-red-650 font-bold">{log.trigger}</td>
+       <td className="p-4 text-red-600 font-bold">{log.trigger}</td>
        <td className="p-4">
-       <span className={`px-2.5 py-0.5 border text-[10px] font-bold rounded-full uppercase ${
+       <span className={`px-2.5 py-0.5 border text-xs font-bold rounded-full uppercase ${
         (log.risk_score || log.riskScore || '').includes('Critical') ? 'bg-red-50 text-red-700 border-red-200' :
         (log.risk_score || log.riskScore || '').includes('Medium') ? 'bg-amber-50 text-amber-700 border-amber-200' :
-        'bg-slate-50 text-slate-705 border-slate-250'
+        'bg-slate-50 text-slate-700 border-slate-300'
        }`}>
         {log.risk_score || log.riskScore}
        </span>
        </td>
-       <td className="p-4 font-mono text-slate-550">{log.date}</td>
+       <td className="p-4 font-mono text-slate-500">{log.date}</td>
        <td className="p-4 text-right">
        <button
         onClick={() => dismissFraudLog(log.id)}
         className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl font-bold text-xs transition-colors cursor-pointer"
-        style={{ minHeight: '36px' }}
+        
        >
         Dismiss Anomaly
        </button>
@@ -590,39 +590,31 @@ export default function AdminDashboard() {
    <div className="space-y-6">
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
     <div className="saas-card">
-     <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>VERIFICATION RATE</span>
+     <span className="font-mono text-slate-400 font-bold uppercase block" >VERIFICATION RATE</span>
      <span className="text-3xl font-display font-black text-slate-900 mt-1 block">
      {platformMetrics?.verification_rate ?? '94.2%'}
      </span>
     </div>
     <div className="saas-card">
-     <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>DISPATCHED RUNS</span>
+     <span className="font-mono text-slate-400 font-bold uppercase block" >DISPATCHED RUNS</span>
      <span className="text-3xl font-display font-black text-primary mt-1 block">
      {platformMetrics?.total_deliveries ?? '342'} logs
      </span>
     </div>
     <div className="saas-card">
-     <span className="font-mono text-slate-400 font-bold uppercase block" style={{ fontSize: '10px' }}>TOTAL NGOS</span>
-     <span className="text-3xl font-display font-black text-emerald-650 mt-1 block">
+     <span className="font-mono text-slate-400 font-bold uppercase block" >TOTAL NGOS</span>
+     <span className="text-3xl font-display font-black text-emerald-600 mt-1 block">
      {platformMetrics?.total_ngos ?? ngos.length} orgs
      </span>
     </div>
     </div>
 
     <div className="saas-card space-y-4">
-    <h4 className="font-display font-bold text-slate-400 uppercase tracking-wider" style={{ fontSize: '12px' }}>Weekly Dispatched Cargo Trends</h4>
+    <h4 className="font-display font-bold text-slate-400 uppercase tracking-wider" >Weekly Dispatched Cargo Trends</h4>
     <div className="h-72">
      <ResponsiveContainer width="100%" height="100%">
      <AreaChart
-      data={[
-      { name: 'Mon', active: 10, total: 15 },
-      { name: 'Tue', active: 18, total: 22 },
-      { name: 'Wed', active: 25, total: 30 },
-      { name: 'Thu', active: 22, total: 28 },
-      { name: 'Fri', active: 30, total: 38 },
-      { name: 'Sat', active: 35, total: 45 },
-      { name: 'Sun', active: 40, total: 55 }
-      ]}
+      data={platformMetrics?.weeklyTrends || []}
       margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
      >
       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
@@ -651,14 +643,14 @@ export default function AdminDashboard() {
     </div>
     <div className="text-xs">
     <p className="font-bold">{undoBanner.message}</p>
-    <p className="text-slate-400 font-mono text-[9px] mt-0.5">Committing change in 5 seconds...</p>
+    <p className="text-slate-400 font-mono text-xs mt-0.5">Committing change in 5 seconds...</p>
     </div>
    </div>
 
    <button
     onClick={handleUndo}
     className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
-    style={{ minHeight: '32px' }}
+    
    >
     Undo Action
    </button>
@@ -674,11 +666,11 @@ export default function AdminDashboard() {
    {/* Modal Header */}
    <div className="p-4 border-b border-border flex justify-between items-center bg-slate-50">
     <div className="text-xs">
-    <span className="text-[10px] font-mono text-slate-400 font-bold block uppercase">DOCUMENT FILINGS VIEWER</span>
+    <span className="text-xs font-mono text-slate-400 font-bold block uppercase">DOCUMENT FILINGS VIEWER</span>
     <div className="flex items-center gap-1.5 mt-0.5">
      <span className="font-bold text-slate-900">{activeLightboxDoc.label}</span>
      {activeLightboxDoc.urls && activeLightboxDoc.urls.length > 1 && (
-     <span className="text-[10px] text-slate-500 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded font-bold">
+     <span className="text-xs text-slate-500 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded font-bold">
       Page {activeLightboxDoc.activeIndex + 1} of {activeLightboxDoc.urls.length}
      </span>
      )}
@@ -692,7 +684,7 @@ export default function AdminDashboard() {
       ...prev,
       activeIndex: (prev.activeIndex - 1 + prev.urls.length) % prev.urls.length
       }))}
-      className="px-2.5 py-1 text-[10px] font-bold bg-white border border-border hover:bg-slate-50 rounded text-slate-700 cursor-pointer"
+      className="px-2.5 py-1 text-xs font-bold bg-white border border-border hover:bg-slate-50 rounded text-slate-700 cursor-pointer"
      >
       Prev
      </button>
@@ -701,7 +693,7 @@ export default function AdminDashboard() {
       ...prev,
       activeIndex: (prev.activeIndex + 1) % prev.urls.length
       }))}
-      className="px-2.5 py-1 text-[10px] font-bold bg-white border border-border hover:bg-slate-50 rounded text-slate-700 cursor-pointer"
+      className="px-2.5 py-1 text-xs font-bold bg-white border border-border hover:bg-slate-50 rounded text-slate-700 cursor-pointer"
      >
       Next
      </button>

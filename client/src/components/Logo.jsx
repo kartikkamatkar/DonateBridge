@@ -118,7 +118,7 @@ export default function Logo({
           <span className={`font-display font-extrabold leading-none ${currentSize.text} ${textColor}`}>
             Donate<span className="text-primary">Bridge</span>
           </span>
-          <span className="text-[10px] text-slate-400 font-medium tracking-wide mt-1">
+          <span className="text-xs text-slate-400 font-medium tracking-wide mt-1">
             Bridging Donors with NGOs
           </span>
         </div>

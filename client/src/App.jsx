@@ -44,6 +44,19 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
+const RedirectToDjangoAdmin = () => {
+  React.useEffect(() => {
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    window.location.href = `${backendUrl}/admin/`;
+  }, []);
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+      <div className="text-slate-500 animate-pulse font-medium text-lg">Redirecting to Django Admin Console...</div>
+    </div>
+  );
+};
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -117,7 +130,7 @@ export default function App() {
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminDashboard />
+              <RedirectToDjangoAdmin />
             </ProtectedRoute>
           }
         />

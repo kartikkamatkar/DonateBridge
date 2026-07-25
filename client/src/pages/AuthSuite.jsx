@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
 import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Lock, ArrowLeft, Eye, EyeOff, Sparkles, Activity } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
 import { authAPI, getApiError } from '../api/index';
@@ -20,21 +20,16 @@ export default function AuthSuite() {
 
   const [isRegister, setIsRegister] = useState(isRegisterParam);
   const [selectedRole, setSelectedRole] = useState(roleParam || 'donor');
-  // Steps: 'credentials' | 'register_otp' | 'forgot' | 'forgot_otp' | 'reset'
   const [step, setStep] = useState('credentials');
   
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   
-  // Registration state
   const [pendingRegData, setPendingRegData] = useState(null);
-  
-  // OTP state
   const [otpCode, setOtpCode] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
 
-  // Forgot password state
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetPassword, setResetPassword] = useState('');
   const [resetConfirm, setResetConfirm] = useState('');
@@ -45,7 +40,6 @@ export default function AuthSuite() {
     setIsRegister(isRegisterParam);
   }, [isRegisterParam]);
 
-  // Resend Timer countdown
   useEffect(() => {
     let interval;
     if (resendTimer > 0) {
@@ -68,7 +62,6 @@ export default function AuthSuite() {
 
     try {
       if (isRegister) {
-        // Send OTP first
         await authAPI.sendOTP(data.email);
         setPendingRegData(data);
         setOtpCode('');
@@ -99,7 +92,6 @@ export default function AuthSuite() {
     setAuthError('');
     try {
       await authAPI.verifyOTP(pendingRegData.email, otpCode);
-      // OTP Verified, now register
       const rawUsername = pendingRegData.name || pendingRegData.email.split('@')[0];
       const cleanUsername = rawUsername.replace(/[^a-zA-Z0-9@.+-_]/g, '') + Math.floor(Math.random() * 10000);
       const registerRes = await authAPI.register(
@@ -111,7 +103,11 @@ export default function AuthSuite() {
       const { user, access, refresh } = registerRes.data;
       loginWithTokens(user, access, refresh);
       toast.success('Account created! Welcome to DonateBridge.');
-      redirectAfterLogin(user.role);
+      if (user.role === 'ngo') {
+        navigate('/ngo-register');
+      } else {
+        redirectAfterLogin(user.role);
+      }
     } catch (err) {
       setAuthError(getApiError(err));
     } finally {
@@ -196,95 +192,112 @@ export default function AuthSuite() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] text-slate-900 flex flex-col lg:grid lg:grid-cols-2">
-      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 bg-white border-r border-border h-full overflow-y-auto">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors w-fit font-medium cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back to Home
-        </button>
+    <div className="min-h-screen w-screen flex flex-col lg:grid lg:grid-cols-2 bg-slate-900 selection:bg-emerald-500/30">
+      
+      {/* LEFT SIDE - Brand Experience */}
+      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 h-full relative overflow-hidden">
+        {/* Deep Glowing Backgrounds */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 via-slate-900 to-slate-900" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay" />
+        <div className="absolute -top-[20%] -left-[10%] w-[500px] h-[500px] bg-emerald-500/20 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute top-[40%] -right-[20%] w-[400px] h-[400px] bg-teal-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-        <div className="space-y-8 max-w-md my-auto">
-          <div className="space-y-4">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg">
-              DB
+        <div className="relative z-10">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors w-fit font-bold tracking-wide uppercase cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" /> Return Home
+          </button>
+        </div>
+
+        <div className="space-y-10 max-w-lg my-auto relative z-10">
+          <div className="space-y-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-500/30">
+              <Sparkles className="w-7 h-7" />
             </div>
-            <h2 className="text-3xl font-display font-bold text-ink leading-tight">
+            <h2 className="text-4xl lg:text-5xl font-display font-black text-white leading-[1.1] tracking-tight">
               A modern physical supply logistics framework.
             </h2>
-            <p className="text-sm text-slate-500 leading-relaxed">
+            <p className="text-lg text-slate-400 leading-relaxed font-medium max-w-md">
               We connect local donors directly to vetted nonprofit organizations, coordinating route delivery logistics and certificates without middle agencies.
             </p>
           </div>
 
-          <div className="space-y-4 pt-6 border-t border-border">
-            <div className="flex items-start gap-3 text-xs">
-              <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <div className="space-y-6 pt-8 border-t border-slate-700/50">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-sm">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h4 className="font-bold text-ink">Verified Nonprofits</h4>
-                <p className="text-slate-500 mt-0.5">Strict admin audits of registration documentation prevent verification fraud.</p>
+                <h4 className="font-bold text-white text-lg">Verified Nonprofits</h4>
+                <p className="text-slate-400 text-sm mt-1 leading-relaxed">Strict admin audits of registration documentation prevent verification fraud.</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 text-xs">
-              <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-                <Lock className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-sm">
+                <Lock className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h4 className="font-bold text-ink">Encrypted Verification Logs</h4>
-                <p className="text-slate-500 mt-0.5">Secure logins ensure zero credential leakage or session hijacking risks.</p>
+                <h4 className="font-bold text-white text-lg">Encrypted Verification Logs</h4>
+                <p className="text-slate-400 text-sm mt-1 leading-relaxed">Secure logins ensure zero credential leakage or session hijacking risks.</p>
               </div>
             </div>
           </div>
         </div>
 
-        <p className="text-xs text-slate-400">
-          © {new Date().getFullYear()} DonateBridge Inc. All rights reserved.
-        </p>
+        <div className="relative z-10">
+          <p className="text-sm font-medium text-slate-500">
+            © {new Date().getFullYear()} DonateBridge Inc.
+          </p>
+        </div>
       </div>
 
-      <div className="flex-1 h-full overflow-y-auto bg-slate-50 flex flex-col justify-center py-8 px-6 sm:px-12 lg:px-20">
-        <div className="w-full max-w-md mx-auto bg-white border border-border rounded-2xl p-6 sm:p-8 shadow-premium-lg">
+      {/* RIGHT SIDE - Glassmorphic Form */}
+      <div className="flex-1 h-full overflow-y-auto bg-slate-50 relative flex flex-col justify-center py-10 px-4 sm:px-8 lg:px-20">
+        
+        {/* Subtle Form Background Pattern */}
+        <div className="absolute inset-0 bg-white/50 backdrop-blur-3xl z-0" />
+        
+        <div className="w-full max-w-md mx-auto bg-white/70 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-8 sm:p-12 shadow-2xl shadow-slate-200/50 relative z-10">
           <AnimatePresence mode="wait">
             
             {/* CREDENTIALS STEP */}
             {step === 'credentials' && (
               <motion.div
                 key="credentials"
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="space-y-8"
               >
-                <div className="text-center space-y-2">
-                  <h1 className="text-2xl font-display font-bold text-ink">
-                    {isRegister ? 'Create Your Account' : 'Welcome to DonateBridge'}
+                <div className="text-center space-y-3">
+                  <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight">
+                    {isRegister ? 'Create Account' : 'Welcome Back'}
                   </h1>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-slate-500">
                     {isRegister
                       ? 'Sign up to request or dispatch essential local goods.'
-                      : 'Sign in with your registered credentials.'}
+                      : 'Sign in to your centralized dashboard.'}
                   </p>
                   {authMessage && (
-                    <p className="text-xs text-red-500 bg-red-50 py-2 px-3 border border-red-100 rounded-lg">
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 font-bold bg-red-50 py-2.5 px-4 border border-red-100 rounded-xl mt-4">
                       {authMessage}
-                    </p>
+                    </motion.p>
                   )}
                 </div>
 
-                <div className="flex p-1 bg-slate-100 rounded-lg border border-border">
-                  {['donor', 'ngo', ...(!isRegister ? ['admin'] : [])].map((role) => (
+                <div className="flex p-1.5 bg-slate-100/80 rounded-xl border border-slate-200/60 backdrop-blur-sm">
+                  {['donor', 'ngo'].map((role) => (
                     <button
                       key={role}
                       type="button"
                       onClick={() => { setSelectedRole(role); clearAuthMessage(); }}
-                      className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all capitalize ${
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all capitalize duration-300 ${
                         selectedRole === role
-                          ? 'bg-white text-primary shadow-premium-sm font-bold'
-                          : 'text-slate-500 hover:text-slate-700'
+                          ? 'bg-white text-emerald-600 shadow-md shadow-slate-200/50'
+                          : 'text-slate-500 hover:text-slate-800 hover:bg-white/40'
                       }`}
                     >
                       {role}
@@ -292,7 +305,7 @@ export default function AuthSuite() {
                   ))}
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmitCredentials)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmitCredentials)} className="space-y-5">
                   {isRegister && (
                     <InputField
                       label={selectedRole === 'ngo' ? 'Organization Legal Name' : 'Full Name'}
@@ -327,24 +340,26 @@ export default function AuthSuite() {
                       error={errors.password}
                       {...register('password', {
                         required: 'Password is required',
-                        minLength: { value: 8, message: 'Password must be at least 8 characters' }
+                        ...(isRegister && {
+                          minLength: { value: 8, message: 'Password must be at least 8 characters' }
+                        })
                       })}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
+                      className="absolute right-3 top-[34px] text-slate-400 hover:text-emerald-500 transition-colors p-1 cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
 
                   {!isRegister && (
-                    <div className="flex justify-end">
+                    <div className="flex justify-end pt-1">
                       <button
                         type="button"
                         onClick={() => { setStep('forgot'); setAuthError(''); }}
-                        className="text-xs text-primary hover:underline font-semibold"
+                        className="text-sm text-emerald-600 hover:text-emerald-500 transition-colors font-bold"
                       >
                         Forgot password?
                       </button>
@@ -353,23 +368,25 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
+                    className="w-full h-12 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-slate-900/10 hover:shadow-emerald-500/25 transition-all duration-300"
                     disabled={loading}
                   >
                     {loading ? 'Processing…' : isRegister ? 'Continue' : 'Sign In'}
                   </Button>
 
                   {authError && (
-                    <p className="text-xs text-red-500 font-semibold text-center mt-2">{authError}</p>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 font-bold text-center pt-2">
+                      {authError}
+                    </motion.p>
                   )}
                 </form>
 
-                <div className="pt-4 border-t border-border text-center text-xs text-slate-500">
+                <div className="pt-6 text-center text-sm font-medium text-slate-500">
                   {isRegister ? 'Already have an account? ' : "Don't have an account yet? "}
                   <button
                     type="button"
                     onClick={() => { setIsRegister(!isRegister); setAuthError(''); }}
-                    className="text-primary hover:underline font-bold"
+                    className="text-emerald-600 hover:text-emerald-500 font-bold transition-colors ml-1"
                   >
                     {isRegister ? 'Sign in' : 'Register Now'}
                   </button>
@@ -377,25 +394,28 @@ export default function AuthSuite() {
               </motion.div>
             )}
 
-            {/* OTP VERIFICATION STEP (Registration) */}
+            {/* OTP VERIFICATION STEP */}
             {step === 'register_otp' && (
               <motion.div
                 key="register_otp"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
               >
-                <div className="text-center space-y-2">
-                  <h1 className="text-xl font-display font-bold text-ink">Verify Your Email</h1>
-                  <p className="text-xs text-slate-500">
-                    We've sent a 6-digit code to <span className="font-semibold">{pendingRegData?.email}</span>.
+                <div className="text-center space-y-3">
+                  <div className="w-16 h-16 mx-auto bg-emerald-50 rounded-2xl flex items-center justify-center mb-6">
+                     <Lock className="w-8 h-8 text-emerald-500" />
+                  </div>
+                  <h1 className="text-2xl font-display font-black text-slate-900">Verify Email</h1>
+                  <p className="text-sm font-medium text-slate-500">
+                    We've sent a 6-digit code to<br/><span className="font-bold text-slate-700">{pendingRegData?.email}</span>
                   </p>
                 </div>
-                <form onSubmit={handleRegisterOTP} className="space-y-4">
+                <form onSubmit={handleRegisterOTP} className="space-y-5">
                   <InputField
-                    label="6-Digit OTP Code"
+                    label="6-Digit Verification Code"
                     id="reg-otp"
                     type="text"
                     maxLength={6}
@@ -406,20 +426,20 @@ export default function AuthSuite() {
                   />
                   <Button
                     type="submit"
-                    className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
+                    className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/25 transition-all"
                     disabled={loading || otpCode.length !== 6}
                   >
                     {loading ? 'Verifying…' : 'Verify & Create Account'}
                   </Button>
                   
-                  {authError && <p className="text-xs text-red-500 font-semibold text-center">{authError}</p>}
+                  {authError && <p className="text-xs text-red-500 font-bold text-center">{authError}</p>}
                   
-                  <div className="text-center">
+                  <div className="text-center pt-2">
                     <button
                       type="button"
                       onClick={() => handleResendOTP(pendingRegData?.email)}
                       disabled={resendTimer > 0 || loading}
-                      className="text-xs text-primary font-semibold hover:underline disabled:opacity-50 disabled:no-underline"
+                      className="text-sm text-emerald-600 font-bold hover:text-emerald-500 transition-colors disabled:opacity-50 disabled:hover:text-emerald-600"
                     >
                       {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
                     </button>
@@ -427,9 +447,9 @@ export default function AuthSuite() {
                   <button
                     type="button"
                     onClick={() => { setStep('credentials'); setAuthError(''); }}
-                    className="w-full py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
+                    className="w-full py-2 mt-4 text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
                   >
-                    Back
+                    Return to Login
                   </button>
                 </form>
               </motion.div>
@@ -439,18 +459,21 @@ export default function AuthSuite() {
             {step === 'forgot' && (
               <motion.div
                 key="forgot"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
               >
-                <div className="text-center space-y-2">
-                  <h1 className="text-xl font-display font-bold text-ink">Reset Password</h1>
-                  <p className="text-xs text-slate-500">Enter your registered email to receive a reset OTP.</p>
+                <div className="text-center space-y-3">
+                  <div className="w-16 h-16 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center mb-6">
+                     <ShieldCheck className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <h1 className="text-2xl font-display font-black text-slate-900">Reset Password</h1>
+                  <p className="text-sm font-medium text-slate-500">Enter your email to receive a recovery code.</p>
                 </div>
 
-                <form onSubmit={handleForgotPassword} className="space-y-4">
+                <form onSubmit={handleForgotPassword} className="space-y-5">
                   <InputField
                     label="Email Address"
                     id="forgot-email"
@@ -463,22 +486,20 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
+                    className="w-full h-12 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg transition-all"
                     disabled={loading}
                   >
-                    {loading ? 'Sending…' : 'Send Reset OTP'}
+                    {loading ? 'Sending…' : 'Send Recovery Code'}
                   </Button>
 
-                  {authError && (
-                    <p className="text-xs text-red-500 font-semibold text-center">{authError}</p>
-                  )}
+                  {authError && <p className="text-xs text-red-500 font-bold text-center">{authError}</p>}
 
                   <button
                     type="button"
                     onClick={() => { setStep('credentials'); setAuthError(''); }}
-                    className="w-full py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
+                    className="w-full py-2 mt-4 text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
                   >
-                    Back to Sign In
+                    Cancel & Return
                   </button>
                 </form>
               </motion.div>
@@ -488,21 +509,21 @@ export default function AuthSuite() {
             {step === 'forgot_otp' && (
               <motion.div
                 key="forgot_otp"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
               >
-                <div className="text-center space-y-2">
-                  <h1 className="text-xl font-display font-bold text-ink">Verify OTP</h1>
-                  <p className="text-xs text-slate-500">
-                    We've sent a 6-digit code to <span className="font-semibold">{forgotEmail}</span>.
+                <div className="text-center space-y-3">
+                  <h1 className="text-2xl font-display font-black text-slate-900">Verify OTP</h1>
+                  <p className="text-sm font-medium text-slate-500">
+                    Recovery code sent to <span className="font-bold text-slate-700">{forgotEmail}</span>.
                   </p>
                 </div>
-                <form onSubmit={handleForgotOTP} className="space-y-4">
+                <form onSubmit={handleForgotOTP} className="space-y-5">
                   <InputField
-                    label="6-Digit OTP Code"
+                    label="6-Digit Recovery Code"
                     id="forgot-otp"
                     type="text"
                     maxLength={6}
@@ -513,20 +534,20 @@ export default function AuthSuite() {
                   />
                   <Button
                     type="submit"
-                    className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
+                    className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/25 transition-all"
                     disabled={loading || otpCode.length !== 6}
                   >
                     {loading ? 'Verifying…' : 'Verify Code'}
                   </Button>
                   
-                  {authError && <p className="text-xs text-red-500 font-semibold text-center">{authError}</p>}
+                  {authError && <p className="text-xs text-red-500 font-bold text-center">{authError}</p>}
                   
-                  <div className="text-center">
+                  <div className="text-center pt-2">
                     <button
                       type="button"
                       onClick={() => handleResendOTP(forgotEmail)}
                       disabled={resendTimer > 0 || loading}
-                      className="text-xs text-primary font-semibold hover:underline disabled:opacity-50 disabled:no-underline"
+                      className="text-sm text-emerald-600 font-bold hover:text-emerald-500 transition-colors disabled:opacity-50"
                     >
                       {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
                     </button>
@@ -534,7 +555,7 @@ export default function AuthSuite() {
                   <button
                     type="button"
                     onClick={() => { setStep('forgot'); setAuthError(''); }}
-                    className="w-full py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
+                    className="w-full py-2 mt-4 text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
                   >
                     Back
                   </button>
@@ -546,18 +567,18 @@ export default function AuthSuite() {
             {step === 'reset' && (
               <motion.div
                 key="reset"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
               >
-                <div className="text-center space-y-2">
-                  <h1 className="text-xl font-display font-bold text-ink">Set New Password</h1>
-                  <p className="text-xs text-slate-500">Enter a strong new password for your account.</p>
+                <div className="text-center space-y-3">
+                  <h1 className="text-2xl font-display font-black text-slate-900">Set New Password</h1>
+                  <p className="text-sm font-medium text-slate-500">Enter a strong new password for your account.</p>
                 </div>
 
-                <form onSubmit={handleResetPassword} className="space-y-4">
+                <form onSubmit={handleResetPassword} className="space-y-5">
                   <InputField
                     label="New Password"
                     id="new-pass"
@@ -579,20 +600,18 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full h-11 bg-primary hover:bg-primary-hover text-white rounded-lg font-semibold"
+                    className="w-full h-12 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg transition-all"
                     disabled={loading}
                   >
                     {loading ? 'Updating…' : 'Update Password'}
                   </Button>
 
-                  {authError && (
-                    <p className="text-xs text-red-500 font-semibold text-center">{authError}</p>
-                  )}
+                  {authError && <p className="text-xs text-red-500 font-bold text-center">{authError}</p>}
 
                   <button
                     type="button"
                     onClick={() => { setStep('credentials'); setAuthError(''); }}
-                    className="w-full py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors text-center"
+                    className="w-full py-2 mt-4 text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
                   >
                     Cancel
                   </button>

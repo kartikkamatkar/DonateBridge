@@ -60,16 +60,43 @@ export default function ChatTerminal() {
     }
   }, [isAuthenticated]);
 
-  // Poll messages every 3 seconds for active channel
+  // Setup WebSocket for active channel
+  const ws = useRef(null);
+
   useEffect(() => {
     if (!activeChannel) return;
     fetchMessages(activeChannel);
 
-    const interval = setInterval(() => {
-      fetchMessages(activeChannel);
-    }, 3000);
+    const token = localStorage.getItem('access');
+    // Using ws:// protocol pointing to the django backend port 8000
+    const wsUrl = `ws://127.0.0.1:8000/ws/chat/${activeChannel}/?token=${token}`;
+    
+    ws.current = new WebSocket(wsUrl);
 
-    return () => clearInterval(interval);
+    ws.current.onmessage = (event) => {
+      const newMsg = JSON.parse(event.data);
+      setMessages(prev => {
+        // Prevent duplicates
+        if (prev.find(m => m.id === newMsg.id)) return prev;
+        return [...prev, newMsg];
+      });
+      // Update channel's last message locally
+      setChannels(prev => prev.map(ch => ch.id === activeChannel ? { 
+        ...ch, 
+        lastMsg: newMsg.message_type === 'text' ? newMsg.text : `Sent a ${newMsg.message_type}`, 
+        time: 'Just now' 
+      } : ch));
+    };
+
+    ws.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    return () => {
+      if (ws.current) {
+        ws.current.close();
+      }
+    };
   }, [activeChannel]);
 
   // Scroll to bottom
@@ -78,18 +105,23 @@ export default function ChatTerminal() {
   }, [messages]);
 
   const handleSendMessage = async (textToSend, type = 'text', mediaUrl = null, lat = null, lng = null) => {
-    if (!activeChannel) return;
+    if (!activeChannel || !ws.current || ws.current.readyState !== WebSocket.OPEN) {
+      toast.error("Connecting to chat... please wait.");
+      return;
+    }
     setSending(true);
     try {
-      const res = await chatAPI.sendMessage(activeChannel, textToSend, type, mediaUrl, lat, lng);
-      // Append the new message immediately for crisp feel
-      setMessages(prev => [...prev, res.data]);
+      ws.current.send(JSON.stringify({
+        message_type: type,
+        text: textToSend,
+        media_url: mediaUrl,
+        lat: lat,
+        lng: lng
+      }));
       setTypedMessage('');
-      
-      // Update channel's last message locally
-      setChannels(prev => prev.map(ch => ch.id === activeChannel ? { ...ch, lastMsg: textToSend, time: 'Just now' } : ch));
     } catch (err) {
-      toast.error(getApiError(err));
+      console.error(err);
+      toast.error("Failed to send message via WebSocket.");
     } finally {
       setSending(false);
     }
@@ -101,22 +133,7 @@ export default function ChatTerminal() {
     handleSendMessage(typedMessage.trim());
   };
 
-  // Quick attachment shortcuts
-  const sendMockImage = () => {
-    const images = [
-      'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400',
-      'https://images.unsplash.com/photo-1574634534894-89d7576c8259?w=400',
-      'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400'
-    ];
-    const pick = images[Math.floor(Math.random() * images.length)];
-    handleSendMessage('Attached logistical shipment snapshot:', 'image', pick);
-    toast.success('Photo attachment sent!');
-  };
 
-  const sendMockLocation = () => {
-    handleSendMessage('Current GPS coordinates attached: 12.9716° N, 77.5946° E', 'location', null, 12.9716, 77.5946);
-    toast.success('Location coordinates sent!');
-  };
 
   const currentChannel = channels.find(c => c.id === activeChannel);
 
@@ -129,14 +146,14 @@ export default function ChatTerminal() {
         {/* Column 1: Threads list */}
         <aside className="w-full lg:w-72 bg-white border border-border rounded-2xl flex flex-col shrink-0 shadow-premium-sm overflow-hidden">
           <div className="p-5 border-b border-border space-y-4">
-            <h3 className="font-display font-bold text-slate-900" style={{ fontSize: '18px' }}>Messages</h3>
+            <h3 className="font-display font-bold text-slate-900" >Messages</h3>
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <input
                 type="text"
                 placeholder="Search conversations..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:border-primary placeholder-slate-400"
-                style={{ fontSize: '14px' }}
+                
               />
             </div>
           </div>
@@ -158,13 +175,13 @@ export default function ChatTerminal() {
                   }`}
                 >
                   <div className="flex justify-between items-center text-xs">
-                    <div className="font-bold flex items-center gap-1 text-slate-900" style={{ fontSize: '14px' }}>
+                    <div className="font-bold flex items-center gap-1 text-slate-900" >
                       {ch.name}
                       {ch.verified && <ShieldCheck className="w-4 h-4 text-primary shrink-0" />}
                     </div>
-                    <span className="font-mono text-slate-400" style={{ fontSize: '11px' }}>{ch.time}</span>
+                    <span className="font-mono text-slate-400" >{ch.time}</span>
                   </div>
-                  <p className="truncate mt-1.5 text-slate-500 font-medium" style={{ fontSize: '13px' }}>{ch.lastMsg}</p>
+                  <p className="truncate mt-1.5 text-slate-500 font-medium" >{ch.lastMsg}</p>
                 </div>
               ))
             )}
@@ -177,16 +194,16 @@ export default function ChatTerminal() {
           <div className="p-5 border-b border-border flex justify-between items-center bg-slate-50">
             {currentChannel ? (
               <div>
-                <p className="font-bold flex items-center gap-1.5 text-slate-900" style={{ fontSize: '16px' }}>
+                <p className="font-bold flex items-center gap-1.5 text-slate-900" >
                   {currentChannel.name}
                   {currentChannel.verified && <ShieldCheck className="w-4.5 h-4.5 text-primary shrink-0" />}
                 </p>
-                <p className="text-slate-500 mt-0.5" style={{ fontSize: '13px' }}>Secure NGO matching chat &bull; Encrypted logs</p>
+                <p className="text-slate-500 mt-0.5" >Secure NGO matching chat &bull; Encrypted logs</p>
               </div>
             ) : (
               <div>
-                <p className="font-bold text-slate-900" style={{ fontSize: '16px' }}>No Conversation Selected</p>
-                <p className="text-slate-500 mt-0.5" style={{ fontSize: '13px' }}>Select an active user chat to begin</p>
+                <p className="font-bold text-slate-900" >No Conversation Selected</p>
+                <p className="text-slate-500 mt-0.5" >Select an active user chat to begin</p>
               </div>
             )}
             <div className="flex gap-2">
@@ -198,14 +215,14 @@ export default function ChatTerminal() {
           {/* Messages Stream */}
           <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-slate-50/20">
             {!isAuthenticated ? (
-              <div className="text-center py-16 text-slate-450 space-y-3">
+              <div className="text-center py-16 text-slate-500 space-y-3">
                 <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
                 <p className="font-bold">Authentication Required</p>
                 <p className="text-xs">Sign in to coordinate with matches.</p>
                 <Button onClick={() => navigate('/auth')}>Sign In</Button>
               </div>
             ) : !activeChannel ? (
-              <div className="text-center py-16 text-slate-450 text-xs">
+              <div className="text-center py-16 text-slate-500 text-xs">
                 Select a thread from the side panel to view messages.
               </div>
             ) : messages.length === 0 ? (
@@ -220,14 +237,14 @@ export default function ChatTerminal() {
                     msg.self ? 'ml-auto items-end' : 'mr-auto items-start'
                   }`}
                 >
-                  <span className="text-slate-400 font-semibold" style={{ fontSize: '11px' }}>{msg.sender_name}</span>
+                  <span className="text-slate-400 font-semibold" >{msg.sender_name}</span>
                   <div
                     className={`p-4 rounded-2xl leading-relaxed shadow-premium-xs text-slate-800 ${
                       msg.self
                         ? 'bg-primary text-white font-medium rounded-tr-none'
                         : 'bg-white border border-border rounded-tl-none'
                     }`}
-                    style={{ fontSize: '15px' }}
+                    
                   >
                     {msg.text}
 
@@ -243,8 +260,8 @@ export default function ChatTerminal() {
                       <div className="mt-3 p-3 bg-slate-100 rounded-xl flex items-center gap-3 border border-slate-200">
                         <MapPin className="w-5 h-5 text-primary shrink-0" />
                         <div>
-                          <p className="font-bold text-slate-850" style={{ fontSize: '13px' }}>Current Pickup Coordinates</p>
-                          <p className="text-slate-500 mt-0.5" style={{ fontSize: '11px' }}>
+                          <p className="font-bold text-slate-850" >Current Pickup Coordinates</p>
+                          <p className="text-slate-500 mt-0.5" >
                             {msg.lat && msg.lng ? `${msg.lat.toFixed(4)}° N, ${msg.lng.toFixed(4)}° E` : 'Coords shared'}
                           </p>
                         </div>
@@ -253,11 +270,11 @@ export default function ChatTerminal() {
                   </div>
                   
                   {/* Time & Read Receipts section */}
-                  <div className="flex items-center gap-1.5 text-slate-400 font-mono" style={{ fontSize: '11px' }}>
+                  <div className="flex items-center gap-1.5 text-slate-400 font-mono" >
                     <span>{msg.time}</span>
                     {msg.self && (
                       <span>
-                        {msg.status === 'sent' && <Check className="w-3.5 h-3.5 text-slate-350" />}
+                        {msg.status === 'sent' && <Check className="w-3.5 h-3.5 text-slate-400" />}
                         {msg.status === 'delivered' && <CheckCheck className="w-3.5 h-3.5 text-slate-400" />}
                         {msg.status === 'read' && <CheckCheck className="w-3.5 h-3.5 text-blue-500" />}
                       </span>
@@ -272,29 +289,6 @@ export default function ChatTerminal() {
 
           {/* Message input bar with attachment shortcuts */}
           <div className="border-t border-border bg-white p-4 space-y-3 shrink-0">
-            <div className="flex gap-2.5">
-              <button
-                type="button"
-                disabled={!activeChannel || sending}
-                onClick={sendMockImage}
-                className="py-2 px-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer transition-all disabled:opacity-50"
-                style={{ fontSize: '12px', minHeight: '36px' }}
-              >
-                <Image className="w-4 h-4 text-slate-400" />
-                <span>Attach Photo</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={!activeChannel || sending}
-                onClick={sendMockLocation}
-                className="py-2 px-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer transition-all disabled:opacity-50"
-                style={{ fontSize: '12px', minHeight: '36px' }}
-              >
-                <MapPin className="w-4 h-4 text-slate-400" />
-                <span>Share Coordinates</span>
-              </button>
-            </div>
 
             <form onSubmit={handleTextSubmit} className="flex gap-3">
               <input
@@ -304,7 +298,7 @@ export default function ChatTerminal() {
                 value={typedMessage}
                 onChange={(e) => setTypedMessage(e.target.value)}
                 className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-primary placeholder-slate-400 disabled:bg-slate-50"
-                style={{ fontSize: '15px', minHeight: '48px' }}
+                
                 required
               />
               <Button type="submit" variant="primary" icon={Send} loading={sending} isDisabled={!activeChannel || sending}>
@@ -317,43 +311,43 @@ export default function ChatTerminal() {
         {/* Column 3: Active Match Details & Action Console */}
         <aside className="hidden xl:flex w-80 bg-white border border-border rounded-2xl flex-col shrink-0 shadow-premium-sm p-5 space-y-6 overflow-y-auto">
           <div>
-            <h4 className="font-display font-bold text-slate-900" style={{ fontSize: '16px' }}>Match Information</h4>
-            <p className="text-slate-400 mt-0.5" style={{ fontSize: '12px' }}>Fulfillment status &amp; logistics tracking details</p>
+            <h4 className="font-display font-bold text-slate-900" >Match Information</h4>
+            <p className="text-slate-400 mt-0.5" >Fulfillment status &amp; logistics tracking details</p>
           </div>
 
           {/* Stepper Status */}
           <div className="space-y-4">
-            <h5 className="text-slate-450 uppercase font-mono tracking-wider font-bold" style={{ fontSize: '10px' }}>Logistics Status</h5>
+            <h5 className="text-slate-500 uppercase font-mono tracking-wider font-bold" >Logistics Status</h5>
             <div className="space-y-3.5">
               <div className="flex gap-3 items-start">
-                <div className="w-6 h-6 rounded-full bg-emerald-50 text-primary border border-emerald-100 flex items-center justify-center font-mono font-bold" style={{ fontSize: '11px' }}>1</div>
+                <div className="w-6 h-6 rounded-full bg-emerald-50 text-primary border border-emerald-100 flex items-center justify-center font-mono font-bold" >1</div>
                 <div>
-                  <p className="font-bold text-slate-800" style={{ fontSize: '13px' }}>Donation Registered</p>
-                  <p className="text-slate-400" style={{ fontSize: '11px' }}>Items submitted by donor.</p>
+                  <p className="font-bold text-slate-800" >Donation Registered</p>
+                  <p className="text-slate-400" >Items submitted by donor.</p>
                 </div>
               </div>
 
               <div className="flex gap-3 items-start">
-                <div className="w-6 h-6 rounded-full bg-emerald-50 text-primary border border-emerald-100 flex items-center justify-center font-mono font-bold" style={{ fontSize: '11px' }}>2</div>
+                <div className="w-6 h-6 rounded-full bg-emerald-50 text-primary border border-emerald-100 flex items-center justify-center font-mono font-bold" >2</div>
                 <div>
-                  <p className="font-bold text-slate-800" style={{ fontSize: '13px' }}>Fulfillment Audited</p>
-                  <p className="text-slate-400" style={{ fontSize: '11px' }}>Verification review certified by Admin.</p>
+                  <p className="font-bold text-slate-800" >Fulfillment Audited</p>
+                  <p className="text-slate-400" >Verification review certified by Admin.</p>
                 </div>
               </div>
 
               <div className="flex gap-3 items-start">
-                <div className="w-6 h-6 rounded-full bg-emerald-50 text-primary border border-emerald-100 flex items-center justify-center font-mono font-bold" style={{ fontSize: '11px' }}>3</div>
+                <div className="w-6 h-6 rounded-full bg-emerald-50 text-primary border border-emerald-100 flex items-center justify-center font-mono font-bold" >3</div>
                 <div>
-                  <p className="font-bold text-slate-800" style={{ fontSize: '13px' }}>Smart Match Confirmed</p>
-                  <p className="text-slate-400" style={{ fontSize: '11px' }}>Linked match parameters fulfilled.</p>
+                  <p className="font-bold text-slate-800" >Smart Match Confirmed</p>
+                  <p className="text-slate-400" >Linked match parameters fulfilled.</p>
                 </div>
               </div>
 
               <div className="flex gap-3 items-start opacity-50">
-                <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center font-mono font-bold" style={{ fontSize: '11px' }}>4</div>
+                <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-400 border border-slate-200 flex items-center justify-center font-mono font-bold" >4</div>
                 <div>
-                  <p className="font-bold text-slate-800" style={{ fontSize: '13px' }}>Courier Dispatched</p>
-                  <p className="text-slate-400" style={{ fontSize: '11px' }}>Scheduled for pickup route tracking.</p>
+                  <p className="font-bold text-slate-800" >Courier Dispatched</p>
+                  <p className="text-slate-400" >Scheduled for pickup route tracking.</p>
                 </div>
               </div>
             </div>
@@ -361,12 +355,12 @@ export default function ChatTerminal() {
 
           {/* Eco info */}
           <div className="border-t border-slate-100 pt-5 space-y-3">
-            <h5 className="text-slate-450 uppercase font-mono tracking-wider font-bold" style={{ fontSize: '10px' }}>Eco Optimization</h5>
-            <div className="flex items-center justify-between" style={{ fontSize: '13px' }}>
+            <h5 className="text-slate-500 uppercase font-mono tracking-wider font-bold" >Eco Optimization</h5>
+            <div className="flex items-center justify-between" >
               <span className="text-slate-500 font-medium">Logistics Radius</span>
               <span className="font-bold text-slate-900">1.2 km</span>
             </div>
-            <div className="flex items-center justify-between" style={{ fontSize: '13px' }}>
+            <div className="flex items-center justify-between" >
               <span className="text-slate-500 font-medium">Estimated Carbon Saved</span>
               <span className="font-bold text-primary">10.1 kg CO₂</span>
             </div>
@@ -376,7 +370,7 @@ export default function ChatTerminal() {
             <button
               onClick={() => toast.info('Logistics manifest printed successfully.')}
               className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-bold transition-all cursor-pointer"
-              style={{ fontSize: '13px', minHeight: '40px' }}
+              
             >
               Print Delivery Manifest
             </button>

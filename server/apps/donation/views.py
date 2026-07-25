@@ -17,33 +17,52 @@ from moderation.models import AuditLog
 
 # Smart Matching Priority Calculation
 def calculate_match_score(donation, need, ngo):
-    # 1. Category Fit (40%)
-    category_fit = 100 if donation.category.lower() == need.category.lower() else 0
-    
-    # 2. Distance Score (30%)
+    # 1. Category Fit (30%)
+    don_cat = donation.category.lower()
+    need_cat = need.category.lower()
+    if don_cat == need_cat:
+        category_fit = 100
+    elif don_cat in need_cat or need_cat in don_cat:
+        category_fit = 80
+    else:
+        category_fit = 0
+        
+    # 2. Distance Score (20%)
     dist = get_distance_km(donation.pickup_lat, donation.pickup_lng, ngo.lat, ngo.lng)
     distance_score = max(0, 100 - (dist * 5)) # 0km = 100, 20km = 0
     
-    # 3. Urgency Score (20%)
+    # 3. Quantity Score (15%)
+    qty_diff = abs(donation.quantity - need.quantity)
+    max_qty = max(donation.quantity, need.quantity)
+    quantity_score = 100 if max_qty == 0 else max(0, 100 - ((qty_diff / max_qty) * 100))
+    
+    # 4. Urgency Score (15%)
     urgency_map = {'High': 100, 'Medium': 70, 'Low': 30}
     urgency_score = urgency_map.get(need.urgency, 30)
     
-    # 4. Freshness Score (10%)
+    # 5. NGO Trust Score (10%)
+    trust_score = getattr(ngo, 'trust_score', 70)
+    
+    # 6. Freshness Score (10%)
     delta_days = (django_timezone.now() - donation.submitted_at).days
     freshness_score = max(0, 100 - (delta_days * 10))
     
     total_score = round(
-        (category_fit * 0.40) +
-        (distance_score * 0.30) +
-        (urgency_score * 0.20) +
+        (category_fit * 0.30) +
+        (distance_score * 0.20) +
+        (quantity_score * 0.15) +
+        (urgency_score * 0.15) +
+        (trust_score * 0.10) +
         (freshness_score * 0.10)
     )
     
     return {
         "total": total_score,
-        "categoryFit": round(category_fit * 0.40),
-        "distanceScore": round(distance_score * 0.30),
-        "urgencyScore": round(urgency_score * 0.20),
+        "categoryFit": round(category_fit * 0.30),
+        "distanceScore": round(distance_score * 0.20),
+        "quantityScore": round(quantity_score * 0.15),
+        "urgencyScore": round(urgency_score * 0.15),
+        "trustScore": round(trust_score * 0.10),
         "freshnessScore": round(freshness_score * 0.10),
         "distance": round(dist, 1)
     }
@@ -116,7 +135,10 @@ class DonationViewSet(viewsets.ModelViewSet):
             return Response({"error": "Donation is not available for claim"}, status=status.HTTP_400_BAD_REQUEST)
             
         # Match Score logic
-        matching_need = Need.objects.filter(ngo=ngo, category__iexact=donation.category).first()
+        matching_need = Need.objects.filter(ngo=ngo, category__icontains=donation.category).first()
+        if not matching_need:
+            matching_need = Need.objects.filter(ngo=ngo).first() # Fallback for fuzzy matching
+
         score = 80
         if matching_need:
             score_breakdown = calculate_match_score(donation, matching_need, ngo)
@@ -198,7 +220,9 @@ class NgoSmartMatchesView(APIView):
         matches = []
         for donation in available_donations:
             for need in ngo_needs:
-                if donation.category.lower() == need.category.lower():
+                don_cat = donation.category.lower()
+                need_cat = need.category.lower()
+                if don_cat in need_cat or need_cat in don_cat:
                     score_breakdown = calculate_match_score(donation, need, ngo)
                     matches.append({
                         "donation": DonationDetailsSerializer(donation, context={'request': request}).data,
@@ -227,7 +251,9 @@ class DonationSmartMatchesView(APIView):
         
         matches = []
         for need in needs:
-            if donation.category.lower() == need.category.lower():
+            don_cat = donation.category.lower()
+            need_cat = need.category.lower()
+            if don_cat in need_cat or need_cat in don_cat:
                 ngo = need.ngo
                 score_breakdown = calculate_match_score(donation, need, ngo)
                 matches.append({

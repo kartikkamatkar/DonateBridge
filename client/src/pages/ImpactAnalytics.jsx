@@ -121,27 +121,27 @@ export default function ImpactAnalytics() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Total Items Routed</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">Total Items Routed</span>
               <p className="text-3xl font-display font-extrabold text-primary">{platformMetrics?.totalItemsTransferred?.toLocaleString() || 0}</p>
-              <span className="text-[9px] text-slate-500 block font-medium">+24% growth since last month</span>
+              <span className="text-xs text-slate-500 block font-medium">+24% growth since last month</span>
             </div>
             <BarChart2 className="w-8 h-8 text-primary opacity-20" />
           </div>
 
           <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Carbon Savings</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">Carbon Savings</span>
               <p className="text-3xl font-display font-extrabold text-[#4CAF50]">{platformMetrics?.carbonSavedKg?.toLocaleString() || 0} kg</p>
-              <span className="text-[9px] text-slate-500 block font-medium">CO2 emissions diverted from waste</span>
+              <span className="text-xs text-slate-500 block font-medium">CO2 emissions diverted from waste</span>
             </div>
             <Leaf className="w-8 h-8 text-[#4CAF50] opacity-20" />
           </div>
 
           <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Verified NGO Hubs</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">Verified NGO Hubs</span>
               <p className="text-3xl font-display font-extrabold text-slate-900">{platformMetrics?.totalNGOs?.toLocaleString() || 0} Hubs</p>
-              <span className="text-[9px] text-slate-500 block font-medium">Audit safety scores above 94%</span>
+              <span className="text-xs text-slate-500 block font-medium">Audit safety scores above 94%</span>
             </div>
             <ShieldCheck className="w-8 h-8 text-primary opacity-20" />
           </div>
@@ -153,7 +153,7 @@ export default function ImpactAnalytics() {
           <div className="lg:col-span-2 bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex flex-col justify-between h-80">
             <div className="mb-2">
               <h3 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Environmental CO2 Savings Log (kg)</h3>
-              <p className="text-[10px] text-slate-500">Accumulated carbon footprint diverted via direct courier logistics channels.</p>
+              <p className="text-xs text-slate-500">Accumulated carbon footprint diverted via direct courier logistics channels.</p>
             </div>
             <div className="flex-1 min-h-0 pt-4">
               <Line data={lineData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
@@ -163,7 +163,7 @@ export default function ImpactAnalytics() {
           <div className="bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex flex-col justify-between h-80">
             <div className="mb-2">
               <h3 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Material Categories (Share %)</h3>
-              <p className="text-[10px] text-slate-500">Distribution of items delivered by category.</p>
+              <p className="text-xs text-slate-500">Distribution of items delivered by category.</p>
             </div>
             <div className="flex-1 min-h-0 pt-4">
               <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: false }} />
@@ -173,7 +173,7 @@ export default function ImpactAnalytics() {
           <div className="lg:col-span-3 bg-white border border-border rounded-2xl shadow-premium-sm p-6 flex flex-col justify-between h-80">
             <div className="mb-2">
               <h3 className="text-xs font-display font-bold text-slate-400 uppercase tracking-wider">Monthly Logistical Donation Volume</h3>
-              <p className="text-[10px] text-slate-500">Physical resources transferred and ledger confirmed monthly.</p>
+              <p className="text-xs text-slate-500">Physical resources transferred and ledger confirmed monthly.</p>
             </div>
             <div className="flex-1 min-h-0 pt-4">
               <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
@@ -182,7 +182,7 @@ export default function ImpactAnalytics() {
         </div>
 
         {/* Anti-Fraud Audit Note */}
-        <div className="text-[11px] text-slate-600 flex items-start gap-3 bg-[#F1F8F5] border border-emerald-100 p-4 rounded-xl">
+        <div className="text-xs text-slate-600 flex items-start gap-3 bg-[#F1F8F5] border border-emerald-100 p-4 rounded-xl">
           <HelpCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="font-bold text-primary">Anti-Fraud & Environmental Audit Process</p>

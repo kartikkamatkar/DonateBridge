@@ -111,22 +111,22 @@ export default function SmartMatchVisualizer() {
               >
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-primary block">Rank #{idx + 1} Match Option</span>
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary block">Rank #{idx + 1} Match Option</span>
                     <h4 className="font-display font-bold text-sm text-slate-950">{match.ngo}</h4>
-                    <p className="text-[10px] text-slate-500 flex items-center gap-1">
+                    <p className="text-xs text-slate-500 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 text-slate-400" /> {match.proximity} miles &bull; ETA {match.eta}
                     </p>
                   </div>
 
                   <div className="text-right">
                     <span className="text-xl font-bold font-mono text-primary block">{match.score}%</span>
-                    <span className="text-[8px] text-slate-400 block -mt-1 font-bold uppercase font-mono">Affinity Score</span>
+                    <span className="text-xs text-slate-400 block -mt-1 font-bold uppercase font-mono">Affinity Score</span>
                   </div>
                 </div>
 
                 {/* Score weights */}
                 <div className="space-y-2.5 mt-4 pt-3 border-t border-border">
-                  <div className="flex justify-between items-center text-[10px]">
+                  <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Proximity Index (40%):</span>
                     <span className="font-mono font-bold text-slate-900">{match.proximityScore}/100</span>
                   </div>
@@ -134,7 +134,7 @@ export default function SmartMatchVisualizer() {
                     <div className="bg-primary h-full" style={{ width: `${match.proximityScore}%` }} />
                   </div>
 
-                  <div className="flex justify-between items-center text-[10px]">
+                  <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Need Urgency Index (35%):</span>
                     <span className="font-mono font-bold text-red-600">{match.urgencyScore}/100</span>
                   </div>
@@ -142,7 +142,7 @@ export default function SmartMatchVisualizer() {
                     <div className="bg-red-500 h-full" style={{ width: `${match.urgencyScore}%` }} />
                   </div>
 
-                  <div className="flex justify-between items-center text-[10px]">
+                  <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Trust Integrity Index (25%):</span>
                     <span className="font-mono font-bold text-secondary">{match.trustScore}/100</span>
                   </div>
@@ -155,7 +155,7 @@ export default function SmartMatchVisualizer() {
                   <Button
                     variant="primary"
                     size="sm"
-                    className="text-[10px] py-1.5 font-bold"
+                    className="text-xs py-1.5 font-bold"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/request-wizard?ngo=${match.id}&category=${match.item}`);
@@ -176,11 +176,11 @@ export default function SmartMatchVisualizer() {
             center={[12.9725, 77.5950]}
             zoom={13}
             markers={[
-              { lat: 12.9740, lng: 77.5980, popupContent: <div><b>Donor Pickup Point</b><p className="text-[10px] text-slate-400">Residency Road, Bengaluru</p></div> },
+              { lat: 12.9740, lng: 77.5980, popupContent: <div><b>Donor Pickup Point</b><p className="text-xs text-slate-400">Residency Road, Bengaluru</p></div> },
               {
                 lat: currentMatch.id === 2 ? 12.9801 : currentMatch.id === 3 ? 12.9634 : 12.9716,
                 lng: currentMatch.id === 2 ? 77.6012 : currentMatch.id === 3 ? 77.5878 : 77.5946,
-                popupContent: <div><b>NGO Hub: {currentMatch.ngo}</b><p className="text-[10px] text-slate-400">Nearby Matching Radius Enabled</p></div>
+                popupContent: <div><b>NGO Hub: {currentMatch.ngo}</b><p className="text-xs text-slate-400">Nearby Matching Radius Enabled</p></div>
               }
             ]}
             circles={[
@@ -210,12 +210,12 @@ export default function SmartMatchVisualizer() {
           <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md border border-border p-5 rounded-2xl text-slate-900 max-w-md space-y-3.5 z-10 text-xs shadow-premium-lg">
             <div className="flex justify-between items-center font-bold">
               <span className="flex items-center gap-1.5 text-primary"><Navigation className="w-4 h-4 text-primary animate-pulse" /> Computed Optimization Route</span>
-              <span className="font-mono text-primary bg-[#F1F8F5] px-2 py-0.5 rounded text-[10px]">ETA {currentMatch.eta}</span>
+              <span className="font-mono text-primary bg-[#F1F8F5] px-2 py-0.5 rounded text-xs">ETA {currentMatch.eta}</span>
             </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               Routing engine suggests dispatching to <strong className="text-slate-800">{currentMatch.ngo}</strong> due to critical demand for <strong className="text-slate-800">{currentMatch.item}</strong> and close coordinates mapping.
             </p>
-            <div className="grid grid-cols-3 gap-2 text-[10px] text-center pt-2 border-t border-border font-mono">
+            <div className="grid grid-cols-3 gap-2 text-xs text-center pt-2 border-t border-border font-mono">
               <div>
                 <span className="text-slate-400 block">TOTAL DISTANCE</span>
                 <span className="font-bold text-slate-900">{currentMatch.proximity} miles</span>

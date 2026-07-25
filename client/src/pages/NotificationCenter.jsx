@@ -34,15 +34,15 @@ export default function NotificationCenter() {
           {/* Title bar */}
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div className="space-y-1">
-              <h1 className="font-display font-black text-slate-900 flex items-center gap-2.5" style={{ fontSize: '24px' }}>
+              <h1 className="font-display font-black text-slate-900 flex items-center gap-2.5" >
                 <Bell className="w-6 h-6 text-primary animate-bounce" /> Notifications
                 {unreadCount > 0 && (
-                  <span className="px-3 py-0.5 border border-emerald-100 bg-emerald-50 text-primary rounded-full font-semibold uppercase tracking-wider" style={{ fontSize: '11px' }}>
+                  <span className="px-3 py-0.5 border border-emerald-100 bg-emerald-50 text-primary rounded-full font-semibold uppercase tracking-wider" >
                     {unreadCount} Unread
                   </span>
                 )}
               </h1>
-              <p className="text-slate-500 font-medium" style={{ fontSize: '15px' }}>Track your donation milestones, delivery pickups, and account updates.</p>
+              <p className="text-slate-500 font-medium" >Track your donation milestones, delivery pickups, and account updates.</p>
             </div>
 
             {unreadCount > 0 && (
@@ -63,7 +63,7 @@ export default function NotificationCenter() {
                     ? 'border-primary text-primary font-bold'
                     : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
-                style={{ fontSize: '15px' }}
+                
               >
                 {tab}
               </button>
@@ -74,9 +74,9 @@ export default function NotificationCenter() {
           <div className="space-y-4">
             {filteredNotifications.length === 0 ? (
               <div className="text-center py-20 text-slate-400 bg-white border border-border rounded-2xl shadow-premium-sm space-y-3">
-                <MailOpen className="w-10 h-10 text-slate-350 mx-auto" />
-                <p className="font-bold text-slate-800" style={{ fontSize: '16px' }}>All clear!</p>
-                <p className="text-slate-500" style={{ fontSize: '14px' }}>You don't have any notifications under this category.</p>
+                <MailOpen className="w-10 h-10 text-slate-400 mx-auto" />
+                <p className="font-bold text-slate-800" >All clear!</p>
+                <p className="text-slate-500" >You don't have any notifications under this category.</p>
               </div>
             ) : (
               filteredNotifications.map((notif) => (
@@ -98,7 +98,7 @@ export default function NotificationCenter() {
                           <Check className="w-5 h-5" />
                         </div>
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-red-50 text-red-650 flex items-center justify-center border border-red-100">
+                        <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center border border-red-100">
                           <ShieldAlert className="w-5 h-5" />
                         </div>
                       )}
@@ -106,13 +106,13 @@ export default function NotificationCenter() {
 
                     <div className="flex-1 space-y-3">
                       <div className="flex justify-between items-start gap-4">
-                        <p className={`leading-relaxed ${notif.read ? 'text-slate-600 font-medium' : 'text-slate-900 font-bold'}`} style={{ fontSize: '15px' }}>
+                        <p className={`leading-relaxed ${notif.read ? 'text-slate-600 font-medium' : 'text-slate-900 font-bold'}`} >
                           {notif.message}
                         </p>
-                        <span className="font-mono text-slate-400 shrink-0 ml-auto" style={{ fontSize: '12px' }}>{notif.time}</span>
+                        <span className="font-mono text-slate-400 shrink-0 ml-auto" >{notif.time}</span>
                       </div>
 
-                      <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-slate-400 font-mono" style={{ fontSize: '12px' }}>
+                      <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-slate-400 font-mono" >
                         <span className="font-semibold uppercase">ID: {notif.id}</span>
                         <div className="flex gap-4">
                           {!notif.read && (
@@ -125,7 +125,7 @@ export default function NotificationCenter() {
                           )}
                           <button
                             onClick={() => handleArchive(notif.id)}
-                            className="text-slate-450 hover:text-red-600 flex items-center gap-1 font-bold cursor-pointer"
+                            className="text-slate-500 hover:text-red-600 flex items-center gap-1 font-bold cursor-pointer"
                             aria-label="Archive notification"
                           >
                             <Trash2 className="w-4 h-4" /> Archive
@@ -143,16 +143,16 @@ export default function NotificationCenter() {
         {/* Right Column: Security Alerts console (Innovative Sidebar to fill gaps!) */}
         <aside className="w-full lg:w-80 bg-white border border-border rounded-2xl flex flex-col shrink-0 shadow-premium-sm p-6 space-y-6 overflow-y-auto">
           <div>
-            <h4 className="font-display font-bold text-slate-900 flex items-center gap-2" style={{ fontSize: '16px' }}>
+            <h4 className="font-display font-bold text-slate-900 flex items-center gap-2" >
               <ShieldCheck className="w-5 h-5 text-primary" /> Security Console
             </h4>
-            <p className="text-slate-500 mt-0.5" style={{ fontSize: '12px' }}>Real-time platform access verification logs.</p>
+            <p className="text-slate-500 mt-0.5" >Real-time platform access verification logs.</p>
           </div>
 
           {/* Active login session */}
           <div className="space-y-3.5">
-            <h5 className="text-slate-400 uppercase font-mono tracking-wider font-bold" style={{ fontSize: '10px' }}>Active Session</h5>
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-slate-650" style={{ fontSize: '13px' }}>
+            <h5 className="text-slate-400 uppercase font-mono tracking-wider font-bold" >Active Session</h5>
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-slate-600" >
               <p>Platform Access: <b>Authorized</b></p>
               <p>Device: <b>Linux Chrome Web</b></p>
               <p>IP Address: <b>192.168.1.104</b></p>
@@ -162,20 +162,20 @@ export default function NotificationCenter() {
 
           {/* Diagnostic status */}
           <div className="border-t border-slate-100 pt-5 space-y-3">
-            <h5 className="text-slate-400 uppercase font-mono tracking-wider font-bold" style={{ fontSize: '10px' }}>System Health</h5>
+            <h5 className="text-slate-400 uppercase font-mono tracking-wider font-bold" >System Health</h5>
             <div className="space-y-2">
-              <div className="flex justify-between items-center text-slate-700" style={{ fontSize: '13px' }}>
+              <div className="flex justify-between items-center text-slate-700" >
                 <span className="flex items-center gap-1.5"><Cpu className="w-4 h-4 text-primary" /> Socket Stream</span>
                 <span className="font-bold text-primary font-mono">CONNECTED</span>
               </div>
-              <div className="flex justify-between items-center text-slate-700" style={{ fontSize: '13px' }}>
+              <div className="flex justify-between items-center text-slate-700" >
                 <span className="flex items-center gap-1.5"><Info className="w-4 h-4 text-primary" /> SMS Gateways</span>
                 <span className="font-bold text-slate-900 font-mono">ONLINE</span>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-slate-100 pt-5 text-slate-500" style={{ fontSize: '12px' }}>
+          <div className="border-t border-slate-100 pt-5 text-slate-500" >
             <p className="leading-relaxed font-sans">
               All communications and matches on DonateBridge use digital tokens to safeguard personal phone numbers and locations.
             </p>

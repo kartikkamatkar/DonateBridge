@@ -9,7 +9,8 @@ from .views import (
     NeedViewSet,
     EmergencyCampaignViewSet,
     VolunteerEventViewSet,
-    VolunteerRegistrationViewSet
+    VolunteerRegistrationViewSet,
+    NGOAnalyticsView
 )
 
 router = DefaultRouter()
@@ -25,4 +26,5 @@ urlpatterns = [
     path('ngos/', NGOListView.as_view(), name='ngo_list'),
     path('ngos/<int:pk>/', NGODetailsView.as_view(), name='ngo_detail'),
     path('ngos/<int:pk>/reviews/', NGOCreateReviewView.as_view(), name='ngo_review'),
+    path('ngos/analytics/', NGOAnalyticsView.as_view(), name='ngo_analytics'),
 ]

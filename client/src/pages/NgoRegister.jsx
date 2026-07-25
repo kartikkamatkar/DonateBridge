@@ -186,7 +186,7 @@ export default function NgoRegister() {
     
     {/* Page title and description */}
     <section className="text-center max-w-2xl mx-auto space-y-2">
-     <span className="px-3 py-1 bg-[#F1F8F5] text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
+     <span className="px-3 py-1 bg-[#F1F8F5] text-primary text-xs font-bold rounded-full uppercase tracking-wider">
       NGO Partnership
      </span>
      <h1 className="text-3xl font-display font-black tracking-tight text-slate-900 leading-tight">
@@ -200,12 +200,12 @@ export default function NgoRegister() {
     {step < 4 && (
      <div className="db-card flex justify-between items-center text-xs max-w-md mx-auto">
       <div className="flex items-center gap-2">
-       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 1 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>1</span>
+       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 1 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>1</span>
        <span className={step === 1 ? 'font-bold text-slate-900' : 'text-slate-500'}>Basic Info</span>
       </div>
       <span className="h-[1px] bg-border flex-1 mx-4"></span>
       <div className="flex items-center gap-2">
-       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 3 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
+       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 3 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
        <span className={step === 3 ? 'font-bold text-slate-900' : 'text-slate-500'}>Upload Document</span>
       </div>
      </div>
@@ -245,7 +245,7 @@ export default function NgoRegister() {
          {...register('address', { required: 'Street address is required' })}
          className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-[70px]"
         />
-        {errors.address && <p className="text-[10px] text-red-500">{errors.address.message}</p>}
+        {errors.address && <p className="text-xs text-red-500">{errors.address.message}</p>}
        </div>
        {/* Map Coordinator Picker */}
        <div className="space-y-2">
@@ -261,7 +261,7 @@ export default function NgoRegister() {
           onMapClick={handleMapClick}
          />
         </div>
-        <p className="text-[10px] text-slate-400">Click anywhere on the map above to select the coordinates of your NGO facility.</p>
+        <p className="text-xs text-slate-400">Click anywhere on the map above to select the coordinates of your NGO facility.</p>
        </div>
        <div className="pt-4 border-t border-border flex justify-end">
         <Button type="button" variant="primary" onClick={handleNextStep} icon={ArrowRight}>
@@ -289,10 +289,10 @@ export default function NgoRegister() {
             <div className="flex justify-between items-start">
              <div className="space-y-1">
               <span className="text-xs font-bold text-slate-800 block">{slot.label}</span>
-              <span className="text-[9px] text-slate-400 block">Upload scans (PDF, Images)</span>
+              <span className="text-xs text-slate-400 block">Upload scans (PDF, Images)</span>
              </div>
              {pages && pages.length > 0 && (
-              <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-xs font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
                {pages.length} page(s)
               </span>
              )}
@@ -321,7 +321,7 @@ export default function NgoRegister() {
                   <Trash2 className="w-3.5 h-3.5" />
                  </button>
                 </div>
-                <span className="absolute bottom-0 inset-x-0 text-[8px] bg-black/70 text-white text-center py-0.5 font-bold font-mono">
+                <span className="absolute bottom-0 inset-x-0 text-xs bg-black/70 text-white text-center py-0.5 font-bold font-mono">
                  P.{idx + 1}
                 </span>
                </div>
@@ -342,13 +342,13 @@ export default function NgoRegister() {
                 className="w-full h-full border border-dashed border-slate-300 hover:border-primary rounded flex flex-col items-center justify-center text-slate-400 hover:text-primary bg-slate-50 hover:bg-slate-100/50 transition-all cursor-pointer"
                >
                 <Plus className="w-3.5 h-3.5" />
-                <span className="text-[7px] font-bold mt-0.5">Add Page</span>
+                <span className="text-xs font-bold mt-0.5">Add Page</span>
                </button>
               </div>
              </div>
             ) : (
              <div className="border border-dashed border-slate-200 p-4 rounded-lg bg-white flex flex-col items-center justify-center text-center space-y-2">
-              <span className="text-[10px] text-slate-400">No pages uploaded yet</span>
+              <span className="text-xs text-slate-400">No pages uploaded yet</span>
               <input
                type="file"
                id={`file-init-${slot.key}`}
@@ -361,7 +361,7 @@ export default function NgoRegister() {
                type="button"
                variant="secondary"
                size="sm"
-               className="text-[9px] py-1 px-3 font-bold"
+               className="text-xs py-1 px-3 font-bold"
                onClick={() => document.getElementById(`file-init-${slot.key}`).click()}
                icon={Upload}
               >
@@ -402,13 +402,13 @@ export default function NgoRegister() {
        <div className="p-4 bg-slate-50 border border-border rounded-xl text-left max-w-sm mx-auto text-xs font-mono space-y-2">
         <div className="flex justify-between">
          <span className="text-slate-400">APPLICATION STATUS:</span>
-         <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-[10px]">PENDING AUDIT</span>
+         <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-xs">PENDING AUDIT</span>
         </div>
         <div className="flex justify-between">
          <span className="text-slate-400">QUEUE INDEX:</span>
          <span className="text-slate-900 font-bold">#DB-REG-{trackingId}</span>
         </div>
-        <div className="flex justify-between border-t border-border pt-2 text-[10px] text-slate-400 text-center leading-relaxed">
+        <div className="flex justify-between border-t border-border pt-2 text-xs text-slate-400 text-center leading-relaxed">
          <span>Our admins typically audit document filings within 24 hours.</span>
         </div>
        </div>
@@ -432,7 +432,7 @@ export default function NgoRegister() {
       <div className="bg-white border border-border w-full max-w-2xl rounded-2xl shadow-premium-2xl overflow-hidden flex flex-col max-h-[85vh]">
        <div className="p-4 border-b border-border flex justify-between items-center bg-slate-50">
         <div className="text-xs">
-         <span className="text-[10px] font-mono text-slate-400 font-bold block uppercase">Document Page Preview</span>
+         <span className="text-xs font-mono text-slate-400 font-bold block uppercase">Document Page Preview</span>
          <span className="font-bold text-slate-900">{selectedPreviewPage.label}</span>
         </div>
         <button
@@ -450,7 +450,7 @@ export default function NgoRegister() {
          className="max-h-[60vh] object-contain rounded border border-slate-700/60"
         />
        </div>
-       <div className="p-3 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-500 font-mono">
+       <div className="p-3 bg-slate-50 border-t border-border flex justify-between items-center text-xs text-slate-500 font-mono">
         <span>File: {selectedPreviewPage.page.name}</span>
        </div>
       </div>

@@ -11,6 +11,7 @@ import {
 import { Button } from '../components/ui/Button';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import { motion } from 'framer-motion';
 
 const MOCK_COORDS = {
   Koramangala: { lat: 12.9340, lng: 77.6100, address: "Koramangala, Bengaluru" },
@@ -40,7 +41,7 @@ export default function LandingPage() {
   const [simCondition, setSimCondition] = useState('Like New');
 
   // Interactive Sandbox state
-  const [sandboxTab, setSandboxTab] = useState('match'); // 'match', 'impact', 'tracker'
+  const [sandboxTab, setSandboxTab] = useState('match'); 
   
   // Match Simulator state
   const [matchCategory, setMatchCategory] = useState('Books');
@@ -51,7 +52,7 @@ export default function LandingPage() {
   const [impactQuantity, setImpactQuantity] = useState(100);
   
   // Stepper Tracker state
-  const [trackerStep, setTrackerStep] = useState(2); // 0, 1, 2, 3
+  const [trackerStep, setTrackerStep] = useState(2); 
 
   // Dynamic Ledger feed
   const ledgerActivity = donations
@@ -81,7 +82,6 @@ export default function LandingPage() {
     navigate(`/discover?query=${encodeURIComponent(tag)}`);
   };
 
-  // Live dynamic routing output for the hero simulator
   const getHeroSimMatches = () => {
     let ngoName = "Hope Foundation";
     let distance = "1.2 km";
@@ -106,7 +106,6 @@ export default function LandingPage() {
       needItem = "Medical Gloves";
     }
 
-    // Modify score slightly based on condition
     let finalScore = score;
     if (simCondition === 'Good') finalScore -= 5;
     if (simCondition === 'New') finalScore += 3;
@@ -117,11 +116,9 @@ export default function LandingPage() {
 
   const heroSimOutput = getHeroSimMatches();
 
-  // Smart Match simulation calculation using Haversine formula
   const getSimulationMatches = () => {
     const selectedCoord = MOCK_COORDS[matchLocation] || MOCK_COORDS.Indiranagar;
     
-    // Normalize user categories to database categories
     let dbCategory = matchCategory;
     if (matchCategory === 'Medical Equipment') dbCategory = 'Medical';
     if (matchCategory === 'Clothes') dbCategory = 'Clothing';
@@ -172,12 +169,6 @@ export default function LandingPage() {
         ngo,
         distance: distance.toFixed(1),
         score: totalScore,
-        breakdown: {
-          category: Math.round(categoryFit * 0.40),
-          distance: Math.round(distanceScore * 0.30),
-          urgency: Math.round(urgencyScore * 0.20),
-          freshness: Math.round(freshnessScore * 0.10)
-        }
       };
     });
     
@@ -186,7 +177,6 @@ export default function LandingPage() {
 
   const simulationResults = getSimulationMatches();
 
-  // Dynamic Impact values
   const getImpactMetrics = () => {
     const qty = parseInt(impactQuantity, 10) || 0;
     switch (impactCategory) {
@@ -225,7 +215,6 @@ export default function LandingPage() {
 
   const impactMetrics = getImpactMetrics();
 
-  // Tracker stages
   const TRACKER_STAGES = [
     {
       title: "1. Item Registered",
@@ -254,35 +243,54 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+    <div className="min-h-screen flex flex-col bg-[#F1F5F9] selection:bg-emerald-500/30">
       <Navbar />
 
-      {/* TOTALLY COMPLETED NEW HERO DESIGN: Integrated Command Center Console (LIGHT THEME) */}
-      <section className="relative py-12 lg:py-16 bg-[#F8FAFC] text-slate-900 overflow-hidden border-b border-slate-200/80">
-        {/* Modern Grid & Soft Ambient Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000003_1px,transparent_1px),linear-gradient(to_bottom,#00000003_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
+      {/* Hero Section */}
+      <section className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 bg-slate-900 text-white overflow-hidden rounded-b-[3rem] lg:rounded-b-[5rem]">
+        {/* Glow Effects */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-teal-500/20 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-12">
           
-          {/* Top Headline and Wide Search Bar (Centered, no cramp/overlaps) */}
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" /> National Humanitarian Match Ledger
-            </span>
-            <h1 className="text-4xl lg:text-6xl font-display font-extrabold text-slate-900 leading-tight tracking-tight">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <motion.span 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-sm font-bold uppercase tracking-wider backdrop-blur-md"
+            >
+              <Sparkles className="w-4 h-4 text-emerald-300 animate-pulse" /> National Humanitarian Match Ledger
+            </motion.span>
+            
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-5xl lg:text-7xl font-display font-black text-white leading-[1.1] tracking-tight"
+            >
               Bridging Donors &amp; NGOs <br />
-              <span className="text-primary">One Need at a Time.</span>
-            </h1>
-            <p className="text-sm lg:text-base text-slate-500 max-w-2xl mx-auto leading-relaxed">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">One Need at a Time.</span>
+            </motion.h1>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-base lg:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-medium"
+            >
               Coordinate physical item donation logistics directly. No cash escrow leakages. Vetted logistics verification, real-time georadial mapping, and instant 80G tax invoice emissions.
-            </p>
+            </motion.p>
 
-            {/* Immersive Wide Search Console */}
-            <div className="max-w-xl mx-auto space-y-3">
-              <form onSubmit={handleSearchSubmit} className="flex items-center bg-white border border-slate-200 rounded-2xl p-1.5 shadow-premium-lg focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all">
-                <div className="flex items-center pl-3.5 pr-2.5 text-slate-400 shrink-0">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="max-w-xl mx-auto space-y-4 pt-2"
+            >
+              <form onSubmit={handleSearchSubmit} className="flex items-center bg-white/10 border border-white/20 backdrop-blur-xl rounded-2xl p-2 shadow-2xl focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/20 transition-all">
+                <div className="flex items-center pl-4 pr-3 text-slate-300 shrink-0">
                   <Search className="w-5 h-5" />
                 </div>
                 <input 
@@ -290,56 +298,59 @@ export default function LandingPage() {
                   placeholder="Search Registry (e.g. Blankets, Medicine, Textbooks)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-sm text-slate-800 placeholder-slate-400 bg-transparent border-none outline-none focus:outline-none !min-h-0 !h-auto !bg-transparent !border-none !shadow-none !py-2 !px-0 !focus:ring-0"
+                  className="w-full text-base text-white placeholder-slate-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 !min-h-0 !h-auto !bg-transparent !border-none !shadow-none !py-3 !px-0"
                 />
                 <Button
                   type="submit"
-                  variant="primary"
-                  className="bg-primary hover:bg-primary-hover text-white font-bold text-xs py-2 px-5 rounded-xl shrink-0 shadow-none border-none"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3 px-6 rounded-xl shrink-0 shadow-lg shadow-emerald-500/25 transition-all"
                 >
-                  Search Registry
+                  Search
                 </Button>
               </form>
 
-              {/* Popular Tags */}
-              <div className="flex flex-wrap justify-center gap-2 text-xs text-slate-500">
-                <span className="font-semibold uppercase tracking-wider text-[10px] mt-0.5 mr-1 text-slate-400">Popular:</span>
+              <div className="flex flex-wrap justify-center gap-3 text-sm text-slate-400 font-medium">
+                <span className="text-slate-500 mt-0.5">Popular:</span>
                 {['Blankets', 'Dry Rations', 'Laptops', 'Gloves'].map((tag) => (
                   <button 
                     key={tag} 
                     onClick={() => handleTagClick(tag)}
-                    className="hover:text-primary hover:underline transition-colors font-medium cursor-pointer"
+                    className="hover:text-emerald-400 hover:underline transition-colors cursor-pointer"
                   >
                     {tag}
                   </button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Immersive Bridge Match Consoles (Side-by-Side Application Workspace) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch pt-8"
+          >
             
-            {/* Left Console: Donor Dispatch Simulator (Interactive Input Hub) */}
-            <div className="lg:col-span-6 bg-white border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between shadow-premium-md text-left">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                  <h3 className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-widest flex items-center gap-1.5">
-                    <Gift className="w-4 h-4 text-primary" /> Donor Dispatch Center
+            {/* Left Console */}
+            <div className="lg:col-span-6 bg-slate-800/50 backdrop-blur-2xl border border-slate-700/50 rounded-3xl p-6 lg:p-8 flex flex-col justify-between shadow-2xl text-left relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
+              
+              <div className="space-y-6 relative z-10">
+                <div className="flex justify-between items-center pb-4 border-b border-slate-700/50">
+                  <h3 className="text-sm font-mono font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-emerald-400" /> Donor Dispatch Center
                   </h3>
-                  <span className="text-[9px] bg-slate-50 text-slate-500 border border-slate-200/50 font-mono font-bold py-0.5 px-2 rounded">
+                  <span className="text-xs bg-slate-700/50 text-slate-300 border border-slate-600/50 font-mono font-bold py-1 px-3 rounded-lg backdrop-blur-sm">
                     Simulate Input
                   </span>
                 </div>
 
-                {/* Form Simulation Inputs */}
-                <div className="grid grid-cols-2 gap-4 text-left">
+                <div className="grid grid-cols-2 gap-5 text-left">
                   <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Item Category</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Item Category</label>
                     <select 
                       value={simCategory}
                       onChange={(e) => setSimCategory(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary !min-h-0 !h-auto !bg-slate-50"
+                      className="w-full mt-2 px-4 py-3 bg-slate-900/50 border border-slate-700/50 text-white rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 !min-h-0 !h-auto transition-all"
                     >
                       <option value="Food">Food / Staples</option>
                       <option value="Books">Books / Learning Kits</option>
@@ -348,11 +359,11 @@ export default function LandingPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Item Condition</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Item Condition</label>
                     <select 
                       value={simCondition}
                       onChange={(e) => setSimCondition(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary !min-h-0 !h-auto !bg-slate-50"
+                      className="w-full mt-2 px-4 py-3 bg-slate-900/50 border border-slate-700/50 text-white rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 !min-h-0 !h-auto transition-all"
                     >
                       <option value="New">Brand New</option>
                       <option value="Like New">Like New / Cleaned</option>
@@ -361,54 +372,53 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Quantity Counter */}
-                <div className="text-left">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Quantity to Pledge</label>
-                  <div className="flex items-center gap-3 mt-1.5">
+                <div className="text-left bg-slate-900/30 p-4 rounded-2xl border border-slate-700/50">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Quantity to Pledge</label>
+                  <div className="flex items-center gap-4">
                     <button 
                       onClick={() => setSimQty(Math.max(1, simQty - 5))}
-                      className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors cursor-pointer"
+                      className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-600 flex items-center justify-center hover:bg-slate-700 hover:border-slate-500 transition-all cursor-pointer shadow-md"
                     >
-                      <Minus className="w-3.5 h-3.5 text-slate-500" />
+                      <Minus className="w-4 h-4 text-slate-300" />
                     </button>
-                    <span className="text-lg font-mono font-extrabold text-slate-800 w-12 text-center">{simQty}</span>
+                    <span className="text-3xl font-display font-black text-white w-16 text-center">{simQty}</span>
                     <button 
                       onClick={() => setSimQty(simQty + 5)}
-                      className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors cursor-pointer"
+                      className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-600 flex items-center justify-center hover:bg-slate-700 hover:border-slate-500 transition-all cursor-pointer shadow-md"
                     >
-                      <Plus className="w-3.5 h-3.5 text-slate-500" />
+                      <Plus className="w-4 h-4 text-slate-300" />
                     </button>
-                    <span className="text-[10px] text-slate-400 font-medium">units matching need list</span>
+                    <span className="text-sm text-slate-400 font-medium ml-2">units matching need list</span>
                   </div>
                 </div>
               </div>
 
-              {/* Dynamic Live Matching Routing Output */}
-              <div className="mt-6 p-4 bg-emerald-50/40 border border-emerald-150 rounded-2xl text-left space-y-3">
-                <p className="text-[10px] font-mono font-bold text-emerald-700 uppercase tracking-wider">Live Match Engine Output:</p>
-                <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="mt-8 p-5 bg-emerald-900/20 border border-emerald-500/30 rounded-2xl text-left space-y-4 relative z-10 backdrop-blur-xl">
+                <p className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                  <Activity className="w-4 h-4" /> Live Match Engine Output
+                </p>
+                <div className="grid grid-cols-2 gap-5 text-sm">
                   <div>
-                    <span className="text-slate-400 block text-[9px] uppercase font-bold">Recommended Partner NGO</span>
-                    <span className="font-bold text-slate-800">{heroSimOutput.ngoName}</span>
+                    <span className="text-emerald-500/70 block text-xs uppercase font-bold tracking-wider mb-1">Partner NGO</span>
+                    <span className="font-bold text-white">{heroSimOutput.ngoName}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[9px] uppercase font-bold">Logistics Radius</span>
-                    <span className="font-bold text-slate-800">{heroSimOutput.distance} (Local Match)</span>
+                    <span className="text-emerald-500/70 block text-xs uppercase font-bold tracking-wider mb-1">Radius</span>
+                    <span className="font-bold text-white">{heroSimOutput.distance} (Local Match)</span>
                   </div>
                   <div>
-                    <span className="text-slate-450 block text-[9px] uppercase font-bold">Target Need Registry</span>
-                    <span className="font-bold text-slate-800">{simQty}x {heroSimOutput.needItem}</span>
+                    <span className="text-emerald-500/70 block text-xs uppercase font-bold tracking-wider mb-1">Target Need</span>
+                    <span className="font-bold text-white">{simQty}x {heroSimOutput.needItem}</span>
                   </div>
                   <div>
-                    <span className="text-slate-450 block text-[9px] uppercase font-bold">Match Score Probability</span>
-                    <span className="font-bold text-emerald-700 font-mono">{heroSimOutput.score}% Confidence</span>
+                    <span className="text-emerald-500/70 block text-xs uppercase font-bold tracking-wider mb-1">Match Score</span>
+                    <span className="font-bold text-emerald-400 font-mono text-lg">{heroSimOutput.score}%</span>
                   </div>
                 </div>
-                <div className="pt-2 border-t border-emerald-100/50 flex justify-between items-center text-[10px]">
-                  <span className="text-slate-500">Carbon saved: <strong>{heroSimOutput.co2} kg CO2</strong></span>
+                <div className="pt-4 border-t border-emerald-500/20 flex justify-between items-center text-sm">
+                  <span className="text-emerald-100 font-medium">Carbon saved: <strong className="text-emerald-400">{heroSimOutput.co2} kg CO2</strong></span>
                   <Button
-                    variant="primary"
-                    className="bg-primary hover:bg-primary-hover text-white py-1.5 px-3 min-h-0 h-7 text-[10px] rounded-lg shadow-none border-none"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black py-2.5 px-5 rounded-xl shadow-lg shadow-emerald-500/25 transition-all"
                     onClick={() => navigate(isAuthenticated ? '/donor' : '/auth')}
                   >
                     Pledge Dispatch
@@ -417,180 +427,174 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Console: Live Matching Ledger Stream (Light theme display) */}
-            <div className="lg:col-span-6 bg-white border border-slate-200/80 rounded-3xl p-6 flex flex-col justify-between shadow-premium-md text-left">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                  <h3 className="text-xs font-mono font-bold text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
-                    <Activity className="w-4 h-4 text-primary animate-pulse" /> Live Matching Ledger
+            {/* Right Console */}
+            <div className="lg:col-span-6 bg-slate-800/50 backdrop-blur-2xl border border-slate-700/50 rounded-3xl p-6 lg:p-8 flex flex-col justify-between shadow-2xl text-left relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-bl from-blue-500/5 to-transparent pointer-events-none" />
+              
+              <div className="space-y-6 relative z-10">
+                <div className="flex justify-between items-center pb-4 border-b border-slate-700/50">
+                  <h3 className="text-sm font-mono font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-emerald-400 animate-pulse" /> Live Matching Ledger
                   </h3>
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
                 </div>
 
-                {/* Ledger activities stream */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {ledgerActivity.length > 0 ? (
                     ledgerActivity.map((donation, idx) => (
-                      <div key={donation.id} className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between gap-3 text-left">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                            donation.status === 'DELIVERED' ? 'bg-emerald-50 text-primary border border-emerald-100' :
-                            donation.status === 'MATCHED' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                      <div key={donation.id} className="p-4 bg-slate-900/50 border border-slate-700/50 hover:border-slate-600 rounded-2xl flex items-center justify-between gap-4 text-left transition-colors">
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${
+                            donation.status === 'DELIVERED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                            donation.status === 'MATCHED' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-700/50 text-slate-400 border border-slate-600'
                           }`}>
-                            {donation.status === 'DELIVERED' ? <Check className="w-3.5 h-3.5" /> : <Activity className="w-3.5 h-3.5" />}
+                            {donation.status === 'DELIVERED' ? <Check className="w-5 h-5" /> : <Activity className="w-5 h-5" />}
                           </div>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-xs font-bold text-slate-800 truncate">{donation.itemName || `${donation.quantity}x ${donation.category}`}</p>
-                              <span className={`text-[8px] px-1 py-0.2 rounded font-bold uppercase tracking-wider ${
-                                donation.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/40' :
-                                donation.status === 'MATCHED' ? 'bg-indigo-100 text-indigo-800 border border-indigo-200/40' : 'bg-slate-150 text-slate-500'
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-bold text-white truncate">{donation.itemName || `${donation.quantity}x ${donation.category}`}</p>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-md font-black uppercase tracking-widest ${
+                                donation.status === 'DELIVERED' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                                donation.status === 'MATCHED' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-slate-700 text-slate-300'
                               }`}>
                                 {donation.status}
                               </span>
                             </div>
-                            <p className="text-[10px] text-slate-500 truncate">
-                              NGO Recipient: {donation.matchedNgoId === 'ngo-1' ? 'Hope Foundation' : donation.matchedNgoId === 'ngo-3' ? 'Care Society' : 'Feeding Hand'} &bull; {donation.location.address}
+                            <p className="text-xs text-slate-400 truncate font-medium">
+                              Recipient: {donation.matchedNgoId === 'ngo-1' ? 'Hope Foundation' : donation.matchedNgoId === 'ngo-3' ? 'Care Society' : 'Feeding Hand'} &bull; {donation.location.address}
                             </p>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-[9px] font-mono text-slate-400 block">LEDGER ID</span>
-                          <span className="text-[10px] font-mono font-bold text-slate-500">{donation.id.substring(0, 8)}</span>
+                          <span className="text-[10px] font-mono text-slate-500 font-bold block mb-1">LEDGER ID</span>
+                          <span className="text-xs font-mono font-bold text-slate-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">{donation.id.substring(0, 8)}</span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 text-xs text-slate-500">
+                    <div className="text-center py-12 text-sm text-slate-500 font-medium bg-slate-900/30 rounded-2xl border border-slate-700/50">
                       No live donation dispatches logged yet.
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Secure status bar */}
-              <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-[10px] font-mono text-slate-500">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-primary" /> SECURE HANDSHAKES
+              <div className="pt-5 mt-5 border-t border-slate-700/50 flex justify-between items-center text-xs font-mono font-bold text-slate-400 relative z-10">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" /> SECURE HANDSHAKES
                 </span>
-                <span className="font-bold text-emerald-700">99.8% DELIVERY SUCCESS RATE</span>
+                <span className="text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">99.8% DELIVERY SUCCESS RATE</span>
               </div>
             </div>
 
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* INNOVATIVE AID SANDBOX SECTION: Interactive Matching, Impact Calculator, and Stepper Tracker */}
-      <section className="py-16 bg-[#F1F5F9] border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      {/* Sandbox Section */}
+      <section className="py-20 bg-slate-50 border-b border-slate-200/60 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-100/40 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           
-          {/* Section Header */}
-          <div className="text-center space-y-2 max-w-xl mx-auto">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> Interactive Sandbox
+          <div className="text-center space-y-4 max-w-2xl mx-auto">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-200/50 text-slate-700 text-sm font-bold uppercase tracking-wider backdrop-blur-sm border border-slate-300/50">
+              <Sparkles className="w-4 h-4 text-slate-600" /> Interactive Sandbox
             </span>
-            <h2 className="text-2xl lg:text-3xl font-display font-extrabold text-ink">
+            <h2 className="text-3xl lg:text-5xl font-display font-black text-slate-900 tracking-tight">
               Simulate Match Integrity &amp; Eco-Impact
             </h2>
-            <p className="text-xs lg:text-sm text-slate-500 leading-relaxed">
+            <p className="text-sm lg:text-base text-slate-500 leading-relaxed font-medium">
               Explore how our georadial algorithms coordinate physical deliveries, reduce CO2, and track audit ledgers in real-time.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
             
-            {/* Left Column: Tab Selectors & Features explanation */}
-            <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
-              <div className="space-y-3 text-left">
-                <button
-                  onClick={() => setSandboxTab('match')}
-                  className={`w-full p-4 rounded-xl text-left border transition-all flex gap-4 items-start ${
-                    sandboxTab === 'match'
-                      ? 'bg-white border-primary/50 shadow-premium-md ring-2 ring-primary/5'
-                      : 'bg-transparent border-slate-250 hover:bg-slate-100 hover:border-slate-350'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    sandboxTab === 'match' ? 'bg-primary text-white' : 'bg-slate-200 text-slate-650'
-                  }`}>
-                    <Sliders className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs lg:text-sm font-bold text-ink">1. Smart-Match Matcher</h3>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Select a category and neighborhood to compute real proximity fit ratings.</p>
-                  </div>
-                </button>
+            {/* Tab Selectors */}
+            <div className="lg:col-span-5 flex flex-col space-y-4">
+              <button
+                onClick={() => setSandboxTab('match')}
+                className={`w-full p-5 rounded-2xl text-left border transition-all duration-300 flex gap-5 items-center ${
+                  sandboxTab === 'match'
+                    ? 'bg-white border-emerald-200 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-500/20 scale-[1.02]'
+                    : 'bg-white/50 border-slate-200 hover:bg-white hover:border-slate-300 shadow-sm'
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${
+                  sandboxTab === 'match' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  <Sliders className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Smart-Match Matcher</h3>
+                  <p className="text-sm text-slate-500 mt-1 font-medium leading-relaxed">Select a category and neighborhood to compute real proximity fit ratings.</p>
+                </div>
+              </button>
 
-                <button
-                  onClick={() => setSandboxTab('impact')}
-                  className={`w-full p-4 rounded-xl text-left border transition-all flex gap-4 items-start ${
-                    sandboxTab === 'impact'
-                      ? 'bg-white border-primary/50 shadow-premium-md ring-2 ring-primary/5'
-                      : 'bg-transparent border-slate-250 hover:bg-slate-100 hover:border-slate-350'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    sandboxTab === 'impact' ? 'bg-primary text-white' : 'bg-slate-200 text-slate-650'
-                  }`}>
-                    <Leaf className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs lg:text-sm font-bold text-ink">2. Eco-Impact Estimator</h3>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Measure the beneficiary reach and shipping CO2 carbon offsets saved.</p>
-                  </div>
-                </button>
+              <button
+                onClick={() => setSandboxTab('impact')}
+                className={`w-full p-5 rounded-2xl text-left border transition-all duration-300 flex gap-5 items-center ${
+                  sandboxTab === 'impact'
+                    ? 'bg-white border-emerald-200 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-500/20 scale-[1.02]'
+                    : 'bg-white/50 border-slate-200 hover:bg-white hover:border-slate-300 shadow-sm'
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${
+                  sandboxTab === 'impact' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  <Leaf className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Eco-Impact Estimator</h3>
+                  <p className="text-sm text-slate-500 mt-1 font-medium leading-relaxed">Measure the beneficiary reach and shipping CO2 carbon offsets saved.</p>
+                </div>
+              </button>
 
-                <button
-                  onClick={() => setSandboxTab('tracker')}
-                  className={`w-full p-4 rounded-xl text-left border transition-all flex gap-4 items-start ${
-                    sandboxTab === 'tracker'
-                      ? 'bg-white border-primary/50 shadow-premium-md ring-2 ring-primary/5'
-                      : 'bg-transparent border-slate-250 hover:bg-slate-100 hover:border-slate-350'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    sandboxTab === 'tracker' ? 'bg-primary text-white' : 'bg-slate-200 text-slate-650'
-                  }`}>
-                    <Truck className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs lg:text-sm font-bold text-ink">3. Logistics Pathway Tracker</h3>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Step through the physical audit compliance lifecycle steps.</p>
-                  </div>
-                </button>
-              </div>
-
-              {/* Bottom Tip Callout (Prevents vertical spacing gap) */}
-              <div className="p-4 bg-emerald-50 border border-emerald-150 rounded-xl text-left flex gap-3 items-start">
-                <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <p className="text-[11px] text-emerald-800 leading-relaxed">
-                  <strong>Did you know?</strong> By grouping dispatches georadially, we minimize courier carbon burn rates by up to 64% compared to long-distance postage.
-                </p>
-              </div>
+              <button
+                onClick={() => setSandboxTab('tracker')}
+                className={`w-full p-5 rounded-2xl text-left border transition-all duration-300 flex gap-5 items-center ${
+                  sandboxTab === 'tracker'
+                    ? 'bg-white border-emerald-200 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-500/20 scale-[1.02]'
+                    : 'bg-white/50 border-slate-200 hover:bg-white hover:border-slate-300 shadow-sm'
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner transition-colors ${
+                  sandboxTab === 'tracker' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  <Truck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Logistics Pathway Tracker</h3>
+                  <p className="text-sm text-slate-500 mt-1 font-medium leading-relaxed">Step through the physical audit compliance lifecycle steps.</p>
+                </div>
+              </button>
             </div>
 
-            {/* Right Column: Dynamic Interactive Widget Container (Styled like iPad interface) */}
+            {/* Widget Container */}
             <div className="lg:col-span-7">
-              <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-premium-lg h-full flex flex-col justify-between text-left">
+              <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] p-8 shadow-2xl shadow-slate-200/50 h-full flex flex-col justify-between text-left relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 pointer-events-none" />
                 
                 {/* 1. MATCH SIMULATOR WIDGET */}
                 {sandboxTab === 'match' && (
-                  <div className="space-y-5 h-full flex flex-col justify-between">
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 h-full flex flex-col justify-between relative z-10">
                     <div>
-                      <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Smart Match Simulator</h4>
-                        <span className="text-[10px] text-primary font-bold">Category Weight: 40% | Distance: 30%</span>
+                      <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                          <Sliders className="w-4 h-4 text-emerald-500" /> Smart Match Simulator
+                        </h4>
+                        <span className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg border border-emerald-100 font-bold tracking-wide">Category: 40% | Distance: 30%</span>
                       </div>
 
-                      {/* Select Grid */}
-                      <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-2 gap-6 mt-6">
                         <div>
-                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Category to Donate</label>
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Category to Donate</label>
                           <select 
                             value={matchCategory} 
                             onChange={(e) => setMatchCategory(e.target.value)}
-                            className="w-full mt-1.5 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-ink focus:outline-none focus:border-primary !min-h-0 !h-auto !bg-slate-50"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm"
                           >
                             <option value="Food">Food &amp; Staple Rations</option>
                             <option value="Books">Books &amp; Learning Kits</option>
@@ -599,11 +603,11 @@ export default function LandingPage() {
                           </select>
                         </div>
                         <div>
-                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Donor Location</label>
+                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Donor Location</label>
                           <select 
                             value={matchLocation} 
                             onChange={(e) => setMatchLocation(e.target.value)}
-                            className="w-full mt-1.5 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-ink focus:outline-none focus:border-primary !min-h-0 !h-auto !bg-slate-50"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm"
                           >
                             <option value="Indiranagar">Indiranagar, Bengaluru</option>
                             <option value="Koramangala">Koramangala, Bengaluru</option>
@@ -614,32 +618,29 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    {/* Results lists */}
-                    <div className="space-y-3 my-4 flex-grow overflow-y-auto max-h-[220px] pr-1">
-                      <p className="text-[10px] font-mono text-slate-400 font-bold">RECOMMENDED NGO DESTINATIONS</p>
+                    <div className="space-y-4 my-6 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                      <p className="text-xs font-black text-slate-400 tracking-widest uppercase mb-2">Recommended Destinations</p>
                       
                       {simulationResults.length > 0 ? (
                         simulationResults.map((res, i) => (
-                          <div key={i} className="p-3 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center justify-between gap-3 hover:border-slate-300 transition-colors">
+                          <div key={i} className="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-4 hover:border-emerald-300 hover:shadow-md transition-all group">
                             <div className="min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <h5 className="text-xs font-bold text-ink truncate">{res.ngo.name}</h5>
-                                <span className="text-[8px] bg-emerald-50 text-primary border border-emerald-250 font-bold px-1 rounded">
+                              <div className="flex items-center gap-3 mb-1.5">
+                                <h5 className="text-base font-black text-slate-900 truncate">{res.ngo.name}</h5>
+                                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                                   {res.distance} km away
                                 </span>
                               </div>
-                              <p className="text-[10px] text-slate-400 truncate mt-0.5">Need: {res.need.quantity}x {res.need.item}</p>
+                              <p className="text-sm text-slate-500 truncate font-medium">Need: {res.need.quantity}x {res.need.item}</p>
                             </div>
 
-                            {/* Score Ring indicator */}
-                            <div className="flex items-center gap-3 shrink-0">
+                            <div className="flex items-center gap-5 shrink-0">
                               <div className="text-right">
-                                <span className="text-xs font-mono font-bold text-emerald-600">{res.score}%</span>
-                                <p className="text-[8px] text-slate-400 font-medium font-mono uppercase tracking-wider">Match Score</p>
+                                <span className="text-lg font-black text-emerald-600">{res.score}%</span>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Match Score</p>
                               </div>
                               <Button 
-                                variant="primary" 
-                                className="px-3 py-1.5 min-h-0 h-7 text-[10px] font-bold rounded-md shadow-none"
+                                className="bg-slate-900 hover:bg-emerald-500 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-md group-hover:shadow-emerald-500/20"
                                 onClick={() => navigate('/auth')}
                               >
                                 Pledge
@@ -648,37 +649,38 @@ export default function LandingPage() {
                           </div>
                         ))
                       ) : (
-                        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-amber-800 text-[11px]">
-                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-sm font-medium">
+                          <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500" />
                           <span>No urgent demands logged in the database matching {matchCategory} currently. Select another category.</span>
                         </div>
                       )}
                     </div>
 
-                    <div className="text-[10px] font-mono text-slate-400 pt-2 border-t border-slate-100">
-                      Matches dynamically weighted based on: Category Fit (40%) + Distance (30%) + Urgency (20%) + Freshness (10%).
+                    <div className="text-[10px] font-bold text-slate-400 pt-4 border-t border-slate-100 uppercase tracking-widest text-center">
+                      Dynamic weighting: Category Fit (40%) + Distance (30%) + Urgency (20%) + Freshness (10%)
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* 2. ECO-IMPACT ESTIMATOR WIDGET */}
                 {sandboxTab === 'impact' && (
-                  <div className="space-y-5 h-full flex flex-col justify-between">
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 h-full flex flex-col justify-between relative z-10">
                     <div>
-                      <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Eco-Impact &amp; Beneficiary Estimator</h4>
-                        <span className="text-[10px] text-primary font-bold">100% Non-Monetary Benefit</span>
+                      <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                          <Leaf className="w-4 h-4 text-emerald-500" /> Eco-Impact Estimator
+                        </h4>
+                        <span className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg border border-emerald-100 font-bold tracking-wide">100% Non-Monetary</span>
                       </div>
 
-                      {/* Inputs */}
-                      <div className="space-y-4 mt-4">
-                        <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-6 mt-6">
+                        <div className="grid grid-cols-2 gap-6">
                           <div>
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Item Category</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Item Category</label>
                             <select 
                               value={impactCategory} 
                               onChange={(e) => setImpactCategory(e.target.value)}
-                              className="w-full mt-1.5 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-ink focus:outline-none focus:border-primary !min-h-0 !h-auto !bg-slate-50"
+                              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-sm"
                             >
                               <option value="Food">Staple Rations</option>
                               <option value="Books">Textbooks &amp; Learning Tools</option>
@@ -687,13 +689,12 @@ export default function LandingPage() {
                             </select>
                           </div>
                           <div className="text-right">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Item Quantity</label>
-                            <p className="text-xl font-extrabold text-primary font-mono mt-1">{impactQuantity} <span className="text-xs text-slate-400 font-sans font-bold">Units</span></p>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Item Quantity</label>
+                            <p className="text-3xl font-black text-emerald-500 font-display mt-1 tracking-tight">{impactQuantity} <span className="text-sm text-slate-400 font-bold uppercase tracking-wider ml-1">Units</span></p>
                           </div>
                         </div>
 
-                        {/* Slider */}
-                        <div>
+                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
                           <input 
                             type="range" 
                             min="5" 
@@ -701,9 +702,9 @@ export default function LandingPage() {
                             step="5"
                             value={impactQuantity} 
                             onChange={(e) => setImpactQuantity(e.target.value)}
-                            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none"
+                            className="w-full h-2.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-500 focus:outline-none"
                           />
-                          <div className="flex justify-between text-[9px] text-slate-400 font-mono mt-1">
+                          <div className="flex justify-between text-xs text-slate-400 font-bold uppercase tracking-wider mt-3">
                             <span>5 min</span>
                             <span>500 max</span>
                           </div>
@@ -711,81 +712,83 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    {/* Calculator stats card */}
-                    <div className="grid grid-cols-3 gap-3 my-4">
-                      <div className="p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-center">
-                        <p className="text-[9px] text-emerald-800 font-semibold uppercase tracking-wider">Beneficiaries</p>
-                        <p className="text-lg font-black text-emerald-700 font-mono mt-1">{impactMetrics.beneficiaries}</p>
-                        <p className="text-[9px] text-emerald-600 mt-0.5">{impactMetrics.beneficiaryLabel}</p>
+                    <div className="grid grid-cols-3 gap-4 my-6">
+                      <div className="p-5 bg-white border border-slate-200 rounded-2xl text-center shadow-sm hover:shadow-md hover:border-emerald-200 transition-all">
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Beneficiaries</p>
+                        <p className="text-3xl font-black text-slate-900 tracking-tight">{impactMetrics.beneficiaries}</p>
+                        <p className="text-xs font-bold text-emerald-600 mt-1">{impactMetrics.beneficiaryLabel}</p>
                       </div>
 
-                      <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-xl text-center">
-                        <p className="text-[9px] text-blue-800 font-semibold uppercase tracking-wider">CO2 Offset</p>
-                        <p className="text-lg font-black text-blue-700 font-mono mt-1">{impactMetrics.co2} kg</p>
-                        <p className="text-[9px] text-blue-600 mt-0.5">Greenhouse Gas saved</p>
+                      <div className="p-5 bg-white border border-slate-200 rounded-2xl text-center shadow-sm hover:shadow-md hover:border-blue-200 transition-all">
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">CO2 Offset</p>
+                        <p className="text-3xl font-black text-slate-900 tracking-tight">{impactMetrics.co2} <span className="text-lg text-slate-400">kg</span></p>
+                        <p className="text-xs font-bold text-blue-600 mt-1">Greenhouse Gas saved</p>
                       </div>
 
-                      <div className="p-3 bg-slate-50 border border-slate-150 rounded-xl text-center">
-                        <p className="text-[9px] text-slate-800 font-semibold uppercase tracking-wider">Process Speed</p>
-                        <p className="text-lg font-black text-ink font-mono mt-1">Local Match</p>
-                        <p className="text-[9px] text-slate-500 mt-0.5">&lt; 3h pickup window</p>
+                      <div className="p-5 bg-slate-900 rounded-2xl text-center shadow-lg shadow-slate-900/20">
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Process Speed</p>
+                        <p className="text-2xl font-black text-white tracking-tight mt-1">Local Match</p>
+                        <p className="text-xs font-bold text-emerald-400 mt-2">&lt; 3h pickup window</p>
                       </div>
                     </div>
 
-                    <div className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-2">
+                    <div className="text-xs font-medium text-slate-500 leading-relaxed border-t border-slate-100 pt-4 text-center px-4">
                       Eco-Impact rates compiled using local radial courier dispatches. Zero packing wrappers and sorting depots reduces carbon waste footprint by 75% per batch.
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* 3. LOGISTICS PATHWAY TRACKER WIDGET */}
                 {sandboxTab === 'tracker' && (
-                  <div className="space-y-4 h-full flex flex-col justify-between">
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 h-full flex flex-col justify-between relative z-10">
                     <div>
-                      <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fulfillment Lifecycle Tracker</h4>
-                        <span className="text-[10px] text-primary font-bold">Secure Delivery Ledger</span>
+                      <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                        <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                          <Truck className="w-4 h-4 text-emerald-500" /> Fulfillment Lifecycle Tracker
+                        </h4>
+                        <span className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-lg border border-blue-100 font-bold tracking-wide">Secure Delivery Ledger</span>
                       </div>
 
-                      {/* Interactive Horizontal Steps */}
-                      <div className="grid grid-cols-4 gap-2 mt-4">
+                      <div className="grid grid-cols-4 gap-3 mt-6">
                         {TRACKER_STAGES.map((st, i) => (
                           <button
                             key={i}
                             onClick={() => setTrackerStep(i)}
-                            className={`p-2 rounded-lg text-center border transition-all ${
+                            className={`p-3 rounded-xl text-center border transition-all duration-200 flex flex-col items-center gap-2 ${
                               trackerStep === i
-                                ? 'bg-slate-900 border-slate-900 text-white'
-                                : 'bg-slate-50 border-slate-200 text-slate-650 hover:bg-slate-100'
+                                ? 'bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-900/20 scale-105'
+                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
                             }`}
                           >
-                            <p className="text-[9px] font-bold truncate">{st.title.split(' ')[1] || st.title}</p>
-                            <span className={`inline-block mt-1 w-1.5 h-1.5 rounded-full ${
+                            <p className="text-xs font-bold truncate w-full">{st.title.split(' ')[1] || st.title}</p>
+                            <span className={`inline-block w-2 h-2 rounded-full ${
                               st.status === 'COMPLETED' ? 'bg-emerald-500' :
-                              st.status === 'ACTIVE' ? 'bg-indigo-400 animate-pulse' : 'bg-slate-350'
+                              st.status === 'ACTIVE' ? 'bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'bg-slate-300'
                             }`} />
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Step details panel */}
-                    <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-left my-3 space-y-2 flex-grow flex flex-col justify-center">
+                    <div className="p-6 bg-white border border-slate-200 rounded-3xl text-left my-6 space-y-4 flex-grow flex flex-col justify-center shadow-sm">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">STAGE DETAILS ({trackerStep + 1}/4)</span>
-                        <span className="text-[10px] font-mono text-slate-400 font-bold">{TRACKER_STAGES[trackerStep].time}</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded-md">STAGE DETAILS ({trackerStep + 1}/4)</span>
+                        <span className="text-xs font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">{TRACKER_STAGES[trackerStep].time}</span>
                       </div>
-                      <h4 className="text-xs font-bold text-ink">{TRACKER_STAGES[trackerStep].title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-mono bg-white p-2.5 rounded-xl border border-slate-150 shadow-inner">
-                        &gt; {TRACKER_STAGES[trackerStep].log}
-                      </p>
+                      <h4 className="text-xl font-black text-slate-900 tracking-tight">{TRACKER_STAGES[trackerStep].title}</h4>
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 relative overflow-hidden">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />
+                        <p className="text-sm font-medium text-slate-600 leading-relaxed font-mono">
+                          {TRACKER_STAGES[trackerStep].log}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="text-[10px] text-slate-400 pt-2 border-t border-slate-100 flex justify-between items-center">
+                    <div className="text-[10px] text-slate-400 pt-4 border-t border-slate-100 flex justify-between items-center font-bold uppercase tracking-widest">
                       <span>Secure Match Ledger Signature</span>
-                      <span className="font-mono font-bold text-ink">ECDSA-SHA256 SECURED</span>
+                      <span className="text-emerald-500 bg-emerald-50/50 px-2 py-1 rounded border border-emerald-100">ECDSA-SHA256 SECURED</span>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
               </div>
@@ -796,159 +799,153 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Projects and Campaigns Section: Real NGO Style with Progress Bars */}
-      <section className="py-16 bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div className="space-y-2 text-left">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-                Active Campaigns
+      {/* Projects and Campaigns Section */}
+      <section className="py-24 bg-white border-b border-slate-100 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-4 text-left">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider">
+                <Building className="w-3.5 h-3.5" /> Active Campaigns
               </span>
-              <h2 className="text-2xl lg:text-3xl font-display font-extrabold text-ink">
-                Featured NGO Projects &amp; Drives
+              <h2 className="text-4xl lg:text-5xl font-display font-black text-slate-900 tracking-tight">
+                Featured NGO Projects
               </h2>
-              <p className="text-sm text-slate-500 max-w-xl">
+              <p className="text-base text-slate-500 max-w-xl font-medium leading-relaxed">
                  Vetted campaigns posting urgent, specific physical needs. Directly pledge items to fund their completion.
               </p>
             </div>
             <Link 
               to="/discover" 
-              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-hover tracking-wide shrink-0 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 transition-all"
             >
-              Browse all 1,234 active needs <ChevronRight className="w-4 h-4" />
+              Browse all needs <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          {/* Cards Grid: Filled layout, gorgeous borders, no vertical gaps */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {needs.length > 0 ? needs.slice(0, 3).map((need) => {
               const target = need.quantity || 1;
               const received = need.fulfilledQuantity || 0;
               const progress = Math.min(100, Math.round((received / target) * 100));
               const image = CATEGORY_IMAGES[need.category] || "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=600";
               return (
-                <div key={need.id} className="bg-white border border-slate-200/60 rounded-2xl overflow-hidden flex flex-col justify-between shadow-premium-sm hover:shadow-premium-md hover:border-slate-300 transition-all duration-200 group">
+                <div key={need.id} className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden flex flex-col justify-between shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300 group">
                   <div>
-                    {/* Campaign Image */}
-                    <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                    <div className="relative h-56 w-full overflow-hidden bg-slate-100">
                       <img 
                         src={image} 
                         alt={need.item} 
-                        className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
-                      <div className="absolute top-3 left-3 flex gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider ${
-                          need.urgency === 'High' ? 'bg-red-500 text-white' : 'bg-amber-500 text-white'
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+                      <div className="absolute top-4 left-4 flex gap-2">
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-md ${
+                          need.urgency === 'High' ? 'bg-red-500/90 text-white border border-red-400/50' : 'bg-amber-500/90 text-white border border-amber-400/50'
                         }`}>
                           {need.urgency} Priority
                         </span>
-                        <span className="px-2 py-0.5 bg-slate-900/80 text-white rounded text-[10px] font-bold flex items-center gap-1">
+                        <span className="px-3 py-1 bg-slate-900/80 text-white rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-md border border-slate-700/50">
                           <MapPin className="w-3 h-3 text-emerald-400" /> Local Hub
                         </span>
                       </div>
-                      <div className="absolute bottom-3 left-3 right-3 text-left">
-                        <p className="text-[10px] font-mono text-emerald-300 uppercase tracking-wider font-bold">{need.category}</p>
-                        <h4 className="text-white font-bold text-sm truncate mt-0.5">{need.ngoName}</h4>
+                      <div className="absolute bottom-4 left-4 right-4 text-left">
+                        <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1 shadow-sm">{need.category}</p>
+                        <h4 className="text-white font-display font-black text-xl truncate">{need.ngoName}</h4>
                       </div>
                     </div>
 
-                    {/* Campaign Info */}
-                    <div className="p-5 text-left space-y-3.5">
-                      <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-ink leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+                    <div className="p-6 text-left space-y-5">
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-bold text-slate-900 leading-snug line-clamp-1 group-hover:text-emerald-600 transition-colors">
                           {need.item} Drive
                         </h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        <p className="text-sm text-slate-500 font-medium line-clamp-2 leading-relaxed">
                           {need.description || `Providing ${need.item} to support local community members in need.`}
                         </p>
                       </div>
 
-                      {/* Progress Bar Component */}
-                      <div className="space-y-1.5 pt-1">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-slate-400 font-medium">Matching Progress</span>
-                          <span className="font-mono font-bold text-ink">{progress}%</span>
+                      <div className="space-y-2.5 pt-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Matching Progress</span>
+                          <span className="font-black text-emerald-600 text-sm">{progress}%</span>
                         </div>
-                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/60">
                           <div 
-                            className="h-full bg-primary rounded-full transition-all duration-500" 
+                            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-1000 ease-out relative" 
                             style={{ width: `${progress}%` }}
-                          />
+                          >
+                            <div className="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]" />
+                          </div>
                         </div>
-                        <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono pt-0.5">
-                          <span>Received: <strong>{received}</strong></span>
-                          <span>Target: <strong>{target} {need.item}</strong></span>
+                        <div className="flex justify-between items-center text-xs text-slate-500 font-medium pt-1">
+                          <span>Received: <strong className="text-slate-800">{received}</strong></span>
+                          <span>Target: <strong className="text-slate-800">{target} {need.item}</strong></span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions Area */}
-                  <div className="px-5 pb-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-4">
-                    <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" /> Updated recently
-                    </span>
+                  <div className="p-6 pt-0 mt-2">
                     <Button 
-                      variant="primary" 
-                      className="px-4 py-2 min-h-0 h-9 text-xs font-bold rounded-lg shrink-0 flex items-center gap-1.5 shadow-none"
+                      className="w-full h-12 bg-slate-900 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group-hover:shadow-emerald-500/25"
                       onClick={() => navigate(`/ngo/${need.ngoId}`)}
                     >
-                      Pledge Items <ArrowUpRight className="w-3 h-3" />
+                      Pledge Items <ArrowUpRight className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
               );
             }) : (
-              <div className="col-span-3 text-center py-12 text-slate-500">
-                <p>No active needs found at the moment.</p>
+              <div className="col-span-3 text-center py-16 bg-slate-50 rounded-[2rem] border border-slate-200 border-dashed">
+                <p className="text-slate-500 font-medium">No active needs found at the moment.</p>
               </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* Process Lifecycle & Timeline Section: Clean, dense layout, no gaps */}
-      <section className="py-16 bg-slate-50 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      {/* Process Lifecycle Section */}
+      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay" />
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             
-            {/* Left Content Column */}
-            <div className="lg:col-span-5 space-y-6 text-left">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+            <div className="lg:col-span-5 space-y-8 text-left">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
                 Audited Logistics
               </span>
-              <h2 className="text-3xl font-display font-extrabold text-ink leading-tight">
+              <h2 className="text-4xl lg:text-5xl font-display font-black text-white leading-[1.1] tracking-tight">
                 How We Maintain Direct Aid Integrity
               </h2>
-              <p className="text-sm text-slate-500 leading-relaxed">
+              <p className="text-base text-slate-400 leading-relaxed font-medium">
                 By focusing exclusively on physical supplies and cutting out monetary routing, DonateBridge ensures that every single resource item connects straight to school classrooms, community kitchens, and disaster response teams.
               </p>
               
-              <div className="space-y-3.5 pt-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check className="w-3.5 h-3.5" />
+              <div className="space-y-5 pt-4">
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                    <Check className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-ink">Zero Financial Escrows</h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Direct coordinator pickup. There are no platform commission fees.</p>
+                    <h4 className="text-base font-bold text-white">Zero Financial Escrows</h4>
+                    <p className="text-sm text-slate-400 mt-1 font-medium leading-relaxed">Direct coordinator pickup. There are no platform commission fees.</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check className="w-3.5 h-3.5" />
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                    <Check className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-ink">Georadial Optimization</h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Matches are ranked using logistical proximity to minimize local transport costs.</p>
+                    <h4 className="text-base font-bold text-white">Georadial Optimization</h4>
+                    <p className="text-sm text-slate-400 mt-1 font-medium leading-relaxed">Matches are ranked using logistical proximity to minimize local transport costs.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Interactive Path Column */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
               {[
                 { 
                   step: '01', 
@@ -964,29 +961,29 @@ export default function LandingPage() {
                 },
                 { 
                   step: '03', 
-                  title: 'Physical Audit Approval', 
+                  title: 'Audit Approval', 
                   desc: 'System admins audit conditions to ensure item compliance prior to matching.',
                   icon: ShieldCheck 
                 },
                 { 
                   step: '04', 
                   title: 'Fulfillment & Invoice', 
-                  desc: 'Donor and NGO coordinate pickup via direct chat. Complete logs emit signed 80G tax forms.',
+                  desc: 'Donor and NGO coordinate pickup. Complete logs emit signed 80G tax forms.',
                   icon: FileInvoice 
                 }
               ].map((item, idx) => {
                 const IconComponent = item.icon || Award;
                 return (
-                  <div key={idx} className="p-5 bg-white border border-slate-200/60 rounded-2xl relative text-left flex flex-col justify-between min-h-[140px] hover:border-slate-300 transition-all shadow-premium-sm">
+                  <div key={idx} className="p-6 bg-slate-800/40 border border-slate-700/50 rounded-3xl relative text-left flex flex-col justify-between min-h-[180px] hover:bg-slate-800/80 hover:border-slate-600 transition-all duration-300 backdrop-blur-sm group">
                     <div>
-                      <div className="flex justify-between items-start">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 text-primary flex items-center justify-center">
-                          <IconComponent className="w-4 h-4" />
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-colors">
+                          <IconComponent className="w-6 h-6" />
                         </div>
-                        <span className="text-2xl font-display font-extrabold text-primary/15">{item.step}</span>
+                        <span className="text-4xl font-display font-black text-white/5 group-hover:text-white/10 transition-colors">{item.step}</span>
                       </div>
-                      <h3 className="font-display font-bold text-xs text-ink mt-3 mb-1">{item.title}</h3>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">{item.desc}</p>
+                      <h3 className="font-display font-bold text-lg text-white mb-2">{item.title}</h3>
+                      <p className="text-sm text-slate-400 leading-relaxed font-medium">{item.desc}</p>
                     </div>
                   </div>
                 );
@@ -997,169 +994,56 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Spotlighting Top Vetted NGOs - Essential "Real NGO" Community aspect */}
-      <section className="py-16 bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="text-center space-y-2 max-w-xl mx-auto">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-              Partner Organizations
-            </span>
-            <h2 className="text-2xl lg:text-3xl font-display font-extrabold text-ink">
-              Top Vetted Partner NGOs
-            </h2>
-            <p className="text-xs lg:text-sm text-slate-500">
-              Our matching algorithms evaluate response rate, fulfillment verification success, and community ratings.
-            </p>
-          </div>
+      {/* CTA Section */}
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-            {ngos.slice(0, 4).map((ngo) => (
-              <div key={ngo.id} className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl text-left flex flex-col justify-between shadow-premium-sm hover:shadow-premium-md hover:border-slate-300 transition-all">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 border border-slate-200/60 flex items-center justify-center shrink-0 font-bold text-primary font-mono text-sm uppercase">
-                      {ngo.name.substring(0, 2)}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-xs font-bold text-ink truncate">{ngo.name}</h3>
-                      <p className="text-[10px] text-slate-400 flex items-center gap-0.5 mt-0.5 truncate">
-                        <MapPin className="w-3 h-3 text-slate-400 shrink-0" /> {ngo.address.split(',')[0]}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
-                    <div className="p-2 bg-white rounded-lg border border-slate-100">
-                      <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Trust Score</p>
-                      <p className="text-xs font-bold text-emerald-600 font-mono mt-0.5">{ngo.trustScore || '85'}%</p>
-                    </div>
-                    <div className="p-2 bg-white rounded-lg border border-slate-100">
-                      <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Success Rate</p>
-                      <p className="text-xs font-bold text-ink font-mono mt-0.5">{ngo.successRate || '90%'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-between text-[10px]">
-                  <span className="text-slate-400">Response: <strong>{ngo.responseTime || '24m'}</strong></span>
-                  <Link 
-                    to={`/ngo/${ngo.id}`} 
-                    className="text-primary font-bold hover:underline inline-flex items-center gap-0.5"
-                  >
-                    View Needs <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials / Corporate Social Responsibility feedback */}
-      <section className="py-16 bg-[#F8FAFC] border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-10">
-          <div className="space-y-2 max-w-xl mx-auto">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-              Testimonials
-            </span>
-            <h2 className="text-2xl lg:text-3xl font-display font-extrabold text-ink">
-              Trusted by Social Initiatives &amp; CSR Units
-            </h2>
-            <p className="text-xs lg:text-sm text-slate-500">
-              Hear from regional logistics operators and corporate philanthropy leads.
-            </p>
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative z-10 space-y-8">
+          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-emerald-500/20 mb-8">
+            <Heart className="w-10 h-10" />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {[
-              {
-                quote: "The donation process was simple and transparent. The admin verification process increased confidence.",
-                author: "Elena Rostova",
-                role: "Sample Donor Testimonial",
-                avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100"
-              },
-              {
-                quote: "Our NGO received school supplies quickly. The tracking feature made the process trustworthy.",
-                author: "Marcus Chen",
-                role: "Sample NGO Testimonial",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100"
-              }
-            ].map((t, idx) => (
-              <div key={idx} className="p-6 bg-white border border-slate-200/60 rounded-2xl text-left flex flex-col justify-between shadow-premium-sm hover:border-slate-350 transition-colors">
-                <div className="space-y-3">
-                  <div className="flex gap-0.5 text-amber-400">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
-                  </div>
-                  <p className="text-xs text-slate-600 italic leading-relaxed">
-                    "{t.quote}"
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 pt-4 mt-4 border-t border-slate-100">
-                  <img 
-                    src={t.avatar} 
-                    alt={t.author} 
-                    className="w-9 h-9 rounded-full object-cover border border-slate-200" 
-                  />
-                  <div>
-                    <p className="text-xs font-bold text-ink">{t.author}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA & Campaign Subscriptions: Completely filled, beautiful visual accent */}
-      <section className="py-16 bg-primary text-white relative overflow-hidden">
-        {/* Glow effect */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(52,211,153,0.15),transparent_60%)]" />
-        <div className="absolute top-1/2 right-10 -translate-y-1/2 w-[350px] h-[350px] bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative z-10 space-y-6">
-          <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-white leading-tight">
+          <h2 className="text-4xl lg:text-6xl font-display font-black text-slate-900 leading-[1.1] tracking-tight">
             Ready to bridge needs in your neighborhood?
           </h2>
-          <p className="text-xs lg:text-sm text-emerald-100 max-w-lg mx-auto leading-relaxed">
+          <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium">
             Create your account today. Log in as a donor to submit item listings, or register your NGO credentials to post supply campaign requests.
           </p>
 
-          <div className="pt-2 flex flex-wrap justify-center gap-3">
+          <div className="pt-4 flex flex-wrap justify-center gap-4">
             <Button
-              variant="secondary"
-              className="bg-white text-primary hover:bg-slate-100 border-none px-6 h-12 rounded-xl font-bold text-sm shadow-premium-md"
+              className="bg-slate-900 text-white hover:bg-emerald-600 border-none px-8 h-14 rounded-2xl font-bold text-base shadow-xl shadow-slate-900/10 hover:shadow-emerald-500/25 transition-all"
               onClick={() => navigate('/auth?tab=register')}
             >
               Register Account
             </Button>
             <Button
-              variant="ghost"
-              className="text-white hover:bg-white/10 px-6 h-12 rounded-xl border border-white/20 font-bold text-sm"
+              variant="outline"
+              className="bg-white text-slate-700 hover:bg-slate-50 border-slate-200 px-8 h-14 rounded-2xl font-bold text-base shadow-sm hover:border-slate-300 transition-all"
               onClick={() => navigate('/discover')}
             >
               Browse Active Demands
             </Button>
           </div>
 
-          {/* Subscriptions inline form */}
-          <div className="pt-8 border-t border-emerald-600 max-w-md mx-auto">
-            <form onSubmit={handleSubscribe} className="space-y-3">
-              <p className="text-[11px] text-emerald-200 font-bold uppercase tracking-wider">
+          <div className="pt-12 mt-12 border-t border-slate-200 max-w-md mx-auto">
+            <form onSubmit={handleSubscribe} className="space-y-4">
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
                 Subscribe to local NGO campaign notifications
               </p>
-              <div className="flex bg-white/10 border border-white/20 rounded-xl p-1 focus-within:border-white focus-within:ring-2 focus-within:ring-white/15">
+              <div className="flex bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/20 transition-all">
                 <input 
                   type="email"
                   placeholder="Enter your email address"
                   value={emailSub}
                   onChange={(e) => setEmailSub(e.target.value)}
-                  className="bg-transparent border-none text-xs text-white outline-none w-full px-3 py-2 placeholder-emerald-250 focus:ring-0 focus:outline-none"
+                  className="bg-transparent border-none text-sm text-slate-900 outline-none w-full px-4 py-2 placeholder-slate-400 focus:ring-0 focus:outline-none font-medium"
                   required
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-white text-primary text-xs font-bold rounded-lg hover:bg-slate-100 shrink-0 transition-colors cursor-pointer"
+                  className="px-6 py-3 bg-emerald-500 text-white text-sm font-bold rounded-xl hover:bg-emerald-600 shrink-0 transition-colors cursor-pointer shadow-md shadow-emerald-500/20"
                 >
                   {subscribed ? 'Subscribed!' : 'Notify Me'}
                 </button>
@@ -1174,7 +1058,6 @@ export default function LandingPage() {
   );
 }
 
-// Simple fallback mock icons for FileInvoice if needed
 const FileInvoice = (props) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 

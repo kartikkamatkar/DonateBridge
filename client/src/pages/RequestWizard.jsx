@@ -198,7 +198,7 @@ export default function RequestWizard() {
     
     {/* Header */}
     <section className="text-center max-w-xl mx-auto space-y-2">
-     <span className="px-3 py-1 bg-[#F1F8F5] text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
+     <span className="px-3 py-1 bg-[#F1F8F5] text-primary text-xs font-bold rounded-full uppercase tracking-wider">
       Donation Dispatcher
      </span>
      <h1 className="text-3xl font-display font-black tracking-tight text-slate-900 leading-tight">
@@ -213,17 +213,17 @@ export default function RequestWizard() {
     {step < 4 && (
      <div className="db-card flex justify-between items-center text-xs">
       <div className="flex items-center gap-2">
-       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 1 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>1</span>
+       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 1 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>1</span>
        <span className={step === 1 ? 'font-bold text-slate-900' : 'text-slate-500'}>Item Details</span>
       </div>
       <span className="h-[1px] bg-border flex-1 mx-4"></span>
       <div className="flex items-center gap-2">
-       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 2 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
+       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 2 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
        <span className={step === 2 ? 'font-bold text-slate-900' : 'text-slate-500'}>Pickup Logistics</span>
       </div>
       <span className="h-[1px] bg-border flex-1 mx-4"></span>
       <div className="flex items-center gap-2">
-       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${step >= 3 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>3</span>
+       <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 3 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>3</span>
        <span className={step === 3 ? 'font-bold text-slate-900' : 'text-slate-500'}>Photos Upload</span>
       </div>
      </div>
@@ -293,7 +293,7 @@ export default function RequestWizard() {
           {...register('description', { required: 'Detailed description is required' })}
           className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-[120px]"
          />
-         {errors.description && <p className="text-[10px] text-red-500">{errors.description.message}</p>}
+         {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
         </div>
        </div>
 
@@ -330,7 +330,7 @@ export default function RequestWizard() {
           {...register('pickupAddress', { required: 'Pickup address is required' })}
           className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-[90px]"
          />
-         {errors.pickupAddress && <p className="text-[10px] text-red-500">{errors.pickupAddress.message}</p>}
+         {errors.pickupAddress && <p className="text-xs text-red-500">{errors.pickupAddress.message}</p>}
         </div>
 
         {/* Coordinate Map Picker */}
@@ -379,7 +379,7 @@ export default function RequestWizard() {
            onMapClick={handleMapClick}
           />
          </div>
-         <p className="text-[10px] text-slate-400">Click on the map above to select the coordinates of your pickup site.</p>
+         <p className="text-xs text-slate-400">Click on the map above to select the coordinates of your pickup site.</p>
         </div>
        </div>
 
@@ -409,7 +409,7 @@ export default function RequestWizard() {
         >
          <Upload className="w-8 h-8 text-primary mx-auto" />
          <p className="text-xs font-bold text-slate-800">Drag & Drop or Click to upload photos</p>
-         <p className="text-[10px] text-slate-400">Supported formats: JPG, PNG. Max 5MB per file.</p>
+         <p className="text-xs text-slate-400">Supported formats: JPG, PNG. Max 5MB per file.</p>
          <input
           type="file"
           id="photoSelect"
@@ -480,13 +480,13 @@ export default function RequestWizard() {
        <div className="p-4 bg-slate-50 border border-border rounded-xl text-left max-w-sm mx-auto text-xs font-mono space-y-2">
         <div className="flex justify-between">
          <span className="text-slate-400">LISTING STATUS:</span>
-         <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-[10px]">PENDING AUDIT</span>
+         <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-xs">PENDING AUDIT</span>
         </div>
         <div className="flex justify-between">
          <span className="text-slate-400">TRACKING ID:</span>
          <span className="text-slate-900 font-bold">#DB-DNT-{trackingId}</span>
         </div>
-        <div className="flex justify-between border-t border-border pt-2 text-[10px] text-slate-400 text-center leading-relaxed">
+        <div className="flex justify-between border-t border-border pt-2 text-xs text-slate-400 text-center leading-relaxed">
          <span>It will remain private until approved by an administrator.</span>
         </div>
        </div>

@@ -39,7 +39,7 @@ export default function Footer() {
           {/* Quick links columns */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs">
             <div className="space-y-3">
-              <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[10px] text-slate-400">Platform</h4>
+              <h4 className="font-bold text-slate-900 uppercase tracking-wider text-xs text-slate-400">Platform</h4>
               <ul className="space-y-2">
                 <li><Link to="/discover" className="text-slate-500 hover:text-primary">Discover Directory</Link></li>
                 <li><Link to="/bridge" className="text-slate-500 hover:text-primary">Bridge Workflows</Link></li>
@@ -48,7 +48,7 @@ export default function Footer() {
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[10px] text-slate-400">Company</h4>
+              <h4 className="font-bold text-slate-900 uppercase tracking-wider text-xs text-slate-400">Company</h4>
               <ul className="space-y-2">
                 <li><Link to="/about" className="text-slate-500 hover:text-primary">About Us</Link></li>
                 <li><Link to="/contact" className="text-slate-500 hover:text-primary">Contact Support</Link></li>
@@ -57,7 +57,7 @@ export default function Footer() {
             </div>
 
             <div className="space-y-3 col-span-2 sm:col-span-1">
-              <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[10px] text-slate-400">Subscribe</h4>
+              <h4 className="font-bold text-slate-900 uppercase tracking-wider text-xs text-slate-400">Subscribe</h4>
               <form onSubmit={handleSubscribe} className="space-y-2">
                 <input
                   type="email"
@@ -67,7 +67,7 @@ export default function Footer() {
                   className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none"
                   required
                 />
-                <Button type="submit" variant="primary" className="w-full text-[10px] font-bold uppercase py-1.5" icon={Mail}>
+                <Button type="submit" variant="primary" className="w-full text-xs font-bold uppercase py-1.5" icon={Mail}>
                   Subscribe
                 </Button>
               </form>
@@ -77,7 +77,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom copyright */}
-        <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-400">
+        <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-400">
           <p>&copy; {new Date().getFullYear()} DonateBridge. All rights reserved.</p>
           <div className="flex gap-4">
             <a href="#" className="hover:underline">Privacy Policy</a>

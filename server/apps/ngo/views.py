@@ -14,6 +14,11 @@ from .serializers import (
     VolunteerEventSerializer,
     VolunteerRegistrationSerializer
 )
+from donation.models import Donation, DonationStatus
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
 
 def get_distance_km(lat1, lon1, lat2, lon2):
     R = 6371.0 # Radius of the Earth in km
@@ -134,6 +139,72 @@ class NGOCreateReviewView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         review = serializer.save(ngo=ngo, author_name=request.user.username)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class NGOAnalyticsView(APIView):
+    """Returns analytics data (monthly trend and category distribution) for the currently authenticated NGO."""
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        if request.user.role != 'ngo' or not hasattr(request.user, 'ngo_details'):
+            return Response({"error": "No NGO profile found for this user."}, status=status.HTTP_403_FORBIDDEN)
+            
+        ngo = request.user.ngo_details
+        
+        # 1. Monthly Data (Last 6 months)
+        six_months_ago = timezone.now() - timedelta(days=180)
+        donations_last_6_months = Donation.objects.filter(
+            matched_ngo=ngo, 
+            status__in=[DonationStatus.MATCHED, DonationStatus.DELIVERED],
+            matched_at__gte=six_months_ago
+        )
+        
+        # Group by month
+        monthly_counts = donations_last_6_months.annotate(
+            month=TruncMonth('matched_at')
+        ).values('month').annotate(total=Count('id')).order_by('month')
+        
+        # Initialize 6 months with 0
+        monthly_data = []
+        for i in range(5, -1, -1):
+            date = timezone.now() - timedelta(days=30*i)
+            monthly_data.append({
+                'month': date.strftime('%b'),
+                'received': 0,
+                'target': 100 # Default target
+            })
+            
+        for item in monthly_counts:
+            if item['month']:
+                month_name = item['month'].strftime('%b')
+                for m in monthly_data:
+                    if m['month'] == month_name:
+                        m['received'] += item['total']
+        
+        # 2. Category Data (All time or last year)
+        all_donations = Donation.objects.filter(
+            matched_ngo=ngo, 
+            status__in=[DonationStatus.MATCHED, DonationStatus.DELIVERED]
+        )
+        category_counts = all_donations.values('category').annotate(value=Count('id'))
+        
+        category_data = []
+        for item in category_counts:
+            category_data.append({
+                'name': item['category'],
+                'value': item['value']
+            })
+            
+        # Fallback if no data
+        if not category_data:
+            category_data = [
+                {'name': 'Clothing', 'value': 1},
+                {'name': 'Food', 'value': 1}
+            ]
+            
+        return Response({
+            'monthly': monthly_data,
+            'categories': category_data
+        })
 
 class NeedViewSet(viewsets.ModelViewSet):
     serializer_class = NeedSerializer

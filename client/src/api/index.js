@@ -81,6 +81,9 @@ export const ngoAPI = {
   deleteNeed: (id) =>
     api.delete(`/api/needs/${id}/`),
 
+  getAnalytics: () =>
+    api.get('/api/ngos/analytics/'),
+
   // Campaigns
   getCampaigns: () =>
     api.get('/api/campaigns/'),

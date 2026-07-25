@@ -56,7 +56,7 @@ class Command(BaseCommand):
         # Mumbai NGO
         ngo1_user = User.objects.create_user(
             username='hopefoundation', email='contact@hopefoundation.org',
-            password='ngo123', role='ngo', avatar='🏫'
+            password='ngo12345', role='ngo', avatar='🏫'
         )
         ngo1 = NGO.objects.create(
             user=ngo1_user, name='Hope Foundation',
@@ -74,7 +74,7 @@ class Command(BaseCommand):
         # Pune NGO
         ngo2_user = User.objects.create_user(
             username='greenearth', email='info@greenearth.org',
-            password='ngo123', role='ngo', avatar='🌳'
+            password='ngo12345', role='ngo', avatar='🌳'
         )
         ngo2 = NGO.objects.create(
             user=ngo2_user, name='Green Earth Foundation',
@@ -92,7 +92,7 @@ class Command(BaseCommand):
         # Nagpur NGO
         ngo3_user = User.objects.create_user(
             username='nagpurseva', email='care@nagpurseva.org',
-            password='ngo123', role='ngo', avatar='🤝'
+            password='ngo12345', role='ngo', avatar='🤝'
         )
         ngo3 = NGO.objects.create(
             user=ngo3_user, name='Nagpur Seva Samiti',

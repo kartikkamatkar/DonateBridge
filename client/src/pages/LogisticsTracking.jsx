@@ -70,7 +70,9 @@ export default function LogisticsTracking() {
           title: matchingMilestone ? matchingMilestone.title : m.title,
           time: matchingMilestone ? new Date(matchingMilestone.time_stamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : m.time,
           desc: matchingMilestone ? matchingMilestone.description : m.desc,
-          coords: stepNum >= 5 ? nCoords : stepNum === 4 ? [ (dCoords[0] + nCoords[0]) / 2, (dCoords[1] + nCoords[1]) / 2 ] : dCoords
+          coords: (matchingMilestone && matchingMilestone.lat && matchingMilestone.lng)
+            ? [matchingMilestone.lat, matchingMilestone.lng]
+            : stepNum >= 5 ? nCoords : dCoords
         };
       });
       setMilestones(mapped);
@@ -94,7 +96,7 @@ export default function LogisticsTracking() {
       }).addTo(mapInstance.current);
 
       const donorIcon = L.divIcon({
-        html: `<div class="w-6 h-6 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center text-white font-extrabold text-[8px] shadow-premium-md">DON</div>`,
+        html: `<div class="w-6 h-6 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center text-white font-extrabold text-xs shadow-premium-md">DON</div>`,
         className: 'custom-donor-icon',
         iconSize: [24, 24]
       });
@@ -103,7 +105,7 @@ export default function LogisticsTracking() {
         .bindPopup('<b>Donor Pickup Point</b>');
 
       const ngoIcon = L.divIcon({
-        html: `<div class="w-6 h-6 rounded-full bg-[#2E7D32] border-2 border-white flex items-center justify-center text-white font-extrabold text-[8px] shadow-premium-md">NGO</div>`,
+        html: `<div class="w-6 h-6 rounded-full bg-[#2E7D32] border-2 border-white flex items-center justify-center text-white font-extrabold text-xs shadow-premium-md">NGO</div>`,
         className: 'custom-ngo-icon',
         iconSize: [24, 24]
       });
@@ -170,10 +172,10 @@ export default function LogisticsTracking() {
           <div className="flex justify-between items-center pb-4 border-b border-border">
             <div>
               <h3 className="text-sm font-display font-bold text-slate-900">Milestone Courier Tracker</h3>
-              <p className="text-[10px] text-slate-400 font-mono">PARCEL TIMELINE PATH</p>
+              <p className="text-xs text-slate-400 font-mono">PARCEL TIMELINE PATH</p>
             </div>
             <div className="text-right">
-              <span className="text-[9px] font-mono text-slate-400 block">PARCEL ID</span>
+              <span className="text-xs font-mono text-slate-400 block">PARCEL ID</span>
               <span className="text-xs font-mono font-bold text-primary">DB-{id || '1042'}</span>
             </div>
           </div>
@@ -207,7 +209,7 @@ export default function LogisticsTracking() {
 
               return (
                 <div key={idx} className="relative text-xs">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center absolute -left-[38px] -top-1 font-mono font-bold text-[9px] border transition-all ${
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center absolute -left-[38px] -top-1 font-mono font-bold text-xs border transition-all ${
                     isCurrent ? 'bg-primary text-white border-primary ring-4 ring-primary/10' :
                     isPassed ? 'bg-[#F1F8F5] text-primary border-emerald-200' :
                     'bg-white text-slate-400 border-border'
@@ -217,8 +219,8 @@ export default function LogisticsTracking() {
 
                   <div className="space-y-0.5">
                     <p className={`font-semibold ${isCurrent ? 'text-primary font-bold' : 'text-slate-900'}`}>{m.title}</p>
-                    <p className="text-[9px] text-slate-400 font-mono">{m.time}</p>
-                    <p className="text-[11px] text-slate-500 leading-relaxed mt-1">{m.desc}</p>
+                    <p className="text-xs text-slate-400 font-mono">{m.time}</p>
+                    <p className="text-xs text-slate-500 leading-relaxed mt-1">{m.desc}</p>
                   </div>
                 </div>
               );

@@ -163,13 +163,13 @@ export default function NgoProfile() {
       <div className="flex flex-wrap justify-center md:justify-start items-center gap-2">
        <h1 className="text-xl font-display font-bold text-ink">{ngo.name}</h1>
        {ngo.verification_status === 'approved' && (
-        <span className="px-2.5 py-0.5 border border-emerald-100 bg-[#F1F8F5] text-primary text-[9px] font-bold rounded-full uppercase">Verified Hub</span>
+        <span className="px-2.5 py-0.5 border border-emerald-100 bg-[#F1F8F5] text-primary text-xs font-bold rounded-full uppercase">Verified Hub</span>
        )}
       </div>
       <p className="text-xs text-slate-500 max-w-xl">
        {ngo.description || ngo.mission || 'No description provided.'}
       </p>
-      <p className="text-[10px] text-slate-400 flex items-center justify-center md:justify-start gap-1 font-mono">
+      <p className="text-xs text-slate-400 flex items-center justify-center md:justify-start gap-1 font-mono">
        <MapPin className="w-3.5 h-3.5 text-primary" /> Address: {ngo.address}, {ngo.city} &bull; Coordinates: {ngo.lat?.toFixed(4)}, {ngo.lng?.toFixed(4)}
       </p>
      </div>
@@ -215,7 +215,7 @@ export default function NgoProfile() {
           <div>
            <div className="flex justify-between items-start mb-2">
             <h4 className="font-display font-bold text-sm text-slate-900">{need.item}</h4>
-            <span className={`px-2 py-0.5 border text-[8px] font-bold rounded-full uppercase ${
+            <span className={`px-2 py-0.5 border text-xs font-bold rounded-full uppercase ${
              need.urgency === 'High' ? 'bg-red-50 text-red-700 border-red-100' :
              need.urgency === 'Medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
              'bg-slate-50 text-slate-700 border-slate-200'
@@ -223,10 +223,10 @@ export default function NgoProfile() {
              {need.urgency}
             </span>
            </div>
-           <p className="text-[11px] text-slate-500 leading-relaxed truncate-3-lines">{need.description || 'No specific specifications listed.'}</p>
+           <p className="text-xs text-slate-500 leading-relaxed truncate-3-lines">{need.description || 'No specific specifications listed.'}</p>
           </div>
           <div className="space-y-2 mt-4">
-           <div className="flex justify-between text-[10px] font-mono text-slate-400">
+           <div className="flex justify-between text-xs font-mono text-slate-400">
             <span>Progress:</span>
             <span className="font-bold text-slate-700">{need.fulfilled_quantity}/{need.quantity} units</span>
            </div>
@@ -257,8 +257,8 @@ export default function NgoProfile() {
           </div>
           <div className="space-y-0.5">
            <p className="font-semibold text-slate-900">{evt.title}</p>
-           <p className="text-[9px] text-slate-400 font-mono">{evt.date} &bull; {evt.time}</p>
-           <p className="text-[11px] text-slate-500 leading-relaxed mt-1">{evt.desc}</p>
+           <p className="text-xs text-slate-400 font-mono">{evt.date} &bull; {evt.time}</p>
+           <p className="text-xs text-slate-500 leading-relaxed mt-1">{evt.desc}</p>
           </div>
          </div>
         ))}
@@ -272,7 +272,7 @@ export default function NgoProfile() {
      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-4">
        {reviews.length === 0 ? (
-        <div className="p-8 bg-white border border-border rounded-2xl text-center text-slate-450 text-xs">
+        <div className="p-8 bg-white border border-border rounded-2xl text-center text-slate-500 text-xs">
          No donor reviews yet. Be the first to leave a feedback!
         </div>
        ) : (
@@ -280,7 +280,7 @@ export default function NgoProfile() {
          <div key={rev.id} className="p-4 bg-white border border-border rounded-2xl shadow-premium-xs text-xs space-y-2">
           <div className="flex justify-between items-center">
            <p className="font-semibold text-slate-800">{rev.author_name || 'Anonymous Donor'}</p>
-           <span className="text-[9px] text-slate-400 font-mono">
+           <span className="text-xs text-slate-400 font-mono">
             {new Date(rev.created_at).toLocaleDateString()}
            </span>
           </div>

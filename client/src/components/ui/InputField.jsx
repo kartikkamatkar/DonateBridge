@@ -14,7 +14,7 @@ export const InputField = React.forwardRef(({
       {label && (
         <label
           htmlFor={id}
-          className="text-xs font-semibold uppercase tracking-wider text-slate-700"
+          className="text-sm font-medium text-slate-600 ml-1 mb-0.5"
         >
           {label}
         </label>
@@ -25,7 +25,7 @@ export const InputField = React.forwardRef(({
         type={type}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
-        className={`w-full px-3 py-2 rounded-sm border bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
+        className={`w-full px-4 py-3 rounded-xl border bg-white border-slate-200/80 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all duration-300 shadow-sm ${
           error ? 'ring-2 ring-red-500 border-transparent' : ''
         }`}
         {...props}

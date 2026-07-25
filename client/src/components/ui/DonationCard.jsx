@@ -40,7 +40,7 @@ export default function DonationCard({
     >
       <div className="shrink-0 flex md:flex-col items-center justify-between border-b md:border-b-0 md:border-r border-border pb-4 md:pb-0 md:pr-6 md:w-48">
         <div className="text-center md:w-full space-y-2">
-          <span className="font-mono text-[10px] text-slate-400 block tracking-wider uppercase">REFERENCE ID</span>
+          <span className="font-mono text-xs text-slate-400 block tracking-wider uppercase">REFERENCE ID</span>
           <span className="text-sm font-semibold font-mono text-ink">{id}</span>
           
           <div className="mt-2 text-center md:flex justify-center hidden">
@@ -53,7 +53,7 @@ export default function DonationCard({
             <Tag className="w-3.5 h-3.5 text-slate-400" />
             {category}
           </span>
-          <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5 justify-center mt-1">
+          <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5 justify-center mt-1">
             <Calendar className="w-3.5 h-3.5" />
             {dateFormatted}
           </span>
@@ -120,23 +120,31 @@ export default function DonationCard({
               <div className="h-2 rounded-full overflow-hidden flex bg-slate-200">
                 <div style={{ width: `${matchScoreDetails.categoryFit}%` }} className="bg-primary h-full" />
                 <div style={{ width: `${matchScoreDetails.distanceScore}%` }} className="bg-sky-500 h-full" />
+                <div style={{ width: `${matchScoreDetails.quantityScore}%` }} className="bg-indigo-500 h-full" />
                 <div style={{ width: `${matchScoreDetails.urgencyScore}%` }} className="bg-emerald-500 h-full" />
+                <div style={{ width: `${matchScoreDetails.trustScore}%` }} className="bg-teal-600 h-full" />
                 <div style={{ width: `${matchScoreDetails.freshnessScore}%` }} className="bg-amber-500 h-full" />
               </div>
 
               {/* Legend details */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-slate-400">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-1 text-xs text-slate-400">
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-primary rounded-full" /> Category ({matchScoreDetails.categoryFit}%)
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-sky-500 rounded-full" /> Distance ({matchScoreDetails.distance} km)
+                  <span className="w-2 h-2 bg-sky-500 rounded-full" /> Dist. ({matchScoreDetails.distanceScore}%)
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-emerald-50 rounded-full" /> Urgency ({matchScoreDetails.urgencyScore}%)
+                  <span className="w-2 h-2 bg-indigo-500 rounded-full" /> Quantity ({matchScoreDetails.quantityScore}%)
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-amber-400 rounded-full" /> Recency ({matchScoreDetails.freshnessScore}%)
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full" /> Urgency ({matchScoreDetails.urgencyScore}%)
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-teal-600 rounded-full" /> Trust ({matchScoreDetails.trustScore}%)
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-amber-500 rounded-full" /> Recency ({matchScoreDetails.freshnessScore}%)
                 </span>
               </div>
             </div>

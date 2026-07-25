@@ -1,11 +1,9 @@
 import random
-import datetime
 import uuid
 import os
 from django.conf import settings
-from django.utils import timezone
+from django.core.cache import cache
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
 from rest_framework import status, permissions, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,6 +21,80 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+# ─── OTP Helpers ───────────────────────────────────────
+OTP_CACHE_PREFIX = 'otp_'
+OTP_TTL_SECONDS = 600  # 10 minutes
+
+def _generate_otp():
+    """Generate a 6-digit OTP. In DEBUG mode, always return 123456 for easy testing."""
+    if settings.DEBUG:
+        return '123456'
+    return str(random.randint(100000, 999999))
+
+def _store_otp(email, otp):
+    """Store OTP in Django's cache with a 10-minute TTL."""
+    cache_key = f"{OTP_CACHE_PREFIX}{email.lower().strip()}"
+    cache.set(cache_key, otp, OTP_TTL_SECONDS)
+
+def _verify_otp(email, code):
+    """
+    Verify OTP against cache. Returns True if valid.
+    In DEBUG mode, always accept '123456' as a fallback.
+    """
+    cache_key = f"{OTP_CACHE_PREFIX}{email.lower().strip()}"
+    stored_otp = cache.get(cache_key)
+    
+    # Accept the code if it matches the stored OTP
+    if stored_otp and str(stored_otp) == str(code):
+        cache.delete(cache_key)  # One-time use
+        return True
+    
+    # In DEBUG mode, accept hardcoded '123456' for dev convenience
+    if settings.DEBUG and str(code) == '123456':
+        cache.delete(cache_key)
+        return True
+    
+    return False
+
+from django.core.mail import send_mail
+
+def _send_otp_to_email(email, otp):
+    """Send OTP via real email, fallback to console logging if fails."""
+    subject = "DonateBridge - Your Verification Code"
+    message = f"Your verification code is: {otp}\n\nThis code will expire in 10 minutes."
+    html_message = f"""
+    <div style="font-family: sans-serif; padding: 20px; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 10px;">
+        <h2 style="color: #0f172a;">DonateBridge Verification</h2>
+        <p style="color: #475569;">Your verification code is:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <h1 style="color: #10b981; letter-spacing: 4px; margin: 0; font-size: 32px;">{otp}</h1>
+        </div>
+        <p style="color: #64748b; font-size: 12px;">This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
+    </div>
+    """
+    
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+            html_message=html_message
+        )
+        print(f"[EMAIL] Successfully sent OTP to {email}")
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send email to {email}: {str(e)}")
+        # Fallback to console for debugging
+        print(f"\n==========================================")
+        print(f"  [EMAIL FALLBACK]                        ")
+        print(f"  OTP sent to: {email}                    ")
+        print(f"  OTP Code:    {otp}                      ")
+        print(f"==========================================\n")
+
+
+# ─── Auth Views ────────────────────────────────────────
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -81,8 +153,44 @@ class UserMeView(generics.RetrieveUpdateAPIView):
         return Response(self.get_serializer(user).data)
 
 
+# ─── OTP Send / Verify / Resend ───────────────────────
+
+class ResendOTPView(APIView):
+    """Generate and send (mock) an OTP for email verification during registration or forgot-password."""
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        otp = _generate_otp()
+        _store_otp(email, otp)
+        _send_otp_to_email(email, otp)
+
+        return Response({"message": "OTP sent successfully to email."}, status=status.HTTP_200_OK)
+
+class VerifyOTPView(APIView):
+    """Verify the OTP code submitted by the user."""
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('code')
+        
+        if not email or not code:
+            return Response({"error": "Email and code are required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if not _verify_otp(email, code):
+            return Response({"error": "Invalid or expired OTP code."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "OTP verified successfully."}, status=status.HTTP_200_OK)
+
+
+# ─── Forgot / Reset Password ──────────────────────────
 
 class ForgotPasswordView(APIView):
+    """Generate and send (mock) an OTP for password reset."""
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -90,26 +198,29 @@ class ForgotPasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
 
-        # TODO: Implement actual email sending for password reset links if configured.
-        # Currently, we just mock it.
-
-        print(f"\n==========================================")
-        print(f"  [EMAIL MOCK SERVER]                     ")
-        print(f"  Password reset requested for {email}     ")
-        print(f"==========================================\n")
+        # Generate OTP and store it in cache
+        otp = _generate_otp()
+        _store_otp(email, otp)
+        _send_otp_to_email(email, otp)
 
         return Response({
-            "message": "If an account exists, a password reset link will be sent to the email."
+            "message": "If an account exists, a password reset OTP will be sent to the email."
         }, status=status.HTTP_200_OK)
 
 class ResetPasswordView(APIView):
+    """Verify OTP and reset the user's password."""
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
+        code = serializer.validated_data['code']
         new_password = serializer.validated_data['new_password']
+
+        # Validate OTP before allowing password change
+        if not _verify_otp(email, code):
+            return Response({"error": "Invalid or expired OTP code."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(email=email)
@@ -121,6 +232,9 @@ class ResetPasswordView(APIView):
         user.save()
 
         return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+
+
+# ─── File Upload ───────────────────────────────────────
 
 class SecureFileUploadView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -165,35 +279,4 @@ class SecureFileUploadView(APIView):
             "message": "File uploaded successfully",
             "url": file_url
         }, status=status.HTTP_201_CREATED)
-
-class ResendOTPView(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request):
-        email = request.data.get('email')
-        if not email:
-            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        print(f"\n==========================================")
-        print(f"  [EMAIL MOCK SERVER]                     ")
-        print(f"  OTP generated and sent to {email}       ")
-        print(f"  OTP Code: 123456                        ")
-        print(f"==========================================\n")
-
-        return Response({"message": "OTP sent successfully to email."}, status=status.HTTP_200_OK)
-
-class VerifyOTPView(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request):
-        email = request.data.get('email')
-        code = request.data.get('code')
-        
-        if not email or not code:
-            return Response({"error": "Email and code are required"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        if code != '123456':
-            return Response({"error": "Invalid OTP code."}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"message": "OTP verified successfully."}, status=status.HTTP_200_OK)
 

@@ -11,7 +11,7 @@ admin.site.site_title = "DonateBridge Admin Portal"
 admin.site.index_title = "Welcome to DonateBridge Management"
 
 urlpatterns = [
-    path('admin-django/', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('api/', include('authentication.urls')),
     path('api/', include('ngo.urls')),
     path('api/', include('donation.urls')),
