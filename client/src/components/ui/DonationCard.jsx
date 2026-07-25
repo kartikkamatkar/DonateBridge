@@ -32,10 +32,9 @@ export default function DonationCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15 }}
       className="saas-card flex flex-col md:flex-row gap-6 relative"
     >
       <div className="shrink-0 flex md:flex-col items-center justify-between border-b md:border-b-0 md:border-r border-border pb-4 md:pb-0 md:pr-6 md:w-48">

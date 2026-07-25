@@ -55,7 +55,7 @@ export default function Logo({
         {/* Arched Bridge Span Negative Space at the bottom */}
         <path
           d="M32 90C45 78 75 78 88 90C78 100 60 102 32 90Z"
-          fill={theme === 'dark' ? '#0F172A' : '#F8FAFC'}
+          fill={theme === 'dark' ? '#1F2937' : '#F5F1E8'}
         />
 
         {/* 2. Heart Center Shape (Negative space in the pin core) */}

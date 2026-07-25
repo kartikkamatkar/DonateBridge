@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
 import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Lock, ArrowLeft, Eye, EyeOff, Sparkles, Activity } from 'lucide-react';
+import { ShieldCheck, Lock, ArrowLeft, Eye, EyeOff, Sparkles, Activity, CheckCircle2, Truck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
 import { authAPI, getApiError } from '../api/index';
@@ -67,7 +67,7 @@ export default function AuthSuite() {
         setOtpCode('');
         setStep('register_otp');
         startResendTimer();
-        toast.success('OTP sent to your email.');
+        toast.success('Verification OTP sent to your email.');
       } else {
         const loginRes = await authAPI.login(data.email, data.password);
         const { user, access, refresh } = loginRes.data;
@@ -137,7 +137,7 @@ export default function AuthSuite() {
     setAuthError('');
     try {
       await authAPI.forgotPassword(forgotEmail);
-      toast.success('OTP dispatched to your email.');
+      toast.success('Recovery code sent to your email.');
       setOtpCode('');
       startResendTimer();
       setStep('forgot_otp');
@@ -192,120 +192,136 @@ export default function AuthSuite() {
   };
 
   return (
-    <div className="min-h-screen w-screen flex flex-col lg:grid lg:grid-cols-2 bg-slate-900 selection:bg-emerald-500/30">
+    <div className="min-h-screen w-screen flex flex-col lg:grid lg:grid-cols-12 bg-[#F8FAFC]">
       
-      {/* LEFT SIDE - Brand Experience */}
-      <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 h-full relative overflow-hidden">
-        {/* Deep Glowing Backgrounds */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 via-slate-900 to-slate-900" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay" />
-        <div className="absolute -top-[20%] -left-[10%] w-[500px] h-[500px] bg-emerald-500/20 blur-[100px] rounded-full pointer-events-none" />
-        <div className="absolute top-[40%] -right-[20%] w-[400px] h-[400px] bg-teal-500/10 blur-[100px] rounded-full pointer-events-none" />
+      {/* LEFT SIDE - Brand Experience Banner */}
+      <div className="lg:col-span-5 bg-gradient-to-br from-[#0B1E13] via-[#143320] to-[#0A1A11] p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden min-h-[300px] lg:min-h-screen text-left">
+        
+        {/* Decorative background glow */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#4A7C59]/20 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-500/10 blur-[100px] rounded-full pointer-events-none" />
 
+        {/* Top Back Navigation Button */}
         <div className="relative z-10">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors w-fit font-bold tracking-wide uppercase cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs tracking-wider uppercase transition-all cursor-pointer border border-white/10"
           >
-            <ArrowLeft className="w-4 h-4" /> Return Home
+            <ArrowLeft className="w-4 h-4" /> Return to Home
           </button>
         </div>
 
-        <div className="space-y-10 max-w-lg my-auto relative z-10">
-          <div className="space-y-5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-500/30">
-              <Sparkles className="w-7 h-7" />
-            </div>
-            <h2 className="text-4xl lg:text-5xl font-display font-black text-white leading-[1.1] tracking-tight">
-              A modern physical supply logistics framework.
-            </h2>
-            <p className="text-lg text-slate-400 leading-relaxed font-medium max-w-md">
-              We connect local donors directly to vetted nonprofit organizations, coordinating route delivery logistics and certificates without middle agencies.
+        {/* Main Brand Messaging */}
+        <div className="relative z-10 space-y-8 max-w-lg my-auto py-8">
+          <div className="space-y-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F3EC] text-[#4A7C59] font-bold text-[10px] uppercase tracking-widest">
+              <Sparkles className="w-3.5 h-3.5" /> Secure Logistics Portal
+            </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
+              Connecting Donors &amp; NGOs with Transparency.
+            </h1>
+            <p className="text-sm sm:text-base text-stone-300 leading-relaxed font-normal">
+              Direct physical supply logistics, zero middle-agency escrow leakage, real-time tracking, and instant 80G tax invoice generation.
             </p>
           </div>
 
-          <div className="space-y-6 pt-8 border-t border-slate-700/50">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-sm">
+          {/* High-Contrast Feature Highlights */}
+          <div className="space-y-4 pt-6 border-t border-white/10">
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0 text-[#4A7C59]">
                 <ShieldCheck className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h4 className="font-bold text-white text-lg">Verified Nonprofits</h4>
-                <p className="text-slate-400 text-sm mt-1 leading-relaxed">Strict admin audits of registration documentation prevent verification fraud.</p>
+                <h4 className="font-bold text-white text-sm">Verified Nonprofit Network</h4>
+                <p className="text-xs text-stone-300 mt-0.5 leading-relaxed">
+                  Strict admin audits of registration documentation prevent verification fraud.
+                </p>
               </div>
             </div>
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center shrink-0 shadow-lg backdrop-blur-sm">
+
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0 text-[#4A7C59]">
                 <Lock className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h4 className="font-bold text-white text-lg">Encrypted Verification Logs</h4>
-                <p className="text-slate-400 text-sm mt-1 leading-relaxed">Secure logins ensure zero credential leakage or session hijacking risks.</p>
+                <h4 className="font-bold text-white text-sm">Encrypted Authentication</h4>
+                <p className="text-xs text-stone-300 mt-0.5 leading-relaxed">
+                  Role-based permissions ensure maximum security and zero credential leakage.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0 text-[#4A7C59]">
+                <Truck className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">Direct Route Dispatches</h4>
+                <p className="text-xs text-stone-300 mt-0.5 leading-relaxed">
+                  Coordinate physical logistics seamlessly with vetted couriers and hub pickup points.
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10">
-          <p className="text-sm font-medium text-slate-500">
-            © {new Date().getFullYear()} DonateBridge Inc.
-          </p>
+        {/* Footer info */}
+        <div className="relative z-10 text-xs font-medium text-stone-400">
+          &copy; {new Date().getFullYear()} DonateBridge Inc. All rights reserved.
         </div>
       </div>
 
-      {/* RIGHT SIDE - Glassmorphic Form */}
-      <div className="flex-1 h-full overflow-y-auto bg-slate-50 relative flex flex-col justify-center py-10 px-4 sm:px-8 lg:px-20">
+      {/* RIGHT SIDE - Authentication Form Card */}
+      <div className="lg:col-span-7 flex items-center justify-center p-6 sm:p-12 bg-[#F8FAFC]">
         
-        {/* Subtle Form Background Pattern */}
-        <div className="absolute inset-0 bg-white/50 backdrop-blur-3xl z-0" />
-        
-        <div className="w-full max-w-md mx-auto bg-white/70 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-8 sm:p-12 shadow-2xl shadow-slate-200/50 relative z-10">
+        <div className="w-full max-w-md bg-white border border-stone-200 rounded-3xl p-8 sm:p-10 shadow-xl text-left space-y-6">
           <AnimatePresence mode="wait">
             
             {/* CREDENTIALS STEP */}
             {step === 'credentials' && (
               <motion.div
                 key="credentials"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="space-y-8"
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
               >
-                <div className="text-center space-y-3">
-                  <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight">
-                    {isRegister ? 'Create Account' : 'Welcome Back'}
-                  </h1>
-                  <p className="text-sm font-medium text-slate-500">
+                <div className="space-y-1.5">
+                  <h2 className="text-2xl font-bold text-stone-900 tracking-tight">
+                    {isRegister ? 'Create an Account' : 'Welcome Back'}
+                  </h2>
+                  <p className="text-xs text-stone-500 font-medium">
                     {isRegister
-                      ? 'Sign up to request or dispatch essential local goods.'
-                      : 'Sign in to your centralized dashboard.'}
+                      ? 'Register to dispatch supplies or request NGO assistance.'
+                      : 'Sign in to access your dispatch dashboard.'}
                   </p>
                   {authMessage && (
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 font-bold bg-red-50 py-2.5 px-4 border border-red-100 rounded-xl mt-4">
+                    <p className="text-xs text-rose-600 font-bold bg-rose-50 p-3 border border-rose-200 rounded-xl mt-3">
                       {authMessage}
-                    </motion.p>
+                    </p>
                   )}
                 </div>
 
-                <div className="flex p-1.5 bg-slate-100/80 rounded-xl border border-slate-200/60 backdrop-blur-sm">
+                {/* Role Switcher */}
+                <div className="flex p-1 bg-stone-100 rounded-xl border border-stone-200">
                   {['donor', 'ngo'].map((role) => (
                     <button
                       key={role}
                       type="button"
                       onClick={() => { setSelectedRole(role); clearAuthMessage(); }}
-                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all capitalize duration-300 ${
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all capitalize cursor-pointer ${
                         selectedRole === role
-                          ? 'bg-white text-emerald-600 shadow-md shadow-slate-200/50'
-                          : 'text-slate-500 hover:text-slate-800 hover:bg-white/40'
+                          ? 'bg-[#4A7C59] text-white shadow-sm'
+                          : 'text-stone-600 hover:text-stone-900'
                       }`}
                     >
-                      {role}
+                      {role === 'donor' ? 'Donor Account' : 'NGO Organization'}
                     </button>
                   ))}
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmitCredentials)} className="space-y-5">
+                <form onSubmit={handleSubmit(onSubmitCredentials)} className="space-y-4">
                   {isRegister && (
                     <InputField
                       label={selectedRole === 'ngo' ? 'Organization Legal Name' : 'Full Name'}
@@ -348,9 +364,9 @@ export default function AuthSuite() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-[34px] text-slate-400 hover:text-emerald-500 transition-colors p-1 cursor-pointer"
+                      className="absolute right-3 top-[34px] text-stone-400 hover:text-[#4A7C59] transition-colors p-1 cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
 
@@ -359,7 +375,7 @@ export default function AuthSuite() {
                       <button
                         type="button"
                         onClick={() => { setStep('forgot'); setAuthError(''); }}
-                        className="text-sm text-emerald-600 hover:text-emerald-500 transition-colors font-bold"
+                        className="text-xs text-[#4A7C59] hover:underline font-bold cursor-pointer"
                       >
                         Forgot password?
                       </button>
@@ -368,25 +384,25 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-slate-900/10 hover:shadow-emerald-500/25 transition-all duration-300"
+                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 px-4 rounded-xl shadow-xs text-sm transition-all cursor-pointer mt-2"
                     disabled={loading}
                   >
-                    {loading ? 'Processing…' : isRegister ? 'Continue' : 'Sign In'}
+                    {loading ? 'Processing...' : isRegister ? 'Continue to Verification' : 'Sign In'}
                   </Button>
 
                   {authError && (
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 font-bold text-center pt-2">
+                    <p className="text-xs text-rose-600 font-bold text-center pt-2">
                       {authError}
-                    </motion.p>
+                    </p>
                   )}
                 </form>
 
-                <div className="pt-6 text-center text-sm font-medium text-slate-500">
+                <div className="pt-4 border-t border-stone-100 text-center text-xs font-medium text-stone-500">
                   {isRegister ? 'Already have an account? ' : "Don't have an account yet? "}
                   <button
                     type="button"
                     onClick={() => { setIsRegister(!isRegister); setAuthError(''); }}
-                    className="text-emerald-600 hover:text-emerald-500 font-bold transition-colors ml-1"
+                    className="text-[#4A7C59] hover:underline font-bold cursor-pointer ml-1"
                   >
                     {isRegister ? 'Sign in' : 'Register Now'}
                   </button>
@@ -394,26 +410,26 @@ export default function AuthSuite() {
               </motion.div>
             )}
 
-            {/* OTP VERIFICATION STEP */}
+            {/* REGISTER OTP STEP */}
             {step === 'register_otp' && (
               <motion.div
                 key="register_otp"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-8"
+                className="space-y-5"
               >
-                <div className="text-center space-y-3">
-                  <div className="w-16 h-16 mx-auto bg-emerald-50 rounded-2xl flex items-center justify-center mb-6">
-                     <Lock className="w-8 h-8 text-emerald-500" />
+                <div className="text-center space-y-2">
+                  <div className="w-12 h-12 mx-auto bg-[#E8F3EC] text-[#4A7C59] rounded-full flex items-center justify-center mb-3">
+                    <Lock className="w-6 h-6" />
                   </div>
-                  <h1 className="text-2xl font-display font-black text-slate-900">Verify Email</h1>
-                  <p className="text-sm font-medium text-slate-500">
-                    We've sent a 6-digit code to<br/><span className="font-bold text-slate-700">{pendingRegData?.email}</span>
+                  <h2 className="text-xl font-bold text-stone-900">Verify Email</h2>
+                  <p className="text-xs text-stone-500 font-medium">
+                    We've sent a 6-digit OTP code to<br/><span className="font-bold text-stone-800">{pendingRegData?.email}</span>
                   </p>
                 </div>
-                <form onSubmit={handleRegisterOTP} className="space-y-5">
+
+                <form onSubmit={handleRegisterOTP} className="space-y-4">
                   <InputField
                     label="6-Digit Verification Code"
                     id="reg-otp"
@@ -424,30 +440,32 @@ export default function AuthSuite() {
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                     required
                   />
+
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/25 transition-all"
+                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 rounded-xl text-sm shadow-xs"
                     disabled={loading || otpCode.length !== 6}
                   >
-                    {loading ? 'Verifying…' : 'Verify & Create Account'}
+                    {loading ? 'Verifying...' : 'Verify & Create Account'}
                   </Button>
                   
-                  {authError && <p className="text-xs text-red-500 font-bold text-center">{authError}</p>}
+                  {authError && <p className="text-xs text-rose-600 font-bold text-center">{authError}</p>}
                   
                   <div className="text-center pt-2">
                     <button
                       type="button"
                       onClick={() => handleResendOTP(pendingRegData?.email)}
                       disabled={resendTimer > 0 || loading}
-                      className="text-sm text-emerald-600 font-bold hover:text-emerald-500 transition-colors disabled:opacity-50 disabled:hover:text-emerald-600"
+                      className="text-xs text-[#4A7C59] font-bold hover:underline disabled:opacity-50"
                     >
                       {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
                     </button>
                   </div>
+
                   <button
                     type="button"
                     onClick={() => { setStep('credentials'); setAuthError(''); }}
-                    className="w-full py-2 mt-4 text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
+                    className="w-full py-2 text-xs font-bold text-stone-500 hover:text-stone-800"
                   >
                     Return to Login
                   </button>
@@ -459,21 +477,20 @@ export default function AuthSuite() {
             {step === 'forgot' && (
               <motion.div
                 key="forgot"
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-8"
+                exit={{ opacity: 0, x: 10 }}
+                className="space-y-5"
               >
-                <div className="text-center space-y-3">
-                  <div className="w-16 h-16 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center mb-6">
-                     <ShieldCheck className="w-8 h-8 text-slate-400" />
+                <div className="text-center space-y-2">
+                  <div className="w-12 h-12 mx-auto bg-[#E8F3EC] text-[#4A7C59] rounded-full flex items-center justify-center mb-3">
+                    <ShieldCheck className="w-6 h-6" />
                   </div>
-                  <h1 className="text-2xl font-display font-black text-slate-900">Reset Password</h1>
-                  <p className="text-sm font-medium text-slate-500">Enter your email to receive a recovery code.</p>
+                  <h2 className="text-xl font-bold text-stone-900">Reset Password</h2>
+                  <p className="text-xs text-stone-500 font-medium">Enter your account email to receive a recovery code.</p>
                 </div>
 
-                <form onSubmit={handleForgotPassword} className="space-y-5">
+                <form onSubmit={handleForgotPassword} className="space-y-4">
                   <InputField
                     label="Email Address"
                     id="forgot-email"
@@ -486,42 +503,42 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg transition-all"
+                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 rounded-xl text-sm shadow-xs"
                     disabled={loading}
                   >
-                    {loading ? 'Sending…' : 'Send Recovery Code'}
+                    {loading ? 'Sending...' : 'Send Recovery Code'}
                   </Button>
 
-                  {authError && <p className="text-xs text-red-500 font-bold text-center">{authError}</p>}
+                  {authError && <p className="text-xs text-rose-600 font-bold text-center">{authError}</p>}
 
                   <button
                     type="button"
                     onClick={() => { setStep('credentials'); setAuthError(''); }}
-                    className="w-full py-2 mt-4 text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
+                    className="w-full py-2 text-xs font-bold text-stone-500 hover:text-stone-800"
                   >
-                    Cancel & Return
+                    Cancel &amp; Return
                   </button>
                 </form>
               </motion.div>
             )}
 
-            {/* FORGOT PASSWORD OTP STEP */}
+            {/* FORGOT OTP STEP */}
             {step === 'forgot_otp' && (
               <motion.div
                 key="forgot_otp"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-8"
+                className="space-y-5"
               >
-                <div className="text-center space-y-3">
-                  <h1 className="text-2xl font-display font-black text-slate-900">Verify OTP</h1>
-                  <p className="text-sm font-medium text-slate-500">
-                    Recovery code sent to <span className="font-bold text-slate-700">{forgotEmail}</span>.
+                <div className="text-center space-y-2">
+                  <h2 className="text-xl font-bold text-stone-900">Verify OTP</h2>
+                  <p className="text-xs text-stone-500 font-medium">
+                    Recovery code sent to <span className="font-bold text-stone-800">{forgotEmail}</span>.
                   </p>
                 </div>
-                <form onSubmit={handleForgotOTP} className="space-y-5">
+
+                <form onSubmit={handleForgotOTP} className="space-y-4">
                   <InputField
                     label="6-Digit Recovery Code"
                     id="forgot-otp"
@@ -532,30 +549,32 @@ export default function AuthSuite() {
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                     required
                   />
+
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/25 transition-all"
+                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 rounded-xl text-sm shadow-xs"
                     disabled={loading || otpCode.length !== 6}
                   >
-                    {loading ? 'Verifying…' : 'Verify Code'}
+                    {loading ? 'Verifying...' : 'Verify Code'}
                   </Button>
                   
-                  {authError && <p className="text-xs text-red-500 font-bold text-center">{authError}</p>}
+                  {authError && <p className="text-xs text-rose-600 font-bold text-center">{authError}</p>}
                   
                   <div className="text-center pt-2">
                     <button
                       type="button"
                       onClick={() => handleResendOTP(forgotEmail)}
                       disabled={resendTimer > 0 || loading}
-                      className="text-sm text-emerald-600 font-bold hover:text-emerald-500 transition-colors disabled:opacity-50"
+                      className="text-xs text-[#4A7C59] font-bold hover:underline disabled:opacity-50"
                     >
                       {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
                     </button>
                   </div>
+
                   <button
                     type="button"
                     onClick={() => { setStep('forgot'); setAuthError(''); }}
-                    className="w-full py-2 mt-4 text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
+                    className="w-full py-2 text-xs font-bold text-stone-500 hover:text-stone-800"
                   >
                     Back
                   </button>
@@ -567,18 +586,17 @@ export default function AuthSuite() {
             {step === 'reset' && (
               <motion.div
                 key="reset"
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-8"
+                exit={{ opacity: 0, x: 10 }}
+                className="space-y-5"
               >
-                <div className="text-center space-y-3">
-                  <h1 className="text-2xl font-display font-black text-slate-900">Set New Password</h1>
-                  <p className="text-sm font-medium text-slate-500">Enter a strong new password for your account.</p>
+                <div className="text-center space-y-2">
+                  <h2 className="text-xl font-bold text-stone-900">Set New Password</h2>
+                  <p className="text-xs text-stone-500 font-medium">Enter a strong new password for your account.</p>
                 </div>
 
-                <form onSubmit={handleResetPassword} className="space-y-5">
+                <form onSubmit={handleResetPassword} className="space-y-4">
                   <InputField
                     label="New Password"
                     id="new-pass"
@@ -588,6 +606,7 @@ export default function AuthSuite() {
                     onChange={(e) => setResetPassword(e.target.value)}
                     required
                   />
+
                   <InputField
                     label="Confirm New Password"
                     id="confirm-new-pass"
@@ -600,18 +619,18 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-slate-900 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg transition-all"
+                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 rounded-xl text-sm shadow-xs"
                     disabled={loading}
                   >
-                    {loading ? 'Updating…' : 'Update Password'}
+                    {loading ? 'Updating...' : 'Update Password'}
                   </Button>
 
-                  {authError && <p className="text-xs text-red-500 font-bold text-center">{authError}</p>}
+                  {authError && <p className="text-xs text-rose-600 font-bold text-center">{authError}</p>}
 
                   <button
                     type="button"
                     onClick={() => { setStep('credentials'); setAuthError(''); }}
-                    className="w-full py-2 mt-4 text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
+                    className="w-full py-2 text-xs font-bold text-stone-500 hover:text-stone-800"
                   >
                     Cancel
                   </button>

@@ -53,47 +53,41 @@ export default function Navbar() {
   const navLinks = getNavLinks();
 
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 px-4 sm:px-6 lg:px-8 py-3 ${scrolled ? 'py-2' : 'py-4'}`}>
-      {/* Floating Glassmorphic Container */}
-      <div className={`mx-auto max-w-7xl rounded-2xl border transition-all duration-300 ${
-        scrolled 
-          ? 'bg-white/80 backdrop-blur-xl border-white/40 shadow-lg shadow-slate-200/40' 
-          : 'bg-white/50 backdrop-blur-md border-white/30 shadow-md shadow-slate-200/20'
-      }`}>
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            
-            {/* Left: Brand logo */}
-            <div className="flex items-center gap-6">
-              <Link to="/" className="flex items-center gap-2.5 group">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-shadow">
-                   <Sparkles className="w-4 h-4" />
-                </div>
-                <span className="font-display font-black text-xl text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors">
-                  DonateBridge
-                </span>
-              </Link>
-            </div>
+    <header className="sticky top-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-xs px-4 sm:px-6 lg:px-8 py-2.5">
+      <div className="mx-auto max-w-7xl">
+        <div className="flex items-center justify-between h-12">
+          
+          {/* Left: Brand logo */}
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-7 h-7 rounded-md bg-[#4A7C59] flex items-center justify-center text-white shadow-xs">
+                 <Sparkles className="w-4 h-4" />
+              </div>
+              <span className="font-bold text-lg text-stone-900 tracking-tight">
+                DonateBridge
+              </span>
+            </Link>
+          </div>
 
-            {/* Middle: Links */}
-            <nav className="hidden md:flex items-center space-x-2 bg-slate-100/50 p-1 rounded-xl border border-slate-200/50">
-              {navLinks.map((link) => {
-                const isActive = currentPath === link.path;
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`px-4 py-1.5 rounded-lg text-sm transition-all duration-200 relative ${
-                      isActive
-                        ? 'text-emerald-700 font-bold bg-white shadow-sm'
-                        : 'text-slate-500 hover:text-slate-900 font-semibold hover:bg-white/50'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </nav>
+          {/* Middle: Links */}
+          <nav className="hidden md:flex items-center space-x-1.5">
+            {navLinks.map((link) => {
+              const isActive = currentPath === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-[#4A7C59] text-white shadow-xs'
+                      : 'text-stone-700 hover:bg-[#E8F3EC] hover:text-[#4A7C59]'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
 
             {/* Right: Actions / Auth / User Menu */}
             <div className="hidden md:flex items-center gap-3">
@@ -218,7 +212,6 @@ export default function Navbar() {
 
           </div>
         </div>
-      </div>
 
       {/* Mobile Menu Panel */}
       <AnimatePresence>
@@ -236,10 +229,10 @@ export default function Navbar() {
                     key={link.path}
                     to={link.path}
                     onClick={() => setIsOpen(false)}
-                    className={`px-4 py-2.5 rounded-lg text-sm transition-colors ${
+                    className={`px-3.5 py-2 rounded-md text-sm transition-all duration-200 ${
                       currentPath === link.path
-                        ? 'bg-white text-emerald-600 font-bold shadow-sm'
-                        : 'font-semibold text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
+                        ? 'bg-emerald-600 text-white font-semibold shadow-sm'
+                        : 'font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700'
                     }`}
                   >
                     {link.label}

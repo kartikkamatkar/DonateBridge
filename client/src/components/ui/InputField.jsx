@@ -25,8 +25,8 @@ export const InputField = React.forwardRef(({
         type={type}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
-        className={`w-full px-4 py-3 rounded-xl border bg-white border-slate-200/80 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all duration-300 shadow-sm ${
-          error ? 'ring-2 ring-red-500 border-transparent' : ''
+        className={`w-full border border-slate-300 rounded-md px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all duration-200 text-sm text-slate-900 bg-white placeholder-slate-400 ${
+          error ? 'ring-2 ring-rose-500 border-transparent' : ''
         }`}
         {...props}
       />

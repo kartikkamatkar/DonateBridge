@@ -247,50 +247,26 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 bg-slate-900 text-white overflow-hidden rounded-b-[3rem] lg:rounded-b-[5rem]">
-        {/* Glow Effects */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-teal-500/20 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-12">
+      <section className="relative pt-16 pb-16 lg:pt-24 lg:pb-20 bg-[#F5F1E8] text-stone-900 border-b border-[#E5E0D5]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
           
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <motion.span 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-sm font-bold uppercase tracking-wider backdrop-blur-md"
-            >
-              <Sparkles className="w-4 h-4 text-emerald-300 animate-pulse" /> National Humanitarian Match Ledger
-            </motion.span>
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-md bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 text-xs font-semibold uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-[#4A7C59]" /> National Humanitarian Match Ledger
+            </span>
             
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl lg:text-7xl font-display font-black text-white leading-[1.1] tracking-tight"
-            >
+            <h1 className="text-4xl lg:text-6xl font-bold text-stone-900 leading-[1.15] tracking-tight">
               Bridging Donors &amp; NGOs <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">One Need at a Time.</span>
-            </motion.h1>
+              <span className="text-[#4A7C59]">One Need at a Time.</span>
+            </h1>
             
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-base lg:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-medium"
-            >
+            <p className="text-base lg:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed font-normal">
               Coordinate physical item donation logistics directly. No cash escrow leakages. Vetted logistics verification, real-time georadial mapping, and instant 80G tax invoice emissions.
-            </motion.p>
+            </p>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="max-w-xl mx-auto space-y-4 pt-2"
-            >
-              <form onSubmit={handleSearchSubmit} className="flex items-center bg-white/10 border border-white/20 backdrop-blur-xl rounded-2xl p-2 shadow-2xl focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/20 transition-all">
-                <div className="flex items-center pl-4 pr-3 text-slate-300 shrink-0">
+            <div className="max-w-xl mx-auto space-y-3 pt-2">
+              <form onSubmit={handleSearchSubmit} className="flex items-center bg-white border border-stone-300 rounded-lg p-1.5 shadow-sm focus-within:border-[#4A7C59] focus-within:ring-2 focus-within:ring-[#4A7C59]/20 transition-all">
+                <div className="flex items-center pl-3 pr-2 text-stone-400 shrink-0">
                   <Search className="w-5 h-5" />
                 </div>
                 <input 
@@ -298,59 +274,52 @@ export default function LandingPage() {
                   placeholder="Search Registry (e.g. Blankets, Medicine, Textbooks)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-base text-white placeholder-slate-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 !min-h-0 !h-auto !bg-transparent !border-none !shadow-none !py-3 !px-0"
+                  className="w-full text-sm text-stone-900 placeholder-stone-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 !min-h-0 !h-auto !bg-transparent !border-none !shadow-none !py-2 !px-1"
                 />
                 <Button
                   type="submit"
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3 px-6 rounded-xl shrink-0 shadow-lg shadow-emerald-500/25 transition-all"
+                  className="bg-[#4A7C59] hover:bg-[#3B6647] text-white font-medium text-sm py-2 px-5 rounded-md shrink-0 shadow-xs transition-all"
                 >
                   Search
                 </Button>
               </form>
 
-              <div className="flex flex-wrap justify-center gap-3 text-sm text-slate-400 font-medium">
-                <span className="text-slate-500 mt-0.5">Popular:</span>
+              <div className="flex flex-wrap justify-center gap-3 text-xs text-stone-500 font-medium">
+                <span className="text-stone-400">Popular:</span>
                 {['Blankets', 'Dry Rations', 'Laptops', 'Gloves'].map((tag) => (
                   <button 
                     key={tag} 
                     onClick={() => handleTagClick(tag)}
-                    className="hover:text-emerald-400 hover:underline transition-colors cursor-pointer"
+                    className="hover:text-[#4A7C59] hover:underline transition-colors cursor-pointer"
                   >
                     {tag}
                   </button>
                 ))}
               </div>
-            </motion.div>
+            </div>
           </div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch pt-8"
-          >
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch pt-4">
             
             {/* Left Console */}
-            <div className="lg:col-span-6 bg-slate-800/50 backdrop-blur-2xl border border-slate-700/50 rounded-3xl p-6 lg:p-8 flex flex-col justify-between shadow-2xl text-left relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
-              
-              <div className="space-y-6 relative z-10">
-                <div className="flex justify-between items-center pb-4 border-b border-slate-700/50">
-                  <h3 className="text-sm font-mono font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-emerald-400" /> Donor Dispatch Center
+            <div className="lg:col-span-6 bg-white border border-stone-200 rounded-xl p-6 lg:p-7 flex flex-col justify-between shadow-sm text-left">
+              <div className="space-y-5">
+                <div className="flex justify-between items-center pb-3 border-b border-stone-200">
+                  <h3 className="text-xs font-semibold text-[#4A7C59] uppercase tracking-wider flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-[#4A7C59]" /> Donor Dispatch Center
                   </h3>
-                  <span className="text-xs bg-slate-700/50 text-slate-300 border border-slate-600/50 font-mono font-bold py-1 px-3 rounded-lg backdrop-blur-sm">
+                  <span className="text-xs bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 font-medium py-0.5 px-2.5 rounded-md">
                     Simulate Input
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-5 text-left">
+                <div className="grid grid-cols-2 gap-4 text-left">
                   <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Item Category</label>
+                    <label className="text-xs font-medium text-stone-600 uppercase tracking-wider">Item Category</label>
                     <select 
                       value={simCategory}
                       onChange={(e) => setSimCategory(e.target.value)}
-                      className="w-full mt-2 px-4 py-3 bg-slate-900/50 border border-slate-700/50 text-white rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 !min-h-0 !h-auto transition-all"
+                      className="w-full mt-1.5 px-3 py-2 bg-stone-50 border border-stone-300 text-stone-900 rounded-md text-sm font-medium focus:outline-none focus:border-[#4A7C59] focus:ring-1 focus:ring-[#4A7C59] !min-h-0 !h-auto transition-all"
                     >
                       <option value="Food">Food / Staples</option>
                       <option value="Books">Books / Learning Kits</option>
@@ -359,11 +328,11 @@ export default function LandingPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Item Condition</label>
+                    <label className="text-xs font-medium text-stone-600 uppercase tracking-wider">Item Condition</label>
                     <select 
                       value={simCondition}
                       onChange={(e) => setSimCondition(e.target.value)}
-                      className="w-full mt-2 px-4 py-3 bg-slate-900/50 border border-slate-700/50 text-white rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 !min-h-0 !h-auto transition-all"
+                      className="w-full mt-1.5 px-3 py-2 bg-stone-50 border border-stone-300 text-stone-900 rounded-md text-sm font-medium focus:outline-none focus:border-[#4A7C59] focus:ring-1 focus:ring-[#4A7C59] !min-h-0 !h-auto transition-all"
                     >
                       <option value="New">Brand New</option>
                       <option value="Like New">Like New / Cleaned</option>
@@ -372,53 +341,53 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="text-left bg-slate-900/30 p-4 rounded-2xl border border-slate-700/50">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Quantity to Pledge</label>
-                  <div className="flex items-center gap-4">
+                <div className="text-left bg-stone-50 p-3.5 rounded-lg border border-stone-200">
+                  <label className="text-xs font-medium text-stone-600 uppercase tracking-wider block mb-2">Quantity to Pledge</label>
+                  <div className="flex items-center gap-3">
                     <button 
                       onClick={() => setSimQty(Math.max(1, simQty - 5))}
-                      className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-600 flex items-center justify-center hover:bg-slate-700 hover:border-slate-500 transition-all cursor-pointer shadow-md"
+                      className="w-9 h-9 rounded-md bg-white border border-stone-300 flex items-center justify-center hover:bg-stone-100 transition-colors cursor-pointer shadow-xs"
                     >
-                      <Minus className="w-4 h-4 text-slate-300" />
+                      <Minus className="w-4 h-4 text-stone-600" />
                     </button>
-                    <span className="text-3xl font-display font-black text-white w-16 text-center">{simQty}</span>
+                    <span className="text-2xl font-bold text-stone-900 w-14 text-center">{simQty}</span>
                     <button 
                       onClick={() => setSimQty(simQty + 5)}
-                      className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-600 flex items-center justify-center hover:bg-slate-700 hover:border-slate-500 transition-all cursor-pointer shadow-md"
+                      className="w-9 h-9 rounded-md bg-white border border-stone-300 flex items-center justify-center hover:bg-stone-100 transition-colors cursor-pointer shadow-xs"
                     >
-                      <Plus className="w-4 h-4 text-slate-300" />
+                      <Plus className="w-4 h-4 text-stone-600" />
                     </button>
-                    <span className="text-sm text-slate-400 font-medium ml-2">units matching need list</span>
+                    <span className="text-xs text-stone-500 font-medium ml-2">units matching need list</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 p-5 bg-emerald-900/20 border border-emerald-500/30 rounded-2xl text-left space-y-4 relative z-10 backdrop-blur-xl">
-                <p className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+              <div className="mt-6 p-4 bg-[#E8F3EC] border border-[#4A7C59]/20 rounded-lg text-left space-y-3">
+                <p className="text-xs font-semibold text-[#4A7C59] uppercase tracking-wider flex items-center gap-2">
                   <Activity className="w-4 h-4" /> Live Match Engine Output
                 </p>
-                <div className="grid grid-cols-2 gap-5 text-sm">
+                <div className="grid grid-cols-2 gap-4 text-xs">
                   <div>
-                    <span className="text-emerald-500/70 block text-xs uppercase font-bold tracking-wider mb-1">Partner NGO</span>
-                    <span className="font-bold text-white">{heroSimOutput.ngoName}</span>
+                    <span className="text-stone-500 block font-medium uppercase mb-0.5">Partner NGO</span>
+                    <span className="font-semibold text-stone-900">{heroSimOutput.ngoName}</span>
                   </div>
                   <div>
-                    <span className="text-emerald-500/70 block text-xs uppercase font-bold tracking-wider mb-1">Radius</span>
-                    <span className="font-bold text-white">{heroSimOutput.distance} (Local Match)</span>
+                    <span className="text-stone-500 block font-medium uppercase mb-0.5">Radius</span>
+                    <span className="font-semibold text-stone-900">{heroSimOutput.distance} (Local Match)</span>
                   </div>
                   <div>
-                    <span className="text-emerald-500/70 block text-xs uppercase font-bold tracking-wider mb-1">Target Need</span>
-                    <span className="font-bold text-white">{simQty}x {heroSimOutput.needItem}</span>
+                    <span className="text-stone-500 block font-medium uppercase mb-0.5">Target Need</span>
+                    <span className="font-semibold text-stone-900">{simQty}x {heroSimOutput.needItem}</span>
                   </div>
                   <div>
-                    <span className="text-emerald-500/70 block text-xs uppercase font-bold tracking-wider mb-1">Match Score</span>
-                    <span className="font-bold text-emerald-400 font-mono text-lg">{heroSimOutput.score}%</span>
+                    <span className="text-stone-500 block font-medium uppercase mb-0.5">Match Score</span>
+                    <span className="font-bold text-[#4A7C59] text-base">{heroSimOutput.score}%</span>
                   </div>
                 </div>
-                <div className="pt-4 border-t border-emerald-500/20 flex justify-between items-center text-sm">
-                  <span className="text-emerald-100 font-medium">Carbon saved: <strong className="text-emerald-400">{heroSimOutput.co2} kg CO2</strong></span>
+                <div className="pt-3 border-t border-[#4A7C59]/20 flex justify-between items-center text-xs">
+                  <span className="text-stone-700 font-medium">Carbon saved: <strong className="text-[#4A7C59]">{heroSimOutput.co2} kg CO2</strong></span>
                   <Button
-                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black py-2.5 px-5 rounded-xl shadow-lg shadow-emerald-500/25 transition-all"
+                    className="bg-[#4A7C59] hover:bg-[#3B6647] text-white font-medium py-2 px-4 rounded-md shadow-xs transition-all"
                     onClick={() => navigate(isAuthenticated ? '/donor' : '/auth')}
                   >
                     Pledge Dispatch
@@ -428,25 +397,23 @@ export default function LandingPage() {
             </div>
 
             {/* Right Console */}
-            <div className="lg:col-span-6 bg-slate-800/50 backdrop-blur-2xl border border-slate-700/50 rounded-3xl p-6 lg:p-8 flex flex-col justify-between shadow-2xl text-left relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-bl from-blue-500/5 to-transparent pointer-events-none" />
-              
-              <div className="space-y-6 relative z-10">
-                <div className="flex justify-between items-center pb-4 border-b border-slate-700/50">
-                  <h3 className="text-sm font-mono font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-emerald-400 animate-pulse" /> Live Matching Ledger
+            <div className="lg:col-span-6 bg-white border border-stone-200 rounded-xl p-6 lg:p-7 flex flex-col justify-between shadow-sm text-left">
+              <div className="space-y-5">
+                <div className="flex justify-between items-center pb-3 border-b border-stone-200">
+                  <h3 className="text-xs font-semibold text-stone-700 uppercase tracking-wider flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-[#4A7C59]" /> Live Matching Ledger
                   </h3>
-                  <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                  <span className="w-2.5 h-2.5 bg-[#4A7C59] rounded-full" />
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {ledgerActivity.length > 0 ? (
-                    ledgerActivity.map((donation, idx) => (
-                      <div key={donation.id} className="p-4 bg-slate-900/50 border border-slate-700/50 hover:border-slate-600 rounded-2xl flex items-center justify-between gap-4 text-left transition-colors">
-                        <div className="flex items-center gap-4 min-w-0">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${
-                            donation.status === 'DELIVERED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                            donation.status === 'MATCHED' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-slate-700/50 text-slate-400 border border-slate-600'
+                    ledgerActivity.map((donation) => (
+                      <div key={donation.id} className="p-3.5 bg-stone-50 border border-stone-200 hover:border-stone-300 rounded-lg flex items-center justify-between gap-4 text-left transition-colors">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 ${
+                            donation.status === 'DELIVERED' ? 'bg-[#E8F3EC] text-[#4A7C59]' :
+                            donation.status === 'MATCHED' ? 'bg-blue-50 text-blue-700' : 'bg-stone-200 text-stone-600'
                           }`}>
                             {donation.status === 'DELIVERED' ? <Check className="w-5 h-5" /> : <Activity className="w-5 h-5" />}
                           </div>
@@ -472,22 +439,22 @@ export default function LandingPage() {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-12 text-sm text-slate-500 font-medium bg-slate-900/30 rounded-2xl border border-slate-700/50">
+                    <div className="text-center py-12 text-xs text-stone-500 font-medium bg-stone-50 rounded-lg border border-stone-200">
                       No live donation dispatches logged yet.
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="pt-5 mt-5 border-t border-slate-700/50 flex justify-between items-center text-xs font-mono font-bold text-slate-400 relative z-10">
+              <div className="pt-4 mt-4 border-t border-stone-200 flex justify-between items-center text-xs font-semibold text-stone-600">
                 <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" /> SECURE HANDSHAKES
+                  <ShieldCheck className="w-4 h-4 text-[#4A7C59]" /> SECURE HANDSHAKES
                 </span>
-                <span className="text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">99.8% DELIVERY SUCCESS RATE</span>
+                <span className="text-[#4A7C59] bg-[#E8F3EC] px-2.5 py-1 rounded-md border border-[#4A7C59]/20">99.8% DELIVERY SUCCESS RATE</span>
               </div>
             </div>
 
-          </motion.div>
+          </div>
         </div>
       </section>
 
