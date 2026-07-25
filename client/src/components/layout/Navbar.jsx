@@ -80,7 +80,7 @@ export default function Navbar() {
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-[#4A7C59] text-white shadow-xs'
-                      : 'text-stone-700 hover:bg-[#E8F3EC] hover:text-[#4A7C59]'
+                      : 'text-stone-700 hover:bg-accent hover:text-[#4A7C59]'
                   }`}
                 >
                   {link.label}

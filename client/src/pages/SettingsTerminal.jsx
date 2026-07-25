@@ -66,7 +66,7 @@ export default function SettingsTerminal() {
   <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
    <Navbar />
 
-   <main className="flex-grow max-w-7xl mx-auto w-full px-6 py-10 flex flex-col lg:flex-row gap-6 items-stretch">
+   <main className="grow max-w-7xl mx-auto w-full px-6 py-10 flex flex-col lg:flex-row gap-6 items-stretch">
     
     {/* Left Column: Form Controls (flex-1) */}
     <div className="flex-1 space-y-6">

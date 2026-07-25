@@ -186,7 +186,7 @@ export default function UserProfile() {
     <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 font-sans selection:bg-[#4A7C59]/20">
       <Navbar />
 
-      <main className="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-6">
+      <main className="grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-6">
         
         {/* HEADER SECTION */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
@@ -233,7 +233,7 @@ export default function UserProfile() {
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="inline-flex items-center gap-1.5 bg-[#4A7C59] hover:bg-[#3B6647] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    className="inline-flex items-center gap-1.5 bg-[#4A7C59] hover:bg-primary-hover text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
                   >
                     <Edit2 className="w-3.5 h-3.5" /> Edit Profile
                   </button>
@@ -263,7 +263,7 @@ export default function UserProfile() {
                         {profileName || 'Member User'}
                       </h4>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A7C59] bg-[#E8F3EC] px-2.5 py-0.5 rounded-full border border-[#4A7C59]/20">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A7C59] bg-accent px-2.5 py-0.5 rounded-full border border-[#4A7C59]/20">
                           {user?.role || 'Donor'}
                         </span>
                         <span className="text-slate-400 text-xs flex items-center gap-1 font-medium">
@@ -322,7 +322,7 @@ export default function UserProfile() {
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
                           disabled={isUploading}
-                          className="absolute -bottom-1 -right-1 p-1.5 bg-[#4A7C59] text-white rounded-lg shadow-md hover:bg-[#3B6647] transition-all cursor-pointer"
+                          className="absolute -bottom-1 -right-1 p-1.5 bg-[#4A7C59] text-white rounded-lg shadow-md hover:bg-primary-hover transition-all cursor-pointer"
                           title="Upload Custom Photo"
                         >
                           <Camera className="w-3.5 h-3.5" />
@@ -363,7 +363,7 @@ export default function UserProfile() {
                             variant="secondary"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploading}
-                            className="bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 hover:bg-[#4A7C59] hover:text-white text-xs h-8 px-3 rounded-lg font-bold transition-all"
+                            className="bg-accent text-[#4A7C59] border border-[#4A7C59]/20 hover:bg-[#4A7C59] hover:text-white text-xs h-8 px-3 rounded-lg font-bold transition-all"
                           >
                             <Upload className="w-3 h-3 mr-1" /> {isUploading ? 'Uploading...' : 'Upload Custom Image'}
                           </Button>
@@ -378,7 +378,7 @@ export default function UserProfile() {
                     value={profileName}
                     onChange={(e) => setProfileName(e.target.value)}
                     required
-                    className="!bg-slate-50 border-slate-200 text-sm rounded-xl"
+                    className="bg-slate-50! border-slate-200 text-sm rounded-xl"
                   />
 
                   <div className="space-y-1">
@@ -398,7 +398,7 @@ export default function UserProfile() {
                       placeholder="+1 (555) 019-2831"
                       value={profilePhone}
                       onChange={(e) => setProfilePhone(e.target.value)}
-                      className="!bg-slate-50 border-slate-200 text-sm rounded-xl"
+                      className="bg-slate-50! border-slate-200 text-sm rounded-xl"
                     />
 
                     <InputField
@@ -407,7 +407,7 @@ export default function UserProfile() {
                       placeholder="e.g. Sector 4, East Hub"
                       value={profileLocation}
                       onChange={(e) => setProfileLocation(e.target.value)}
-                      className="!bg-slate-50 border-slate-200 text-sm rounded-xl"
+                      className="bg-slate-50! border-slate-200 text-sm rounded-xl"
                     />
                   </div>
 
@@ -424,7 +424,7 @@ export default function UserProfile() {
                       type="submit" 
                       variant="primary" 
                       loading={isSaving}
-                      className="bg-[#4A7C59] hover:bg-[#3B6647] text-white text-xs font-bold h-11 px-6 rounded-xl shadow-xs"
+                      className="bg-[#4A7C59] hover:bg-primary-hover text-white text-xs font-bold h-11 px-6 rounded-xl shadow-xs"
                     >
                       {isSaving ? 'Saving Changes...' : 'Save Profile Details'}
                     </Button>
@@ -485,7 +485,7 @@ export default function UserProfile() {
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 className="font-bold text-slate-900 text-base">Account Overview</h3>
-                <span className="px-2.5 py-0.5 bg-[#E8F3EC] text-[#4A7C59] font-bold text-[10px] uppercase rounded-full border border-[#4A7C59]/20">
+                <span className="px-2.5 py-0.5 bg-accent text-[#4A7C59] font-bold text-[10px] uppercase rounded-full border border-[#4A7C59]/20">
                   {user?.role || 'Donor'}
                 </span>
               </div>
@@ -537,7 +537,7 @@ export default function UserProfile() {
                 <div className="space-y-2.5">
                   {myDonations.slice(0, 4).map((d) => (
                     <div key={d.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs hover:border-[#4A7C59]/40 transition-colors">
-                      <div className="space-y-0.5 truncate max-w-[170px]">
+                      <div className="space-y-0.5 truncate max-w-42.5">
                         <span className="font-bold text-slate-900 block truncate">{d.title || d.category}</span>
                         <span className="text-[10px] text-slate-500 font-mono block">ID: {d.id} ({d.quantity} u)</span>
                       </div>
@@ -545,14 +545,14 @@ export default function UserProfile() {
                       <div className="flex items-center gap-2 shrink-0">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                           d.status === 'DELIVERED' ? 'bg-emerald-100 text-[#4A7C59]' :
-                          d.status === 'MATCHED' ? 'bg-[#E8F3EC] text-[#4A7C59]' : 'bg-amber-100 text-amber-800'
+                          d.status === 'MATCHED' ? 'bg-accent text-[#4A7C59]' : 'bg-amber-100 text-amber-800'
                         }`}>
                           {d.status}
                         </span>
                         
                         <button
                           onClick={() => navigate(`/tracking/${d.id}`)}
-                          className="p-1 text-[#4A7C59] hover:bg-[#E8F3EC] rounded-lg transition-colors cursor-pointer"
+                          className="p-1 text-[#4A7C59] hover:bg-accent rounded-lg transition-colors cursor-pointer"
                           title="Track logistics"
                         >
                           <ArrowUpRight className="w-4 h-4" />
@@ -576,15 +576,15 @@ export default function UserProfile() {
 
                 <div className="space-y-2.5">
                   {deliveredDonations.map((d) => (
-                    <div key={d.id} className="p-3 bg-[#E8F3EC]/50 border border-[#4A7C59]/20 rounded-xl flex items-center justify-between text-xs">
-                      <div className="truncate max-w-[180px]">
+                    <div key={d.id} className="p-3 bg-accent/50 border border-[#4A7C59]/20 rounded-xl flex items-center justify-between text-xs">
+                      <div className="truncate max-w-45">
                         <span className="font-bold text-slate-900 block truncate">{d.title || d.category}</span>
                         <span className="text-[10px] text-[#4A7C59] font-mono block">80G Certificate</span>
                       </div>
 
                       <button
                         onClick={() => handleDownloadReceipt(d.id, d.title || d.category)}
-                        className="inline-flex items-center gap-1 bg-[#4A7C59] text-white px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-[#3B6647] transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 bg-[#4A7C59] text-white px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-primary-hover transition-colors cursor-pointer"
                       >
                         <Download className="w-3 h-3" /> PDF
                       </button>

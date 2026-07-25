@@ -168,7 +168,7 @@ export default function SmartMatchVisualizer() {
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 pt-16">
         
         {/* Left Side: Rankings */}
-        <aside className="w-full lg:w-[480px] bg-white border-r border-slate-200 flex flex-col min-h-0 overflow-y-auto p-6 space-y-5 shrink-0 shadow-sm">
+        <aside className="w-full lg:w-120 bg-white border-r border-slate-200 flex flex-col min-h-0 overflow-y-auto p-6 space-y-5 shrink-0 shadow-sm">
           
           {/* Header */}
           <div className="flex justify-between items-center pb-4 border-b border-slate-200">
@@ -361,7 +361,7 @@ export default function SmartMatchVisualizer() {
         </aside>
 
         {/* Right Side Map */}
-        <main className="flex-grow flex-1 relative min-h-[350px] lg:min-h-0 bg-slate-50">
+        <main className="grow flex-1 relative min-h-87.5 lg:min-h-0 bg-slate-50">
           <LeafletMap
             center={mapCenter}
             zoom={12}
