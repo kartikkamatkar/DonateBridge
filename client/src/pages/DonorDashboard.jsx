@@ -512,7 +512,7 @@ export default function DonorDashboard() {
               {submissionSuccess ? (
                 <div className="text-center py-8 space-y-6 max-w-md mx-auto">
                   <div className="w-20 h-20 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#4A7C59] mx-auto">
-                    <Check className="w-10 h-10 stroke-[3]" />
+                    <Check className="w-10 h-10 stroke-3" />
                   </div>
                   <div>
                     <h2 className="font-display font-black text-slate-900 text-2xl tracking-tight">Listing Submitted</h2>
@@ -815,7 +815,7 @@ export default function DonorDashboard() {
                 {/* Left Delivered List */}
                 <div className="lg:col-span-5 space-y-3">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Delivered Items</label>
-                  <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-[420px] overflow-y-auto bg-white shadow-sm">
+                  <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-105 overflow-y-auto bg-white shadow-sm">
                     {donorDonations.filter(d => d.status === 'DELIVERED').length === 0 ? (
                       <div className="p-8 text-slate-400 text-center font-medium text-xs flex flex-col items-center justify-center gap-2">
                         <Box className="w-6 h-6 opacity-40" />
@@ -844,7 +844,7 @@ export default function DonorDashboard() {
                 </div>
 
                 {/* Right Certificate Document Preview */}
-                <div className="lg:col-span-7 flex flex-col items-center justify-center border border-slate-200/80 rounded-2xl p-6 bg-slate-50/60 min-h-[420px]">
+                <div className="lg:col-span-7 flex flex-col items-center justify-center border border-slate-200/80 rounded-2xl p-6 bg-slate-50/60 min-h-105">
                   {activeReceiptDonation ? (
                     <div className="w-full flex flex-col items-center space-y-6">
                       

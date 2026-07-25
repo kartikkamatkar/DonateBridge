@@ -211,12 +211,12 @@ export default function NgoConsole() {
     <div className="min-h-screen flex flex-col bg-[#FAFAF8] text-[#1E2923] font-sans antialiased selection:bg-[#2E5B3D]/15">
       <Navbar />
 
-      <main className="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-8 relative z-10">
+      <main className="grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-8 relative z-10">
         
         {/* SERENE HERO PROFILE BANNER */}
         <section className="bg-white border border-[#E8EDE9] rounded-3xl p-6 md:p-8 shadow-xs relative overflow-hidden">
           {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#EBF3EE] to-transparent rounded-full blur-3xl opacity-60 pointer-events-none -mr-20 -mt-20" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-linear-to-br from-[#EBF3EE] to-transparent rounded-full blur-3xl opacity-60 pointer-events-none -mr-20 -mt-20" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             
@@ -395,7 +395,7 @@ export default function NgoConsole() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
                 {/* Highlight Card 1 */}
-                <div className="bg-gradient-to-br from-[#2E5B3D] to-[#1E3B27] text-white p-6 rounded-2xl space-y-3 shadow-2xs md:col-span-2 relative overflow-hidden">
+                <div className="bg-linear-to-br from-[#2E5B3D] to-[#1E3B27] text-white p-6 rounded-2xl space-y-3 shadow-2xs md:col-span-2 relative overflow-hidden">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wider text-emerald-200 flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5" /> Spatial Proximity Engine
@@ -556,7 +556,7 @@ export default function NgoConsole() {
                     value={needItem}
                     onChange={(e) => setNeedItem(e.target.value)}
                     required
-                    className="!bg-[#F8FAF8] border-[#E8EDE9] text-xs rounded-xl"
+                    className="bg-[#F8FAF8]! border-[#E8EDE9] text-xs rounded-xl"
                   />
 
                   <div className="grid grid-cols-2 gap-3">
@@ -569,7 +569,7 @@ export default function NgoConsole() {
                       value={needQty}
                       onChange={(e) => setNeedQty(e.target.value)}
                       required
-                      className="!bg-[#F8FAF8] border-[#E8EDE9] text-xs rounded-xl"
+                      className="bg-[#F8FAF8]! border-[#E8EDE9] text-xs rounded-xl"
                     />
 
                     <div className="space-y-1.5">
@@ -617,7 +617,7 @@ export default function NgoConsole() {
                   ● Active 4km Radius
                 </span>
               </div>
-              <div className="h-[480px] w-full rounded-xl overflow-hidden border border-[#E8EDE9]">
+              <div className="h-120 w-full rounded-xl overflow-hidden border border-[#E8EDE9]">
                 <LeafletMap
                   center={[currentNgo.lat, currentNgo.lng]}
                   zoom={13}

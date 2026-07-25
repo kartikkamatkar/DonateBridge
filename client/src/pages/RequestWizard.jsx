@@ -195,7 +195,7 @@ export default function RequestWizard() {
   <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
    <Navbar />
 
-   <main className="flex-grow max-w-2xl mx-auto w-full p-6 sm:p-8 space-y-8">
+   <main className="grow max-w-2xl mx-auto w-full p-6 sm:p-8 space-y-8">
     
     {/* Header */}
     <section className="text-center max-w-xl mx-auto space-y-2">
@@ -217,12 +217,12 @@ export default function RequestWizard() {
        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 1 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>1</span>
        <span className={step === 1 ? 'font-bold text-slate-900' : 'text-slate-500'}>Item Details</span>
       </div>
-      <span className="h-[1px] bg-border flex-1 mx-4"></span>
+      <span className="h-px bg-border flex-1 mx-4"></span>
       <div className="flex items-center gap-2">
        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 2 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>2</span>
        <span className={step === 2 ? 'font-bold text-slate-900' : 'text-slate-500'}>Pickup Logistics</span>
       </div>
-      <span className="h-[1px] bg-border flex-1 mx-4"></span>
+      <span className="h-px bg-border flex-1 mx-4"></span>
       <div className="flex items-center gap-2">
        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= 3 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>3</span>
        <span className={step === 3 ? 'font-bold text-slate-900' : 'text-slate-500'}>Photos Upload</span>
@@ -292,7 +292,7 @@ export default function RequestWizard() {
           rows="4"
           placeholder="Describe cleanliness, size details, wrapping status, and sorting breakdown..."
           {...register('description', { required: 'Detailed description is required' })}
-          className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-[120px]"
+          className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-30"
          />
          {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
         </div>
@@ -329,7 +329,7 @@ export default function RequestWizard() {
           rows="3"
           placeholder="Provide full address where the logistics carriers can pick up items..."
           {...register('pickupAddress', { required: 'Pickup address is required' })}
-          className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-[90px]"
+          className="w-full px-4 py-3 border border-border rounded-xl text-xs bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none min-h-22.5"
          />
          {errors.pickupAddress && <p className="text-xs text-red-500">{errors.pickupAddress.message}</p>}
         </div>

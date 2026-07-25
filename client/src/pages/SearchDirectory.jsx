@@ -281,7 +281,7 @@ export default function SearchDirectory() {
           
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#E8F3EC] text-[#4A7C59] border border-[#4A7C59]/20 text-xs font-semibold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-accent text-[#4A7C59] border border-[#4A7C59]/20 text-xs font-semibold uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5" /> Resource Directory &amp; Radar
               </span>
               <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight mt-2">
@@ -355,7 +355,7 @@ export default function SearchDirectory() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full bg-transparent border-none outline-none text-xs font-semibold text-stone-800 cursor-pointer !py-0"
+                  className="w-full bg-transparent border-none outline-none text-xs font-semibold text-stone-800 cursor-pointer py-0!"
                 >
                   <option value="distance">Sort: Distance</option>
                   <option value="match">Sort: Match Score</option>
@@ -418,7 +418,7 @@ export default function SearchDirectory() {
                     title="Split View"
                     onClick={() => setViewMode('split')}
                     className={`p-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
-                      viewMode === 'split' ? 'bg-[#E8F3EC] text-[#4A7C59]' : 'text-stone-400 hover:text-stone-700'
+                      viewMode === 'split' ? 'bg-accent text-[#4A7C59]' : 'text-stone-400 hover:text-stone-700'
                     }`}
                   >
                     <Columns className="w-4 h-4" />
@@ -427,7 +427,7 @@ export default function SearchDirectory() {
                     title="Grid Focus"
                     onClick={() => setViewMode('grid')}
                     className={`p-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
-                      viewMode === 'grid' ? 'bg-[#E8F3EC] text-[#4A7C59]' : 'text-stone-400 hover:text-stone-700'
+                      viewMode === 'grid' ? 'bg-accent text-[#4A7C59]' : 'text-stone-400 hover:text-stone-700'
                     }`}
                   >
                     <LayoutGrid className="w-4 h-4" />
@@ -436,7 +436,7 @@ export default function SearchDirectory() {
                     title="Map Focus"
                     onClick={() => setViewMode('map')}
                     className={`p-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
-                      viewMode === 'map' ? 'bg-[#E8F3EC] text-[#4A7C59]' : 'text-stone-400 hover:text-stone-700'
+                      viewMode === 'map' ? 'bg-accent text-[#4A7C59]' : 'text-stone-400 hover:text-stone-700'
                     }`}
                   >
                     <MapIcon className="w-4 h-4" />
@@ -473,7 +473,7 @@ export default function SearchDirectory() {
 
             {/* Route Stats Drawer if an item is selected */}
             {selectedItem && (
-              <div className="bg-[#E8F3EC] border border-[#4A7C59]/30 rounded-xl p-4 text-left space-y-3">
+              <div className="bg-accent/10 border border-accent/30 rounded-xl p-4 text-left space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Navigation className="w-4 h-4 text-[#4A7C59]" />
@@ -589,7 +589,7 @@ export default function SearchDirectory() {
 
                         {/* Smart Match score if present */}
                         {smartMatch && (
-                          <div className="bg-[#E8F3EC] text-[#4A7C59] px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between">
+                          <div className="bg-accent text-[#4A7C59] px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between">
                             <span className="flex items-center gap-1"><Sparkles className="w-3.5 h-3.5" /> Smart Match</span>
                             <span className="font-bold">{smartMatch.score}% Score</span>
                           </div>
@@ -632,7 +632,7 @@ export default function SearchDirectory() {
                         {searchType === 'donations' && user?.role === 'ngo' && (
                           <Button
                             size="sm"
-                            className="bg-[#4A7C59] hover:bg-[#3B6647] text-white text-xs font-bold py-1.5 px-3 rounded-lg"
+                            className="bg-[#4A7C59] hover:bg-primary-hover text-white text-xs font-bold py-1.5 px-3 rounded-lg"
                             onClick={(e) => handleOpenClaimModal(item, e)}
                           >
                             Claim Item
@@ -660,7 +660,7 @@ export default function SearchDirectory() {
 
           {/* Sticky Discover Map Column */}
           <div className={`${
-            viewMode === 'grid' ? 'hidden' : viewMode === 'map' ? 'lg:col-span-12 h-[700px]' : 'lg:col-span-6 xl:col-span-5 h-[580px] lg:sticky lg:top-24'
+            viewMode === 'grid' ? 'hidden' : viewMode === 'map' ? 'lg:col-span-12 h-175' : 'lg:col-span-6 xl:col-span-5 h-145 lg:sticky lg:top-24'
           }`}>
             <DiscoverMap
               userCoords={userCoords}
@@ -680,7 +680,7 @@ export default function SearchDirectory() {
         {/* NGO Claim Modal */}
         <AnimatePresence>
           {isClaimModalOpen && selectedItem && (
-            <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-xs">
+            <div className="fixed inset-0 z-600 flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-xs">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -698,7 +698,7 @@ export default function SearchDirectory() {
 
                 {claimSuccess ? (
                   <div className="text-center py-4 space-y-3">
-                    <div className="w-12 h-12 bg-[#E8F3EC] text-[#4A7C59] rounded-full flex items-center justify-center mx-auto">
+                    <div className="w-12 h-12 bg-accent text-[#4A7C59] rounded-full flex items-center justify-center mx-auto">
                       <Check className="w-6 h-6" />
                     </div>
                     <h4 className="font-bold text-stone-900 text-sm">Claim Request Submitted!</h4>
@@ -707,7 +707,7 @@ export default function SearchDirectory() {
                     </p>
                     <Button
                       onClick={() => { setIsClaimModalOpen(false); navigate('/ngo-console'); }}
-                      className="bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold text-xs py-2 px-4 rounded-lg w-full"
+                      className="bg-[#4A7C59] hover:bg-primary-hover text-white font-bold text-xs py-2 px-4 rounded-lg w-full"
                     >
                       Go to NGO Console
                     </Button>
@@ -755,7 +755,7 @@ export default function SearchDirectory() {
                       <Button
                         type="submit"
                         disabled={isClaiming}
-                        className="flex-1 bg-[#4A7C59] hover:bg-[#3B6647] text-white text-xs font-bold py-2 rounded-lg"
+                        className="flex-1 bg-[#4A7C59] hover:bg-primary-hover text-white text-xs font-bold py-2 rounded-lg"
                       >
                         {isClaiming ? 'Submitting...' : 'Confirm Claim'}
                       </Button>

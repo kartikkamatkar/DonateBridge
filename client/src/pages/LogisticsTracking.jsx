@@ -168,7 +168,7 @@ export default function LogisticsTracking() {
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 border-t border-border">
         
         {/* Left Side: Milestones */}
-        <aside className="w-full lg:w-[460px] bg-white border-r border-border p-6 flex flex-col min-h-0 overflow-y-auto space-y-6 shrink-0 shadow-premium-sm">
+        <aside className="w-full lg:w-115 bg-white border-r border-border p-6 flex flex-col min-h-0 overflow-y-auto space-y-6 shrink-0 shadow-premium-sm">
           <div className="flex justify-between items-center pb-4 border-b border-border">
             <div>
               <h3 className="text-sm font-display font-bold text-slate-900">Milestone Courier Tracker</h3>
@@ -201,7 +201,7 @@ export default function LogisticsTracking() {
             </div>
           </div>
 
-          <div className="relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100 pl-8 space-y-6 flex-grow">
+          <div className="relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 pl-8 space-y-6 grow">
             {milestones.map((m, idx) => {
               const stepNum = idx + 1;
               const isCurrent = stepNum === activeStep;
@@ -209,7 +209,7 @@ export default function LogisticsTracking() {
 
               return (
                 <div key={idx} className="relative text-xs">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center absolute -left-[38px] -top-1 font-mono font-bold text-xs border transition-all ${
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center absolute -left-9.5 -top-1 font-mono font-bold text-xs border transition-all ${
                     isCurrent ? 'bg-primary text-white border-primary ring-4 ring-primary/10' :
                     isPassed ? 'bg-[#F1F8F5] text-primary border-emerald-200' :
                     'bg-white text-slate-400 border-border'
@@ -247,7 +247,7 @@ export default function LogisticsTracking() {
         </aside>
 
         {/* Right Side: Map */}
-        <main ref={mapRef} className="flex-grow min-h-[350px] lg:min-h-0 z-10" />
+        <main ref={mapRef} className="grow min-h-87.5 lg:min-h-0 z-10" />
 
       </div>
     </div>

@@ -250,7 +250,7 @@ export default function LandingPage() {
       <section className="relative pt-24 pb-16 lg:pt-28 lg:pb-20 bg-[#FAFAF8] text-[#1E2923] border-b border-[#E8EDE9]">
         
         {/* Subtle background glow */}
-        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-[#EBF3EE] to-transparent rounded-full blur-3xl opacity-70 pointer-events-none -mt-20" />
+        <div className="absolute top-0 right-1/4 w-150 h-150 bg-linear-to-br from-[#EBF3EE] to-transparent rounded-full blur-3xl opacity-70 pointer-events-none -mt-20" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
           
@@ -279,7 +279,7 @@ export default function LandingPage() {
                   placeholder="Search Registry (e.g. Blankets, Medicine, Textbooks)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-xs sm:text-sm text-[#1E2923] placeholder-[#94A3B8] bg-transparent border-none outline-none focus:outline-none focus:ring-0 !min-h-0 !h-auto !bg-transparent !border-none !shadow-none !py-2 !px-1"
+                  className="w-full text-xs sm:text-sm text-[#1E2923] placeholder-[#94A3B8] bg-transparent border-none outline-none focus:outline-none focus:ring-0 !min-h-0 !h-auto !shadow-none !py-2 !px-1"
                 />
                 <Button
                   type="submit"
@@ -590,7 +590,7 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-3 my-4 flex-grow overflow-y-auto pr-1">
+                    <div className="space-y-3 my-4 grow overflow-y-auto pr-1">
                       <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Recommended Hub Destinations</p>
                       
                       {simulationResults.length > 0 ? (
@@ -741,7 +741,7 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    <div className="p-5 bg-[#F8FAF8] border border-[#E8EDE9] rounded-2xl text-left my-4 space-y-3 flex-grow flex flex-col justify-center">
+                    <div className="p-5 bg-[#F8FAF8] border border-[#E8EDE9] rounded-2xl text-left my-4 space-y-3 grow flex flex-col justify-center">
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider bg-white px-2 py-0.5 rounded border border-[#E8EDE9]">STAGE ({trackerStep + 1}/4)</span>
                         <span className="text-xs font-semibold text-[#64748B]">{TRACKER_STAGES[trackerStep].time}</span>
@@ -807,7 +807,7 @@ export default function LandingPage() {
                         alt={need.item} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
                       <div className="absolute top-3 left-3 flex gap-2">
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                           need.urgency === 'High' ? 'bg-rose-600 text-white' : 'bg-amber-600 text-white'
@@ -937,7 +937,7 @@ export default function LandingPage() {
               ].map((item, idx) => {
                 const IconComponent = item.icon || Award;
                 return (
-                  <div key={idx} className="p-5 bg-white border border-[#E8EDE9] rounded-2xl text-left flex flex-col justify-between min-h-[160px] shadow-2xs hover:border-[#2E5B3D]/30 transition-all">
+                  <div key={idx} className="p-5 bg-white border border-[#E8EDE9] rounded-2xl text-left flex flex-col justify-between min-h-40 shadow-2xs hover:border-[#2E5B3D]/30 transition-all">
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <div className="w-10 h-10 rounded-xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center">

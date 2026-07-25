@@ -141,7 +141,7 @@ export default function ChatTerminal() {
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
 
-      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full px-6 py-8 gap-6 items-stretch h-[calc(100vh-140px)] min-h-[640px]">
+      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full px-6 py-8 gap-6 items-stretch h-[calc(100vh-140px)] min-h-160">
         
         {/* Column 1: Threads list */}
         <aside className="w-full lg:w-72 bg-white border border-border rounded-2xl flex flex-col shrink-0 shadow-premium-sm overflow-hidden">
@@ -189,7 +189,7 @@ export default function ChatTerminal() {
         </aside>
 
         {/* Column 2: Message flow screen */}
-        <main className="flex-1 flex flex-col bg-white border border-border rounded-2xl shadow-premium-sm overflow-hidden min-h-[480px]">
+        <main className="flex-1 flex flex-col bg-white border border-border rounded-2xl shadow-premium-sm overflow-hidden min-h-120">
           {/* Active channel header */}
           <div className="p-5 border-b border-border flex justify-between items-center bg-slate-50">
             {currentChannel ? (

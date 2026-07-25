@@ -430,7 +430,7 @@ export default function AuthSuite() {
                 className="space-y-5"
               >
                 <div className="text-center space-y-2">
-                  <div className="w-12 h-12 mx-auto bg-[#E8F3EC] text-[#4A7C59] rounded-full flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 mx-auto bg-accent text-[#4A7C59] rounded-full flex items-center justify-center mb-3">
                     <Lock className="w-6 h-6" />
                   </div>
                   <h2 className="text-xl font-bold text-stone-900">Verify Email</h2>
@@ -453,7 +453,7 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 rounded-xl text-sm shadow-xs"
+                    className="w-full bg-[#4A7C59] hover:bg-primary-hover text-white font-bold py-3 rounded-xl text-sm shadow-xs"
                     disabled={loading || otpCode.length !== 6}
                   >
                     {loading ? 'Verifying...' : 'Verify & Create Account'}
@@ -493,7 +493,7 @@ export default function AuthSuite() {
                 className="space-y-5"
               >
                 <div className="text-center space-y-2">
-                  <div className="w-12 h-12 mx-auto bg-[#E8F3EC] text-[#4A7C59] rounded-full flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 mx-auto bg-accent text-[#4A7C59] rounded-full flex items-center justify-center mb-3">
                     <ShieldCheck className="w-6 h-6" />
                   </div>
                   <h2 className="text-xl font-bold text-stone-900">Reset Password</h2>
@@ -513,7 +513,7 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 rounded-xl text-sm shadow-xs"
+                    className="w-full bg-[#4A7C59] hover:bg-primary-hover text-white font-bold py-3 rounded-xl text-sm shadow-xs"
                     disabled={loading}
                   >
                     {loading ? 'Sending...' : 'Send Recovery Code'}
@@ -562,7 +562,7 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 rounded-xl text-sm shadow-xs"
+                    className="w-full bg-[#4A7C59] hover:bg-primary-hover text-white font-bold py-3 rounded-xl text-sm shadow-xs"
                     disabled={loading || otpCode.length !== 6}
                   >
                     {loading ? 'Verifying...' : 'Verify Code'}
@@ -629,7 +629,7 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 rounded-xl text-sm shadow-xs"
+                    className="w-full bg-[#4A7C59] hover:bg-primary-hover text-white font-bold py-3 rounded-xl text-sm shadow-xs"
                     disabled={loading}
                   >
                     {loading ? 'Updating...' : 'Update Password'}
