@@ -213,11 +213,24 @@ class NeedViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         ngo_id = self.request.query_params.get('ngo_id')
         campaign_id = self.request.query_params.get('campaign_id')
-        queryset = Need.objects.all()
+        unfulfilled_only = self.request.query_params.get('unfulfilled_only')
+        
+        # Security Sync: Only show needs from APPROVED NGOs, unless the user is the NGO itself looking at their own needs
+        if self.request.user.is_authenticated and self.request.user.role == 'ngo' and hasattr(self.request.user, 'ngo_details'):
+            from django.db import models
+            queryset = Need.objects.filter(models.Q(ngo__verification_status='approved') | models.Q(ngo=self.request.user.ngo_details))
+        else:
+            queryset = Need.objects.filter(ngo__verification_status='approved')
+            
         if ngo_id:
             queryset = queryset.filter(ngo_id=ngo_id)
         if campaign_id:
             queryset = queryset.filter(campaign_id=campaign_id)
+            
+        if unfulfilled_only and unfulfilled_only.lower() == 'true':
+            from django.db.models import F
+            queryset = queryset.filter(fulfilled_quantity__lt=F('quantity'))
+            
         return queryset
 
     def perform_create(self, serializer):
@@ -240,9 +253,17 @@ class VolunteerEventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         ngo_id = self.request.query_params.get('ngo_id')
+        
+        # Security Sync: Only show events from APPROVED NGOs, unless the user is the NGO itself
+        if self.request.user.is_authenticated and self.request.user.role == 'ngo' and hasattr(self.request.user, 'ngo_details'):
+            from django.db import models
+            queryset = VolunteerEvent.objects.filter(models.Q(ngo__verification_status='approved') | models.Q(ngo=self.request.user.ngo_details))
+        else:
+            queryset = VolunteerEvent.objects.filter(ngo__verification_status='approved')
+            
         if ngo_id:
-            return VolunteerEvent.objects.filter(ngo_id=ngo_id)
-        return VolunteerEvent.objects.all()
+            return queryset.filter(ngo_id=ngo_id)
+        return queryset
 
     def perform_create(self, serializer):
         if not hasattr(self.request.user, 'ngo_details'):

@@ -43,13 +43,28 @@ def reject_selected_ngos(modeladmin, request, queryset):
             )
     modeladmin.message_user(request, "Selected NGOs were rejected.")
 
+from django.utils.html import format_html
+
 @admin.register(NGO)
 class NGOAdmin(admin.ModelAdmin):
-    list_display = ('name', 'verification_status', 'trust_score', 'city', 'state', 'created_at')
+    list_display = ('name', 'verification_badge', 'trust_score', 'city', 'state', 'created_at')
     list_filter = ('verification_status', 'state')
     search_fields = ('name', 'registration_number', 'gov_registration_number')
     inlines = [NGODocumentInline, NGOReviewInline]
     actions = [approve_selected_ngos, reject_selected_ngos]
+
+    def verification_badge(self, obj):
+        colors = {
+            VerificationStatus.APPROVED: '#10B981',
+            VerificationStatus.REJECTED: '#EF4444',
+            VerificationStatus.PENDING: '#F59E0B',
+        }
+        color = colors.get(obj.verification_status, '#6B7280')
+        return format_html(
+            '<span style="background-color:{}; color:white; font-weight:700; padding:3px 10px; border-radius:12px; font-size:11px; text-transform:uppercase;">{}</span>',
+            color, obj.get_verification_status_display()
+        )
+    verification_badge.short_description = "Verification Status"
 
 @admin.register(Need)
 class NeedAdmin(admin.ModelAdmin):

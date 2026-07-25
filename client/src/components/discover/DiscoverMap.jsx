@@ -142,14 +142,14 @@ export default function DiscoverMap({
     <div ref={containerRef} className={`relative overflow-hidden rounded-xl border border-stone-300 shadow-sm bg-stone-100 ${className}`}>
       
       {/* Top Left Live Badge Overlay */}
-      <div className="absolute top-3 left-3 z-[400] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-stone-200 shadow-xs flex items-center gap-2 text-stone-800 text-xs font-semibold">
+      <div className="absolute top-3 left-3 z-400 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-stone-200 shadow-xs flex items-center gap-2 text-stone-800 text-xs font-semibold">
         <span className="w-2 h-2 rounded-full bg-[#4A7C59] animate-pulse" />
         <span>Logistics Radar</span>
         <span className="text-stone-400 font-mono text-[11px]">| {items.length} Active Pins</span>
       </div>
 
       {/* Top Right Controls Overlay */}
-      <div className="absolute top-3 right-3 z-[400] flex flex-col gap-1.5 bg-white/95 backdrop-blur-md p-1 rounded-lg border border-stone-200 shadow-sm">
+      <div className="absolute top-3 right-3 z-400 flex flex-col gap-1.5 bg-white/95 backdrop-blur-md p-1 rounded-lg border border-stone-200 shadow-sm">
         <button
           title="Recenter GPS"
           onClick={() => {
@@ -184,7 +184,7 @@ export default function DiscoverMap({
       </div>
 
       {/* Bottom Map Legend Banner */}
-      <div className="absolute bottom-3 left-3 z-[400] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-stone-200 shadow-xs flex items-center gap-3 text-[11px] font-semibold text-stone-700">
+      <div className="absolute bottom-3 left-3 z-400 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-stone-200 shadow-xs flex items-center gap-3 text-[11px] font-semibold text-stone-700">
         <div className="flex items-center gap-1">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />
           <span>You</span>
@@ -284,10 +284,10 @@ export default function DiscoverMap({
               }}
             >
               <Popup>
-                <div className="p-1 text-xs font-sans space-y-2 text-stone-900 max-w-[200px] text-left">
+                <div className="p-1 text-xs font-sans space-y-2 text-stone-900 max-w-50 text-left">
                   <div className="font-bold text-sm leading-snug">{title}</div>
                   {item.category && (
-                    <span className="inline-block bg-[#E8F3EC] text-[#4A7C59] px-2 py-0.5 rounded text-[10px] font-bold">
+                    <span className="inline-block bg-accent text-[#4A7C59] px-2 py-0.5 rounded text-[10px] font-bold">
                       {item.category}
                     </span>
                   )}
@@ -301,7 +301,7 @@ export default function DiscoverMap({
                   </p>
                   <button
                     onClick={() => onSelectItem && onSelectItem(item)}
-                    className="w-full mt-1 bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold text-[11px] py-1.5 px-3 rounded-md transition-colors cursor-pointer"
+                    className="w-full mt-1 bg-[#4A7C59] hover:bg-primary-hover text-white font-bold text-[11px] py-1.5 px-3 rounded-md transition-colors cursor-pointer"
                   >
                     🎯 Select &amp; View Route
                   </button>

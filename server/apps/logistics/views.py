@@ -1,6 +1,10 @@
+# pyrefly: ignore [missing-import]
 from rest_framework import status, permissions, generics
+# pyrefly: ignore [missing-import]
 from rest_framework.response import Response
+# pyrefly: ignore [missing-import]
 from rest_framework.views import APIView
+# pyrefly: ignore [missing-import]
 from django.utils import timezone
 
 from .models import LogisticsJob, TrackingMilestone
@@ -84,6 +88,15 @@ class UpdateLogisticsStepView(APIView):
             donation.status = DonationStatus.DELIVERED
             donation.save()
             
+        try:
+            from notification.models import Notification, NotificationType
+            if step_num == 3:
+                Notification.objects.create(user=donation.donor, notification_type=NotificationType.DELIVERY, title="🚚 Carrier Dispatched", message=f"A logistics carrier is on the way to pick up your donation '{donation.title}'.")
+            elif step_num == 5:
+                Notification.objects.create(user=donation.donor, notification_type=NotificationType.DELIVERY, title="✅ Delivery Successful", message=f"Your donation '{donation.title}' has been successfully delivered to the NGO!")
+        except Exception as e:
+            print("[Notification Error Logistics]", e)
+            
         return Response(LogisticsJobSerializer(job).data)
 
 class VerifyQRCodeView(APIView):
@@ -120,6 +133,12 @@ class VerifyQRCodeView(APIView):
                 'lng': donation.matched_ngo.lng if donation.matched_ngo else donation.pickup_lng
             }
         )
+        
+        try:
+            from notification.models import Notification, NotificationType
+            Notification.objects.create(user=donation.donor, notification_type=NotificationType.DELIVERY, title="✅ Delivery Verified", message=f"Your donation '{donation.title}' was successfully handed over to the NGO via secure QR Code.")
+        except Exception as e:
+            print("[Notification Error Logistics]", e)
 
         return Response({
             "message": "Delivery verified successfully via QR code.",

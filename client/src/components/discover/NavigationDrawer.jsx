@@ -24,7 +24,7 @@ export default function NavigationDrawer({
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 30, scale: 0.95 }}
-        className="fixed bottom-6 right-6 z-[500] max-w-md w-full px-4 sm:px-0"
+        className="fixed bottom-6 right-6 z-500 max-w-md w-full px-4 sm:px-0"
       >
         <div className="bg-slate-900/95 backdrop-blur-2xl border border-slate-700/80 rounded-3xl p-5 text-white shadow-2xl shadow-slate-950/50 space-y-4">
           

@@ -27,7 +27,7 @@ export default function NotificationCenter() {
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Navbar />
 
-      <main className="flex-grow max-w-7xl mx-auto w-full px-6 py-10 flex flex-col lg:flex-row gap-6 items-stretch">
+      <main className="grow max-w-7xl mx-auto w-full px-6 py-10 flex flex-col lg:flex-row gap-6 items-stretch">
         
         {/* Left Column: Notification Stream (flex-1) */}
         <div className="flex-1 space-y-6">
@@ -106,10 +106,15 @@ export default function NotificationCenter() {
 
                     <div className="flex-1 space-y-3">
                       <div className="flex justify-between items-start gap-4">
-                        <p className={`leading-relaxed ${notif.read ? 'text-slate-600 font-medium' : 'text-slate-900 font-bold'}`} >
-                          {notif.message}
-                        </p>
-                        <span className="font-mono text-slate-400 shrink-0 ml-auto" >{notif.time}</span>
+                        <div>
+                          {notif.title && (
+                            <h4 className="font-bold text-slate-900 text-sm mb-1">{notif.title}</h4>
+                          )}
+                          <p className={`leading-relaxed text-xs ${notif.read ? 'text-slate-600 font-normal' : 'text-slate-900 font-semibold'}`}>
+                            {notif.message}
+                          </p>
+                        </div>
+                        <span className="font-mono text-[11px] text-slate-400 shrink-0 ml-auto">{notif.time}</span>
                       </div>
 
                       <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-slate-400 font-mono" >

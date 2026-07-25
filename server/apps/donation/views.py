@@ -134,7 +134,7 @@ class DonationViewSet(viewsets.ModelViewSet):
         if donation.status != 'VERIFIED':
             return Response({"error": "Donation is not available for claim"}, status=status.HTTP_400_BAD_REQUEST)
             
-        # Match Score logic
+        # Match Score logic & fulfill quantity update
         matching_need = Need.objects.filter(ngo=ngo, category__icontains=donation.category).first()
         if not matching_need:
             matching_need = Need.objects.filter(ngo=ngo).first() # Fallback for fuzzy matching
@@ -143,12 +143,26 @@ class DonationViewSet(viewsets.ModelViewSet):
         if matching_need:
             score_breakdown = calculate_match_score(donation, matching_need, ngo)
             score = score_breakdown['total']
+            matching_need.fulfilled_quantity = (matching_need.fulfilled_quantity or 0) + donation.quantity
+            matching_need.save()
             
         donation.status = 'MATCHED'
         donation.matched_ngo = ngo
         donation.match_score = score
         donation.matched_at = django_timezone.now()
         donation.save()
+        
+        # Notify Donor that their donation has been claimed by NGO
+        try:
+            from notification.models import Notification, NotificationType
+            Notification.objects.create(
+                user=donation.donor,
+                notification_type=NotificationType.MATCH,
+                title=f"🎉 Donation Claimed by {ngo.name}!",
+                message=f"NGO '{ngo.name}' has matched & claimed your donation '{donation.title}' (Qty: {donation.quantity}). Pickup logistics and tracking milestone generated!"
+            )
+        except Exception as e:
+            print("[Notification Error]", e)
         
         # Generate logistics job with verification QR code token
         verify_token = f"VERIFY-{random.randint(100000, 999999)}-{donation.id}"

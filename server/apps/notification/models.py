@@ -1,10 +1,13 @@
+# pyrefly: ignore [missing-import]
 from django.db import models
+# pyrefly: ignore [missing-import]
 from django.conf import settings
 
 class NotificationType(models.TextChoices):
     ALL = 'all', 'All'
     DELIVERY = 'delivery', 'Delivery Status'
     SECURITY = 'security', 'Security Alert'
+    MATCH = 'match', 'Donation Match'
 
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')

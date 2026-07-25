@@ -205,7 +205,7 @@ export default function AuthSuite() {
     <div className="min-h-screen w-screen flex flex-col lg:grid lg:grid-cols-12 bg-[#F8FAFC]">
       
       {/* LEFT SIDE - Brand Experience Banner */}
-      <div className="lg:col-span-5 bg-gradient-to-br from-[#0B1E13] via-[#143320] to-[#0A1A11] p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden min-h-[300px] lg:min-h-screen text-left">
+      <div className="lg:col-span-5 bg-linear-to-br from-[#0B1E13] via-[#143320] to-[#0A1A11] p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden min-h-75 lg:min-h-screen text-left">
         
         {/* Decorative background glow */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-[#4A7C59]/20 blur-[100px] rounded-full pointer-events-none" />
@@ -224,7 +224,7 @@ export default function AuthSuite() {
         {/* Main Brand Messaging */}
         <div className="relative z-10 space-y-8 max-w-lg my-auto py-8">
           <div className="space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F3EC] text-[#4A7C59] font-bold text-[10px] uppercase tracking-widest">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-[#4A7C59] font-bold text-[10px] uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5" /> Secure Logistics Portal
             </span>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
@@ -374,7 +374,7 @@ export default function AuthSuite() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-[34px] text-stone-400 hover:text-[#4A7C59] transition-colors p-1 cursor-pointer"
+                      className="absolute right-3 top-8.5 text-stone-400 hover:text-[#4A7C59] transition-colors p-1 cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -394,7 +394,7 @@ export default function AuthSuite() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-[#4A7C59] hover:bg-[#3B6647] text-white font-bold py-3 px-4 rounded-xl shadow-xs text-sm transition-all cursor-pointer mt-2"
+                    className="w-full bg-[#4A7C59] hover:bg-primary-hover text-white font-bold py-3 px-4 rounded-xl shadow-xs text-sm transition-all cursor-pointer mt-2"
                     disabled={loading}
                   >
                     {loading ? 'Processing...' : isRegister ? 'Continue to Verification' : 'Sign In'}

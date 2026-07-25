@@ -59,15 +59,21 @@ export default function DonorDashboard() {
   const carbonSavedKg = totalDelivered * 4.5;
 
   const urgentNeeds = (needs || [])
-    .filter(n => n.urgency === 'High' || n.urgency === 'Medium')
+    .filter(n => {
+      const remaining = n.quantity - (n.fulfilledQuantity || 0);
+      return (n.urgency === 'High' || n.urgency === 'Medium') && remaining > 0;
+    })
     .slice(0, 5)
     .map(n => {
       const ngo = (ngos || []).find(o => String(o.id) === String(n.ngoId));
+      const remaining = n.quantity - (n.fulfilledQuantity || 0);
       return {
         id: n.id,
-        ngo: ngo?.name || 'NGO Partner',
+        ngo: ngo?.name || n.ngoName || 'NGO Partner',
         item: n.item || n.category,
-        qty: n.quantity,
+        qty: remaining,
+        totalQty: n.quantity,
+        fulfilledQty: n.fulfilledQuantity || 0,
         urgency: n.urgency,
         category: n.category,
       };
@@ -199,12 +205,12 @@ export default function DonorDashboard() {
   };
 
   const fulfillDemand = (demand) => {
-    setItemName(`${demand.qty}x ${demand.item} for ${demand.ngo}`);
+    setItemName(demand.item);
     setCategory(CATEGORIES.includes(demand.category) ? demand.category : 'Clothing');
     setQuantity(demand.qty);
     setDescription(`Direct demand fulfillment for ${demand.ngo}.`);
     setActiveTab('submit');
-    toast.info(`Auto-filled submit form for ${demand.ngo}'s request.`);
+    toast.info(`Auto-filled submit form for ${demand.ngo}'s request (${demand.qty}x needed).`);
   };
 
   const retractDonation = async (donationId) => {
