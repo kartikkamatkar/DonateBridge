@@ -157,6 +157,7 @@ class PlatformMetricsView(APIView):
             success_rate = f"{round((delivered_count / total_claims) * 100)}%"
             
         active_challenges = CommunityChallenge.objects.filter(is_active=True).count()
+        active_campaigns = EmergencyCampaign.objects.filter(is_active=True).count()
         # Weekly trends (last 7 days)
         seven_days_ago = timezone.now() - timedelta(days=7)
         recent_donations = Donation.objects.filter(

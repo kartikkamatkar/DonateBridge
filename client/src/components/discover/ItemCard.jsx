@@ -48,7 +48,7 @@ export default function ItemCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-              type === 'ngos' ? 'bg-[#E8F3EC] text-[#4A7C59]' : 'bg-amber-50 text-amber-600'
+              type === 'ngos' ? 'bg-accent text-primary' : 'bg-amber-50 text-amber-600'
             }`}>
               {type === 'ngos' ? <Building className="w-5 h-5" /> : <Package className="w-5 h-5" />}
             </div>
@@ -57,7 +57,7 @@ export default function ItemCard({
               <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block">
                 {type === 'ngos' ? 'Verified NGO Partner' : `${quantity} Units Available`}
               </span>
-              <h3 className="font-bold text-base text-stone-900 truncate leading-snug group-hover:text-[#4A7C59] transition-colors">
+              <h3 className="font-bold text-base text-stone-900 truncate leading-snug group-hover:text-primary transition-colors">
                 {title}
               </h3>
             </div>
@@ -82,11 +82,11 @@ export default function ItemCard({
 
         {/* Smart Match Banner if available */}
         {smartMatchDetails && (
-          <div className="bg-[#E8F3EC] border border-[#4A7C59]/30 p-2.5 rounded-2xl flex items-center justify-between text-xs text-[#4A7C59] font-semibold">
+          <div className="bg-accent border border-primary/30 p-2.5 rounded-2xl flex items-center justify-between text-xs text-primary font-semibold">
             <span className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#4A7C59]" /> Smart Match
+              <Sparkles className="w-4 h-4 text-primary" /> Smart Match
             </span>
-            <span className="font-bold text-sm bg-white px-2 py-0.5 rounded-lg border border-[#4A7C59]/20 shadow-xs">
+            <span className="font-bold text-sm bg-white px-2 py-0.5 rounded-lg border border-primary/20 shadow-xs">
               {smartMatchDetails.score}% Score
             </span>
           </div>
@@ -129,7 +129,7 @@ export default function ItemCard({
           }}
           className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
             isSelected
-              ? 'bg-[#4A7C59] text-white border-[#4A7C59]'
+              ? 'bg-primary text-white border-primary'
               : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200'
           }`}
         >
@@ -140,7 +140,7 @@ export default function ItemCard({
         {type === 'donations' && userRole === 'ngo' && (
           <Button
             size="sm"
-            className="bg-[#4A7C59] hover:bg-[#3B6647] text-white text-xs font-bold py-2 px-4 rounded-xl shadow-xs"
+            className="bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2 px-4 rounded-xl shadow-xs"
             onClick={(e) => {
               e.stopPropagation();
               onClaim && onClaim(item);
