@@ -10,7 +10,7 @@ import { InputField } from '../components/ui/InputField';
 import { authAPI, getApiError } from '../api/index';
 
 export default function AuthSuite() {
-  const { loginWithTokens, authMessage, clearAuthMessage } = useAuth();
+  const { loginWithTokens, authMessage, clearAuthMessage, isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -35,6 +35,15 @@ export default function AuthSuite() {
   const [resetConfirm, setResetConfirm] = useState('');
 
   const { register, handleSubmit, formState: { errors }, reset: resetForm } = useForm();
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (isAuthenticated && user?.role) {
+      if (user.role === 'admin') navigate('/admin', { replace: true });
+      else if (user.role === 'ngo') navigate('/ngo', { replace: true });
+      else navigate('/donor', { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     setIsRegister(isRegisterParam);

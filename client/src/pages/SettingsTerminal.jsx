@@ -1,27 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/GlobalStateContext';
-import { Settings, Sun, Eye, Bell, Lock, ToggleLeft, ToggleRight, Check, ShieldCheck, Cpu, Database, Wifi } from 'lucide-react';
+import { Settings, Sun, Eye, Bell, Lock, ToggleLeft, ToggleRight, Check, ShieldCheck, Cpu, Database, Wifi, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import Navbar from '../components/layout/Navbar';
+import { authAPI, getApiError } from '../api/index';
+import { useToast } from '../components/ui/Toast';
 
 export default function SettingsTerminal() {
  const { user } = useAuth();
  const navigate = useNavigate();
+ const { toast } = useToast();
 
- const [textSize, setTextSize] = useState('normal'); // 'small' | 'normal' | 'large'
- const [highContrast, setHighContrast] = useState(false);
- const [emailAlerts, setEmailAlerts] = useState(true);
- const [transitAlerts, setTransitAlerts] = useState(true);
- const [mfaEnabled, setMfaEnabled] = useState(true);
+ // Load localStorage preferences with fallbacks
+ const [textSize, setTextSize] = useState(() => localStorage.getItem('pref_textSize') || 'normal');
+ const [highContrast, setHighContrast] = useState(() => localStorage.getItem('pref_highContrast') === 'true');
+ const [emailAlerts, setEmailAlerts] = useState(() => localStorage.getItem('pref_emailAlerts') !== 'false');
+ const [transitAlerts, setTransitAlerts] = useState(() => localStorage.getItem('pref_transitAlerts') !== 'false');
+ const [mfaEnabled, setMfaEnabled] = useState(false);
+ const [isSaving, setIsSaving] = useState(false);
  const [isSaved, setIsSaved] = useState(false);
+ const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
- const handleSaveSettings = (e) => {
+ // Load MFA state from backend on mount
+ useEffect(() => {
+  const loadProfile = async () => {
+   try {
+    const res = await authAPI.getMe();
+    if (res.data?.profile) {
+     setMfaEnabled(!!res.data.profile.mfa_enabled);
+    }
+   } catch (err) {
+    console.warn('Failed to load profile settings:', err);
+   } finally {
+    setIsLoadingProfile(false);
+   }
+  };
+  loadProfile();
+ }, []);
+
+ const handleSaveSettings = async (e) => {
   e.preventDefault();
-  setIsSaved(true);
-  setTimeout(() => {
-   setIsSaved(false);
-  }, 2000);
+  setIsSaving(true);
+  try {
+   // Persist MFA toggle to database
+   await authAPI.updateMe({ mfa_enabled: mfaEnabled });
+
+   // Persist other preferences to localStorage
+   localStorage.setItem('pref_textSize', textSize);
+   localStorage.setItem('pref_highContrast', String(highContrast));
+   localStorage.setItem('pref_emailAlerts', String(emailAlerts));
+   localStorage.setItem('pref_transitAlerts', String(transitAlerts));
+
+   setIsSaved(true);
+   toast.success('Settings saved successfully.');
+   setTimeout(() => setIsSaved(false), 2000);
+  } catch (err) {
+   toast.error(getApiError(err));
+  } finally {
+   setIsSaving(false);
+  }
  };
 
  return (
@@ -203,8 +241,8 @@ export default function SettingsTerminal() {
 
       {/* Submit */}
       <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
-       <Button type="submit" variant="primary" icon={isSaved ? Check : undefined}>
-        {isSaved ? 'Settings Saved' : 'Save Preferences'}
+       <Button type="submit" variant="primary" disabled={isSaving} icon={isSaved ? Check : isSaving ? Loader2 : undefined}>
+        {isSaved ? 'Settings Saved' : isSaving ? 'Saving...' : 'Save Preferences'}
        </Button>
       </div>
 

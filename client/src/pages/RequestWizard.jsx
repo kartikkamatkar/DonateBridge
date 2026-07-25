@@ -32,7 +32,7 @@ export default function RequestWizard() {
  const [step, setStep] = useState(1); // 1: Details, 2: Location Map, 3: Photos, 4: Success Receipt
  const [selectedCoords, setSelectedCoords] = useState({ lat: 21.1458, lng: 79.0882 }); // Nagpur default
  const [photos, setPhotos] = useState([]); // Array of { name, previewUrl }
- const [trackingId] = useState(() => Math.floor(10000 + Math.random() * 90000));
+ const [createdDonationId, setCreatedDonationId] = useState(null);
  
  const [addressSearch, setAddressSearch] = useState('');
  const [searchResults, setSearchResults] = useState([]);
@@ -168,20 +168,21 @@ export default function RequestWizard() {
     }
    }
 
-   await donationAPI.create({
-    title: data.title,
-    category: data.category,
-    condition: data.condition,
-    quantity: parseInt(data.quantity) || 1,
-    description: data.description,
-    photos: uploadedPhotoUrls,
-    pickup_address: data.pickupAddress,
-    pickup_lat: selectedCoords.lat,
-    pickup_lng: selectedCoords.lng,
-    preferred_pickup_time: data.preferredPickupTime,
-   });
+    const res = await donationAPI.create({
+     title: data.title,
+     category: data.category,
+     condition: data.condition,
+     quantity: parseInt(data.quantity) || 1,
+     description: data.description,
+     photos: uploadedPhotoUrls,
+     pickup_address: data.pickupAddress,
+     pickup_lat: selectedCoords.lat,
+     pickup_lng: selectedCoords.lng,
+     preferred_pickup_time: data.preferredPickupTime,
+    });
 
-   setStep(4);
+    setCreatedDonationId(res.data?.id || null);
+    setStep(4);
    toast.success('Donation listing logged in moderation queue.');
   } catch (err) {
    toast.error(getApiError(err));
@@ -483,8 +484,8 @@ export default function RequestWizard() {
          <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-xs">PENDING AUDIT</span>
         </div>
         <div className="flex justify-between">
-         <span className="text-slate-400">TRACKING ID:</span>
-         <span className="text-slate-900 font-bold">#DB-DNT-{trackingId}</span>
+         <span className="text-slate-400">DONATION ID:</span>
+         <span className="text-slate-900 font-bold">{createdDonationId || 'Processing...'}</span>
         </div>
         <div className="flex justify-between border-t border-border pt-2 text-xs text-slate-400 text-center leading-relaxed">
          <span>It will remain private until approved by an administrator.</span>
@@ -492,8 +493,8 @@ export default function RequestWizard() {
        </div>
 
        <div className="pt-4 flex flex-col gap-2 max-w-xs mx-auto text-center">
-        <Button variant="primary" className="w-full" onClick={() => navigate('/donor-dashboard')}>
-         Go to Donor Dashboard
+        <Button variant="primary" className="w-full" onClick={() => navigate('/donor')}>
+         View in Dashboard
         </Button>
         <Button variant="secondary" className="w-full" onClick={() => navigate('/discover')}>
          Browse Marketplace
