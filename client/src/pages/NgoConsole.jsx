@@ -4,6 +4,7 @@ import { useAuth } from '../context/GlobalStateContext';
 import { useRealDB } from '../hooks/useRealDB';
 import { getApiError, ngoAPI } from '../api/index';
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import DonationCard from '../components/ui/DonationCard';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
@@ -15,7 +16,7 @@ import {
 } from 'recharts';
 import { 
   ShieldCheck, Package, Clock, AlertTriangle, Plus, MapPin, 
-  BarChart3, Activity, Trash2, Zap, Radar, CheckCircle2, 
+  BarChart3, Activity, Trash2, Zap, Radar, CheckCircle2, Truck,
   Sparkles, TrendingUp, Radio, Building2, RefreshCw, Send,
   ShieldAlert, ArrowRight, Check, Leaf, Sun, Layers, Globe, Award, ChevronRight
 } from 'lucide-react';
@@ -24,14 +25,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function NgoConsole() {
   const { user } = useAuth();
   const {
-    myNgo, needs, donations,
-    addNeed, deleteNeed, claimDonation,
+    myNgo, needs, donations, fetchNeeds,
+    addNeed, deleteNeed, claimDonation, updateDonation,
     getSmartMatchesForNgo
   } = useRealDB();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('matches');
+  const [activeTab, setActiveTab] = useState('incoming');
   const [smartMatches, setSmartMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [monthlyData, setMonthlyData] = useState([]);
@@ -63,9 +64,25 @@ export default function NgoConsole() {
   };
 
   // NGO-specific data
-  const ngoNeeds = needs.filter(n => n.ngoId === currentNgo.id);
-  const activeIncoming = donations.filter(d => String(d.matchedNgoId) === String(currentNgo.id) && d.status === 'MATCHED');
-  const deliveredDonations = donations.filter(d => String(d.matchedNgoId) === String(currentNgo.id) && d.status === 'DELIVERED');
+  const ngoNeeds = needs.filter(n => 
+    String(n.ngoId) === String(currentNgo.id) || 
+    String(n.ngo_id) === String(currentNgo.id) || 
+    String(n.ngo) === String(currentNgo.id)
+  );
+  const allPledges = donations.filter(d => 
+    String(d.matchedNgoId) === String(currentNgo.id) || 
+    String(d.matched_ngo) === String(currentNgo.id) || 
+    String(d.matched_ngo?.id) === String(currentNgo.id) ||
+    d.status === 'MATCHED' || d.status === 'DELIVERED'
+  );
+  const activeIncoming = donations.filter(d => 
+    (String(d.matchedNgoId) === String(currentNgo.id) || String(d.matched_ngo) === String(currentNgo.id)) && 
+    d.status === 'MATCHED'
+  );
+  const deliveredDonations = donations.filter(d => 
+    (String(d.matchedNgoId) === String(currentNgo.id) || String(d.matched_ngo) === String(currentNgo.id)) && 
+    d.status === 'DELIVERED'
+  );
   const totalReceived = deliveredDonations.reduce((acc, curr) => acc + (curr.quantity || 1), 0);
   const totalInTransit = activeIncoming.reduce((acc, curr) => acc + (curr.quantity || 1), 0);
   const activeNeedsCount = ngoNeeds.length;
@@ -81,8 +98,9 @@ export default function NgoConsole() {
   };
 
   useEffect(() => {
+    fetchNeeds({ all: 'true' });
     fetchMatches();
-  }, [currentNgo?.id, currentNgo?.verificationStatus]);
+  }, [currentNgo?.id, currentNgo?.verificationStatus, fetchNeeds]);
 
   useEffect(() => {
     if (activeTab === 'analytics' && currentNgo?.id) {
@@ -208,78 +226,75 @@ export default function NgoConsole() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAF8] text-[#1E2923] font-sans antialiased selection:bg-[#2E5B3D]/15">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 font-sans antialiased">
       <Navbar />
 
-      <main className="grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-8 relative z-10">
-        
-        {/* SERENE HERO PROFILE BANNER */}
-        <section className="bg-white border border-[#E8EDE9] rounded-3xl p-6 md:p-8 shadow-xs relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-linear-to-br from-[#EBF3EE] to-transparent rounded-full blur-3xl opacity-60 pointer-events-none -mr-20 -mt-20" />
-
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            
-            {/* Left NGO Identity */}
-            <div className="flex items-start gap-4 sm:gap-5">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#EBF3EE] border border-[#2E5B3D]/15 flex items-center justify-center text-[#2E5B3D] shrink-0 shadow-2xs font-bold text-xl">
-                {currentNgo.name ? currentNgo.name.charAt(0).toUpperCase() : 'N'}
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold ${
-                    verStatus === 'approved' 
-                      ? 'bg-[#EBF3EE] text-[#2E5B3D] border border-[#2E5B3D]/20' 
-                      : 'bg-amber-50 text-amber-800 border border-amber-200'
-                  }`}>
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    {verStatus === 'approved' ? 'Verified Organization' : 'Pending Audit'}
-                  </span>
-
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                    <MapPin className="w-3 h-3 text-slate-500" />
-                    {currentNgo.city || currentNgo.district || 'Regional Zone'}
-                  </span>
-                </div>
-
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E2923] tracking-tight">
-                  {currentNgo.name}
-                </h1>
-
-                <p className="text-xs sm:text-sm text-[#64748B] max-w-xl font-normal leading-relaxed">
-                  Direct physical supply logistics, real-time demand ledger & AI-driven spatial donor matching.
-                </p>
-              </div>
+      {/* SEAMLESS TOP HERO BANNER */}
+      <div className="bg-white border-b border-slate-200/80 pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          
+          {/* Left NGO Identity */}
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 shrink-0 font-extrabold text-2xl shadow-xs">
+              {currentNgo.name ? currentNgo.name.charAt(0).toUpperCase() : 'N'}
             </div>
 
-            {/* Right Status Badges & Quick Action */}
-            <div className="flex flex-wrap lg:flex-col items-start lg:items-end gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-[#F0F4F1]">
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={handleRefreshData}
-                  disabled={isRefreshing}
-                  className="inline-flex items-center gap-1.5 bg-white hover:bg-[#F3F6F4] text-[#2E5B3D] border border-[#E8EDE9] px-3.5 py-2 rounded-xl font-semibold text-xs transition-all shadow-2xs cursor-pointer"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync Network
-                </button>
-                <button
-                  onClick={() => navigate('/settings')}
-                  className="inline-flex items-center gap-1.5 bg-[#EBF3EE] hover:bg-[#2E5B3D] hover:text-white text-[#2E5B3D] border border-[#2E5B3D]/15 px-3.5 py-2 rounded-xl font-semibold text-xs transition-all shadow-2xs cursor-pointer"
-                >
-                  Hub Settings
-                </button>
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold ${
+                  verStatus === 'approved' 
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                    : 'bg-amber-50 text-amber-800 border border-amber-200'
+                }`}>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {verStatus === 'approved' ? 'Verified Organization' : 'Pending Audit'}
+                </span>
+
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                  <MapPin className="w-3 h-3 text-slate-500" />
+                  {currentNgo.city || currentNgo.district || 'Regional Zone'}
+                </span>
               </div>
 
-              <div className="flex items-center gap-3 text-xs text-[#64748B] pt-1">
-                <span>Trust Score: <strong className="text-[#2E5B3D] font-bold">{currentNgo.trustScore || 95}%</strong></span>
-                <span>&bull;</span>
-                <span>Response Time: <strong className="text-[#1E2923] font-semibold">{currentNgo.responseTime || '2 hrs'}</strong></span>
-              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                {currentNgo.name}
+              </h1>
+
+              <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-normal leading-relaxed">
+                Direct physical supply logistics, real-time demand ledger & AI-driven spatial donor matching.
+              </p>
             </div>
-
           </div>
-        </section>
+
+          {/* Right Status Badges & Quick Action */}
+          <div className="flex flex-wrap lg:flex-col items-start lg:items-end gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleRefreshData}
+                disabled={isRefreshing}
+                className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl font-semibold text-xs transition-all cursor-pointer"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} /> Sync Network
+              </button>
+              <button
+                onClick={() => navigate('/settings')}
+                className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 border border-emerald-200 px-3.5 py-2 rounded-xl font-semibold text-xs transition-all cursor-pointer"
+              >
+                Hub Settings
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 text-xs text-slate-500 pt-1">
+              <span>Trust Score: <strong className="text-emerald-700 font-bold">{currentNgo.trustScore || 95}%</strong></span>
+              <span>&bull;</span>
+              <span>Response Time: <strong className="text-slate-800 font-semibold">{currentNgo.responseTime || '2 hrs'}</strong></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <main className="grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         {/* 4 ELEGANT KPI METRIC CARDS */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -358,6 +373,7 @@ export default function NgoConsole() {
         <div className="flex justify-center pt-2">
           <div className="inline-flex p-1.5 bg-white border border-[#E8EDE9] rounded-2xl shadow-2xs max-w-full overflow-x-auto gap-1">
             {[
+              { id: 'incoming', label: `Incoming Pledges (${allPledges.length})`, icon: Truck },
               { id: 'matches', label: `AI Smart Matches (${smartMatches.length})`, icon: Zap },
               { id: 'needs', label: `Broadcast Demands (${ngoNeeds.length})`, icon: Radio },
               { id: 'geo', label: `Coverage Map`, icon: Radar },
@@ -381,7 +397,115 @@ export default function NgoConsole() {
 
         {/* TAB CONTENTS */}
         <AnimatePresence mode="wait">
-          
+
+          {/* TAB 0: INCOMING PLEDGES & LOGISTICS */}
+          {activeTab === 'incoming' && (
+            <motion.div
+              key="incoming"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E8EDE9] shadow-2xs">
+                <div>
+                  <h3 className="font-display font-bold text-[#1E2923] text-base flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-[#2E5B3D]" /> Incoming Pledges & Logistics Stream
+                  </h3>
+                  <p className="text-xs text-[#64748B] mt-0.5 font-medium">Real-time dispatches pledged by donors for your non-profit demands.</p>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#2E5B3D] bg-[#EBF3EE] px-3.5 py-1.5 rounded-xl border border-emerald-200">
+                  <Activity className="w-3.5 h-3.5 animate-pulse text-[#2E5B3D]" />
+                  <span>{activeIncoming.length} Active Shipments in Transit</span>
+                </div>
+              </div>
+
+              {allPledges.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {allPledges.map(pledge => {
+                    const isDelivered = pledge.status === 'DELIVERED';
+                    return (
+                      <div key={pledge.id} className="bg-white border border-[#E8EDE9] rounded-2xl p-5 space-y-4 shadow-2xs hover:border-[#2E5B3D]/30 transition-all flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-mono font-bold text-slate-400">ID: {pledge.id}</span>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${
+                              isDelivered ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-sky-100 text-sky-800 border border-sky-200'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${isDelivered ? 'bg-emerald-600' : 'bg-sky-600 animate-ping'}`}></span>
+                              {isDelivered ? 'Delivered & Verified' : 'In Transit / Matched'}
+                            </span>
+                          </div>
+
+                          <div>
+                            <h4 className="font-display font-bold text-slate-900 text-base">{pledge.title || pledge.item || pledge.category}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="px-2 py-0.5 rounded bg-emerald-50 text-[#2E5B3D] font-bold text-[10px]">
+                                {pledge.category}
+                              </span>
+                              <span className="text-xs font-semibold text-slate-600">
+                                Quantity: <strong className="text-slate-900">{pledge.quantity || 1}x</strong>
+                              </span>
+                              {pledge.condition && (
+                                <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                                  {pledge.condition}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-100 space-y-1.5 text-xs text-slate-500">
+                            <div className="flex items-center justify-between">
+                              <span>Donor Name:</span>
+                              <strong className="text-slate-800">{pledge.donorName || pledge.donor?.username || 'Verified Donor'}</strong>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>Pickup Location:</span>
+                              <strong className="text-slate-800 text-right truncate max-w-[200px]">{pledge.pickupAddress || pledge.address || 'Nagpur, Maharashtra'}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                          <button
+                            onClick={() => navigate(`/tracking/${pledge.id}`)}
+                            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer"
+                          >
+                            Track Stream <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+
+                          {!isDelivered && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await updateDonation(pledge.id, { status: 'DELIVERED' });
+                                  toast.success('Delivery verified & tax certificate issued!');
+                                } catch (err) {
+                                  toast.error('Failed to update delivery status');
+                                }
+                              }}
+                              className="px-4 py-2 bg-[#2E5B3D] hover:bg-[#23472E] text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Verify Delivery
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="bg-white border border-[#E8EDE9] rounded-2xl p-12 text-center space-y-3">
+                  <div className="w-12 h-12 bg-emerald-50 text-[#2E5B3D] rounded-full flex items-center justify-center mx-auto">
+                    <Truck className="w-6 h-6" />
+                  </div>
+                  <h4 className="font-display font-bold text-slate-900 text-base">No Incoming Pledges Yet</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">When donors fulfill your broadcast demands or pledge surplus items to your hub, they will appear here for tracking and delivery verification.</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {/* TAB 1: SMART MATCHES */}
           {activeTab === 'matches' && (
             <motion.div
@@ -433,15 +557,66 @@ export default function NgoConsole() {
                   Calculating spatial proximity matrix...
                 </div>
               ) : verStatus === 'approved' && smartMatches.length === 0 ? (
-                <div className="bg-white border border-[#E8EDE9] rounded-2xl p-12 text-center space-y-3 shadow-2xs">
-                  <div className="w-12 h-12 rounded-2xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center mx-auto">
-                    <Zap className="w-6 h-6" />
-                  </div>
-                  <p className="font-bold text-[#1E2923]">No active match recommendations</p>
-                  <p className="text-xs text-[#64748B] max-w-sm mx-auto">Broadcast a new demand specification to trigger automated spatial matching.</p>
-                  <Button variant="primary" onClick={() => setActiveTab('needs')} className="bg-[#2E5B3D] hover:bg-[#1E3B27] text-white text-xs h-10 px-5 rounded-xl font-semibold">
-                    Create Demand Broadcast
-                  </Button>
+                <div className="space-y-6">
+                  {donations.filter(d => d.status === 'VERIFIED' || d.status === 'PENDING').length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Package className="w-4 h-4 text-[#2E5B3D]" />
+                          <h4 className="font-bold text-sm text-[#1E2923]">Available Surplus Supplies in Region</h4>
+                        </div>
+                        <span className="text-xs text-[#64748B] font-medium">
+                          {donations.filter(d => d.status === 'VERIFIED' || d.status === 'PENDING').length} listings open for claim
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {donations.filter(d => d.status === 'VERIFIED' || d.status === 'PENDING').slice(0, 4).map(donation => (
+                          <div key={donation.id} className="bg-white border border-[#E8EDE9] rounded-2xl p-4 space-y-3 shadow-2xs hover:border-[#2E5B3D]/30 transition-all flex flex-col justify-between">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="px-2.5 py-0.5 rounded-md bg-[#EBF3EE] text-[#2E5B3D] font-bold text-[11px]">
+                                  {donation.category}
+                                </span>
+                                <span className="text-[10px] uppercase font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                                  {donation.condition || 'Good'}
+                                </span>
+                              </div>
+                              <h5 className="font-bold text-[#1E2923] text-sm">{donation.title || donation.itemName}</h5>
+                              <p className="text-xs text-[#64748B] flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                                {donation.pickup_address || donation.location?.address || 'Local Region'}
+                              </p>
+                              {donation.description && (
+                                <p className="text-xs text-slate-600 line-clamp-2">{donation.description}</p>
+                              )}
+                            </div>
+                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                              <span className="text-xs font-mono font-bold text-slate-800">{donation.quantity} units</span>
+                              <Button
+                                variant="primary"
+                                onClick={() => handleClaimDonation(donation.id)}
+                                className="bg-[#2E5B3D] hover:bg-[#1E3B27] text-white text-xs h-8 px-3.5 rounded-lg font-semibold"
+                              >
+                                Claim Supply
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-[#E8EDE9] rounded-2xl p-10 text-center space-y-3 shadow-2xs">
+                      <div className="w-12 h-12 rounded-2xl bg-[#EBF3EE] text-[#2E5B3D] flex items-center justify-center mx-auto">
+                        <Zap className="w-6 h-6" />
+                      </div>
+                      <p className="font-bold text-[#1E2923]">No active match recommendations</p>
+                      <p className="text-xs text-[#64748B] max-w-sm mx-auto">Broadcast a new demand specification to trigger automated spatial matching.</p>
+                      <Button variant="primary" onClick={() => setActiveTab('needs')} className="bg-[#2E5B3D] hover:bg-[#1E3B27] text-white text-xs h-10 px-5 rounded-xl font-semibold">
+                        Create Demand Broadcast
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -681,6 +856,7 @@ export default function NgoConsole() {
         </div>
 
       </main>
+      <Footer />
     </div>
   );
 }

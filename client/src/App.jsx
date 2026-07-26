@@ -123,6 +123,8 @@ export default function App() {
           }
         />
         <Route path="/ngo-dashboard" element={<Navigate to="/ngo" replace />} />
+        <Route path="/ngo-console" element={<Navigate to="/ngo" replace />} />
+        <Route path="/donor-hub" element={<Navigate to="/donor" replace />} />
 
         {/* Screen 5: Platform Integrity Control Center (Admin Only) */}
         <Route
@@ -138,6 +140,14 @@ export default function App() {
         {/* Screen 8: Donation Request Logistics Wizard (Donor Only) */}
         <Route
           path="/request-wizard"
+          element={
+            <ProtectedRoute allowedRoles={['donor']}>
+              <RequestWizard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/upload-donation"
           element={
             <ProtectedRoute allowedRoles={['donor']}>
               <RequestWizard />

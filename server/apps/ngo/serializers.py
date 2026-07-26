@@ -25,7 +25,7 @@ class NeedSerializer(serializers.ModelSerializer):
         model = Need
         fields = (
             'id', 'ngo_id', 'ngo_name', 'category', 'item', 'quantity', 
-            'fulfilled_quantity', 'urgency', 'description', 'campaign', 
+            'fulfilled_quantity', 'urgency', 'description', 'status', 'campaign', 
             'campaign_title', 'lat', 'lng', 'created_at'
         )
 

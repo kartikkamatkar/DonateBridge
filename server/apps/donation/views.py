@@ -115,6 +115,52 @@ class DonationViewSet(viewsets.ModelViewSet):
             
         return queryset
 
+    def perform_create(self, serializer):
+        donation = serializer.save(donor=self.request.user)
+        
+        matched_ngo_id = self.request.data.get('matched_ngo_id') or self.request.data.get('ngo_id') or self.request.data.get('ngoId')
+        matching_need = None
+        
+        if matched_ngo_id:
+            try:
+                from ngo.models import NGO
+                target_ngo = NGO.objects.get(id=matched_ngo_id)
+                donation.matched_ngo = target_ngo
+                donation.status = 'MATCHED'
+                donation.save()
+                matching_need = Need.objects.filter(ngo=target_ngo, category__icontains=donation.category).first()
+            except Exception as e:
+                print("[Matched NGO Fetch Error]", e)
+
+        if not matching_need:
+            matching_need = Need.objects.filter(
+                status='ACTIVE',
+                category__icontains=donation.category
+            ).first()
+        
+        if matching_need:
+            if not donation.matched_ngo:
+                donation.matched_ngo = matching_need.ngo
+                donation.status = 'MATCHED'
+                donation.save()
+
+            matching_need.fulfilled_quantity += donation.quantity
+            if matching_need.fulfilled_quantity >= matching_need.quantity:
+                matching_need.status = 'FULFILLED'
+            matching_need.save()
+            
+            # Send real-time notification to the relevant NGO owner
+            try:
+                from notification.models import Notification, NotificationType
+                Notification.objects.create(
+                    user=matching_need.ngo.user,
+                    notification_type=NotificationType.MATCH,
+                    title=f"🎁 Requirement Fulfilled: {matching_need.item}",
+                    message=f"Donor '{self.request.user.username or self.request.user.email}' pledged {donation.quantity}x '{donation.title}' towards your requirement '{matching_need.item}'!"
+                )
+            except Exception as e:
+                print("[Notification Error]", e)
+
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def my_donations(self, request):
         donations = Donation.objects.select_related('donor', 'matched_ngo').prefetch_related('photos').filter(donor=request.user).order_by('-submitted_at')
@@ -143,7 +189,9 @@ class DonationViewSet(viewsets.ModelViewSet):
         if matching_need:
             score_breakdown = calculate_match_score(donation, matching_need, ngo)
             score = score_breakdown['total']
-            matching_need.fulfilled_quantity = (matching_need.fulfilled_quantity or 0) + donation.quantity
+            matching_need.fulfilled_quantity += donation.quantity
+            if matching_need.fulfilled_quantity >= matching_need.quantity:
+                matching_need.status = 'FULFILLED'
             matching_need.save()
             
         donation.status = 'MATCHED'

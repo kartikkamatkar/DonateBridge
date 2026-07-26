@@ -72,6 +72,7 @@ class DonationCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         photos_data = validated_data.pop('photos', [])
+        donor = validated_data.pop('donor', None) or self.context['request'].user
         
         # Generate custom id: DNT-YYYY-XXXXX
         year = datetime.now().year
@@ -83,7 +84,7 @@ class DonationCreateSerializer(serializers.ModelSerializer):
                 
         donation = Donation.objects.create(
             id=custom_id,
-            donor=self.context['request'].user,
+            donor=donor,
             **validated_data
         )
         

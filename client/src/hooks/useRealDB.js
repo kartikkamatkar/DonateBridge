@@ -12,7 +12,7 @@ import { useAuth } from '../context/GlobalStateContext';
 
 export function useRealDB() {
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   // ─── Donations ───────────────────────────────────
   const [donations, setDonations] = useState([]);
@@ -61,6 +61,7 @@ export function useRealDB() {
         pickup_lng: donationData.location?.lng ?? donationData.pickup_lng ?? 0,
         preferred_pickup_time: donationData.preferredPickupTime || 'Flexible',
         photos: donationData.photos || [],
+        matched_ngo_id: donationData.matched_ngo_id || donationData.ngo_id || donationData.ngoId || undefined,
       };
       const res = await donationAPI.create(payload);
       const newDonation = normalizeDonation(res.data);
@@ -103,7 +104,7 @@ export function useRealDB() {
   }, []);
 
   const fetchMyNgo = useCallback(async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || (user && user.role !== 'ngo')) return;
     try {
       const res = await ngoAPI.getMe();
       setMyNgo(normalizeNgo(res.data));
@@ -112,7 +113,7 @@ export function useRealDB() {
         setMyNgo(false); // Indicates user has no NGO profile yet
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.role]);
 
   useEffect(() => {
     fetchNgos();
@@ -132,20 +133,59 @@ export function useRealDB() {
     }
   }, [toast]);
 
+  const updateDonation = useCallback(async (donationId, updateData) => {
+    try {
+      const res = await donationAPI.update(donationId, updateData);
+      const updated = normalizeDonation(res.data);
+      setMyDonations(prev => prev.map(d => String(d.id) === String(donationId) ? updated : d));
+      setDonations(prev => prev.map(d => String(d.id) === String(donationId) ? updated : d));
+      toast.success('Donation updated successfully.');
+      return updated;
+    } catch (err) {
+      toast.error(getApiError(err));
+      throw err;
+    }
+  }, [toast]);
+
+  const deleteDonation = useCallback(async (donationId) => {
+    try {
+      await donationAPI.delete(donationId);
+      setMyDonations(prev => prev.filter(d => String(d.id) !== String(donationId)));
+      setDonations(prev => prev.filter(d => String(d.id) !== String(donationId)));
+      toast.success('Donation listing deleted.');
+    } catch (err) {
+      toast.error(getApiError(err));
+      throw err;
+    }
+  }, [toast]);
+
   // ─── Needs ────────────────────────────────────────
   const [needs, setNeeds] = useState([]);
+  const [loadingNeeds, setLoadingNeeds] = useState(false);
 
   const fetchNeeds = useCallback(async (params = {}) => {
+    setLoadingNeeds(true);
     try {
       const res = await ngoAPI.getNeeds(params);
       const data = res.data.results || res.data;
       setNeeds(normalizeNeeds(data));
     } catch (err) {
       console.warn('[useRealDB] fetchNeeds failed:', getApiError(err));
+    } finally {
+      setLoadingNeeds(false);
     }
   }, []);
 
-  useEffect(() => { fetchNeeds(); }, []);
+  useEffect(() => { fetchNeeds(); }, [fetchNeeds]);
+
+  // Real-time synchronization: poll backend every 6 seconds to update state across all clients without page refresh
+  useEffect(() => {
+    const syncTimer = setInterval(() => {
+      fetchNeeds();
+      fetchDonations();
+    }, 6000);
+    return () => clearInterval(syncTimer);
+  }, [fetchNeeds, fetchDonations]);
 
   const addNeed = useCallback(async (needData) => {
     try {
@@ -161,7 +201,21 @@ export function useRealDB() {
       const res = await ngoAPI.createNeed(payload);
       const newNeed = normalizeNeed(res.data);
       setNeeds(prev => [newNeed, ...prev]);
+      await fetchNeeds();
       return newNeed;
+    } catch (err) {
+      toast.error(getApiError(err));
+      throw err;
+    }
+  }, [toast, fetchNeeds]);
+
+  const updateNeed = useCallback(async (needId, updateData) => {
+    try {
+      const res = await ngoAPI.updateNeed(needId, updateData);
+      const updated = normalizeNeed(res.data);
+      setNeeds(prev => prev.map(n => String(n.id) === String(needId) ? updated : n));
+      toast.success('Requirement updated.');
+      return updated;
     } catch (err) {
       toast.error(getApiError(err));
       throw err;
@@ -171,7 +225,8 @@ export function useRealDB() {
   const deleteNeed = useCallback(async (needId) => {
     try {
       await ngoAPI.deleteNeed(needId);
-      setNeeds(prev => prev.filter(n => n.id !== needId));
+      setNeeds(prev => prev.filter(n => String(n.id) !== String(needId)));
+      toast.success('Requirement removed.');
     } catch (err) {
       toast.error(getApiError(err));
       throw err;
@@ -217,7 +272,7 @@ export function useRealDB() {
     }
   }, []);
 
-  useEffect(() => { fetchMetrics(); }, []);
+  useEffect(() => { fetchMetrics(); }, [fetchMetrics]);
 
   const updateNgoStatus = useCallback(async (id, action, reason = '') => {
     try {
@@ -251,16 +306,21 @@ export function useRealDB() {
     platformMetrics,
     loadingDonations,
     loadingNgos,
+    loadingNeeds,
 
     // Actions
     addDonation,
+    updateDonation,
+    deleteDonation,
     claimDonation,
     fetchDonations,
     fetchMyDonations,
     fetchNgos,
     fetchMyNgo,
     registerNgo,
+    fetchNeeds,
     addNeed,
+    updateNeed,
     deleteNeed,
     getSmartMatchesForNgo,
     getSmartMatchesForDonation,
@@ -355,15 +415,21 @@ function normalizeNgos(arr) {
 
 function normalizeNeed(n) {
   if (!n) return null;
+  const ngoId = n.ngo_id || n.ngoId || (typeof n.ngo === 'object' ? n.ngo?.id : n.ngo);
+  const ngoName = n.ngo_name || n.ngoName || (typeof n.ngo === 'object' ? n.ngo?.name : '');
+  const fulfilledQty = n.fulfilled_quantity ?? n.fulfilledQuantity ?? 0;
+  const statusVal = n.status || (fulfilledQty >= n.quantity ? 'FULFILLED' : 'ACTIVE');
   return {
     id: n.id,
-    ngoId: n.ngo_id || n.ngoId,
-    ngoName: n.ngo_name || n.ngoName || '',
+    ngoId: ngoId,
+    ngo_id: ngoId,
+    ngoName: ngoName,
     category: n.category,
     item: n.item,
     quantity: n.quantity,
-    fulfilledQuantity: n.fulfilled_quantity || n.fulfilledQuantity || 0,
+    fulfilledQuantity: fulfilledQty,
     urgency: n.urgency,
+    status: statusVal,
     description: n.description || '',
     lat: n.lat || 0,
     lng: n.lng || 0,

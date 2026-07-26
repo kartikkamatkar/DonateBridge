@@ -221,12 +221,15 @@ class NeedViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         ngo_id = self.request.query_params.get('ngo_id')
         campaign_id = self.request.query_params.get('campaign_id')
-        unfulfilled_only = self.request.query_params.get('unfulfilled_only')
+        status_param = self.request.query_params.get('status')
+        all_param = self.request.query_params.get('all')
         
+        from django.db import models
+        from django.db.models import F
+
         # Security Sync: Only show needs from APPROVED NGOs, unless the user is the NGO itself looking at their own needs
-        if self.request.user.is_authenticated and self.request.user.role == 'ngo' and hasattr(self.request.user, 'ngo_details'):
-            # pyrefly: ignore [missing-import]
-            from django.db import models
+        is_ngo_owner = self.request.user.is_authenticated and self.request.user.role == 'ngo' and hasattr(self.request.user, 'ngo_details')
+        if is_ngo_owner:
             queryset = Need.objects.filter(models.Q(ngo__verification_status='approved') | models.Q(ngo=self.request.user.ngo_details))
         else:
             queryset = Need.objects.filter(ngo__verification_status='approved')
@@ -236,12 +239,16 @@ class NeedViewSet(viewsets.ModelViewSet):
         if campaign_id:
             queryset = queryset.filter(campaign_id=campaign_id)
             
-        if unfulfilled_only and unfulfilled_only.lower() == 'true':
-            # pyrefly: ignore [missing-import]
-            from django.db.models import F
-            queryset = queryset.filter(fulfilled_quantity__lt=F('quantity'))
+        # Real-time visibility filter:
+        # Public listings only show ACTIVE, unfulfilled requests.
+        # NGOs can view complete history when explicitly requested (all=true or status specified).
+        if is_ngo_owner and (all_param == 'true' or status_param):
+            if status_param and status_param != 'ALL':
+                queryset = queryset.filter(status=status_param)
+        else:
+            queryset = queryset.filter(status='ACTIVE', fulfilled_quantity__lt=F('quantity'))
             
-        return queryset
+        return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         if not hasattr(self.request.user, 'ngo_details'):

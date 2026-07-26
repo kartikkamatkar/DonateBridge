@@ -38,14 +38,15 @@ export default function RequestWizard() {
  const [searchResults, setSearchResults] = useState([]);
 
  const preselectedCategory = searchParams.get('category') || 'Blankets';
+ const preselectedItem = searchParams.get('item') || '';
 
  const { register, handleSubmit, formState: { errors }, trigger } = useForm({
   defaultValues: {
-   title: '',
+   title: preselectedItem,
    category: preselectedCategory,
    condition: 'Good',
    quantity: '1',
-   description: '',
+   description: preselectedItem ? `Fulfilling demand requirement for ${preselectedItem}` : '',
    pickupAddress: '',
    preferredPickupTime: ''
   }
@@ -168,6 +169,7 @@ export default function RequestWizard() {
     }
    }
 
+    const preselectedNgoId = searchParams.get('ngo_id') || searchParams.get('ngoId');
     const res = await donationAPI.create({
      title: data.title,
      category: data.category,
@@ -179,6 +181,7 @@ export default function RequestWizard() {
      pickup_lat: selectedCoords.lat,
      pickup_lng: selectedCoords.lng,
      preferred_pickup_time: data.preferredPickupTime,
+     matched_ngo_id: preselectedNgoId || undefined,
     });
 
     setCreatedDonationId(res.data?.id || null);

@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 
 import os
+# pyrefly: ignore [missing-import]
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
@@ -15,6 +16,7 @@ django_asgi_app = get_asgi_application()
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from core.middleware import JWTAuthMiddleware
+# pyrefly: ignore [missing-import]
 import chat.routing
 
 application = ProtocolTypeRouter({

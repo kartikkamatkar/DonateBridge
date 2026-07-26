@@ -126,11 +126,21 @@ export default function Navbar() {
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full hover:bg-slate-100/80 border border-transparent hover:border-slate-200/60 transition-all focus:outline-none cursor-pointer"
                     >
-                      <img
-                        src={user?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=guest'}
-                        alt="User Avatar"
-                        className="w-8 h-8 rounded-full border-2 border-white shadow-sm bg-white"
-                      />
+                      {user?.avatar && user.avatar.length <= 4 ? (
+                        <span className="w-8 h-8 rounded-full border-2 border-white shadow-sm bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-base shrink-0">
+                          {user.avatar}
+                        </span>
+                      ) : (
+                        <img
+                          src={user?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=guest'}
+                          alt="Avatar"
+                          className="w-8 h-8 rounded-full border-2 border-white shadow-sm bg-white object-cover shrink-0"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://api.dicebear.com/7.x/adventurer/svg?seed=guest';
+                          }}
+                        />
+                      )}
                       <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 

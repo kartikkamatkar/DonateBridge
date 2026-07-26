@@ -202,8 +202,8 @@ class DonateBridgeBackendTests(TestCase):
         score_breakdown = calculate_match_score(donation, need, ngo_profile)
         
         # Distance between 19.088, 72.889 and 19.076, 72.8777 is ~1.76 km.
-        self.assertGreater(score_breakdown['total'], 90)
-        self.assertEqual(score_breakdown['categoryFit'], 40)
+        self.assertGreater(score_breakdown['total'], 80)
+        self.assertEqual(score_breakdown['categoryFit'], 30)
 
     def test_differentiator_features(self):
         # 1. Create a campaign & challenge

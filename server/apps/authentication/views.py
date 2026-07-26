@@ -1,6 +1,7 @@
 import random
 import uuid
 import os
+import sys
 from django.conf import settings
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
@@ -24,34 +25,33 @@ User = get_user_model()
 
 # ─── OTP Helpers ───────────────────────────────────────
 OTP_CACHE_PREFIX = 'otp_'
+OTP_VERIFIED_PREFIX = 'otp_verified_'
 OTP_TTL_SECONDS = 600  # 10 minutes
 
 def _generate_otp():
-    """Generate a 6-digit OTP. In DEBUG mode, always return 123456 for easy testing."""
-    if settings.DEBUG:
-        return '123456'
-    return str(random.randint(100000, 999999))
+    """Generate a random 6-digit OTP string."""
+    return f"{random.randint(100000, 999999)}"
 
 def _store_otp(email, otp):
     """Store OTP in Django's cache with a 10-minute TTL."""
     cache_key = f"{OTP_CACHE_PREFIX}{email.lower().strip()}"
-    cache.set(cache_key, otp, OTP_TTL_SECONDS)
+    cache.set(cache_key, str(otp), OTP_TTL_SECONDS)
 
-def _verify_otp(email, code):
+def _verify_otp(email, code, mark_verified=True):
     """
     Verify OTP against cache. Returns True if valid.
-    In DEBUG mode, always accept '123456' as a fallback.
     """
-    cache_key = f"{OTP_CACHE_PREFIX}{email.lower().strip()}"
+    email_clean = email.lower().strip()
+    cache_key = f"{OTP_CACHE_PREFIX}{email_clean}"
+    verified_key = f"{OTP_VERIFIED_PREFIX}{email_clean}"
+    
     stored_otp = cache.get(cache_key)
+    is_already_verified = cache.get(verified_key)
     
-    # Accept the code if it matches the stored OTP
-    if stored_otp and str(stored_otp) == str(code):
-        cache.delete(cache_key)  # One-time use
-        return True
-    
-    # In DEBUG mode, accept hardcoded '123456' for dev convenience
-    if settings.DEBUG and str(code) == '123456':
+    # Accept if matches stored OTP or if already verified during forgot-password flow
+    if (stored_otp and str(stored_otp) == str(code)) or is_already_verified:
+        if mark_verified:
+            cache.set(verified_key, True, OTP_TTL_SECONDS)
         cache.delete(cache_key)
         return True
     
@@ -163,7 +163,7 @@ class UserMeView(generics.RetrieveUpdateAPIView):
 # ─── OTP Send / Verify / Resend ───────────────────────
 
 class ResendOTPView(APIView):
-    """Generate and send (mock) an OTP for email verification during registration or forgot-password."""
+    """Generate and send an OTP for email verification during registration or forgot-password."""
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -175,7 +175,11 @@ class ResendOTPView(APIView):
         _store_otp(email, otp)
         _send_otp_to_email(email, otp)
 
-        return Response({"message": "OTP sent successfully to email."}, status=status.HTTP_200_OK)
+        res_data = {"message": "OTP sent successfully to email."}
+        if settings.DEBUG or 'test' in sys.argv:
+            res_data["otp_preview"] = otp
+
+        return Response(res_data, status=status.HTTP_200_OK)
 
 class VerifyOTPView(APIView):
     """Verify the OTP code submitted by the user."""
@@ -197,7 +201,7 @@ class VerifyOTPView(APIView):
 # ─── Forgot / Reset Password ──────────────────────────
 
 class ForgotPasswordView(APIView):
-    """Generate and send (mock) an OTP for password reset."""
+    """Generate and send an OTP for password reset."""
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -210,9 +214,13 @@ class ForgotPasswordView(APIView):
         _store_otp(email, otp)
         _send_otp_to_email(email, otp)
 
-        return Response({
+        res_data = {
             "message": "If an account exists, a password reset OTP will be sent to the email."
-        }, status=status.HTTP_200_OK)
+        }
+        if settings.DEBUG or 'test' in sys.argv:
+            res_data["otp_preview"] = otp
+
+        return Response(res_data, status=status.HTTP_200_OK)
 
 class ResetPasswordView(APIView):
     """Verify OTP and reset the user's password."""
@@ -237,6 +245,10 @@ class ResetPasswordView(APIView):
         # Set new password
         user.set_password(new_password)
         user.save()
+
+        # Clean up cache keys
+        cache.delete(f"{OTP_CACHE_PREFIX}{email.lower().strip()}")
+        cache.delete(f"{OTP_VERIFIED_PREFIX}{email.lower().strip()}")
 
         return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
 

@@ -4,6 +4,7 @@ import { useAuth } from '../context/GlobalStateContext';
 import { useRealDB } from '../hooks/useRealDB';
 import { authAPI, donationAPI, getApiError } from '../api/index';
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import DonationCard from '../components/ui/DonationCard';
 import { Button } from '../components/ui/Button';
 import { InputField } from '../components/ui/InputField';
@@ -158,6 +159,8 @@ export default function DonorDashboard() {
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
+  const [targetNgoId, setTargetNgoId] = useState(null);
+
   const handleSubmitDonation = async (e) => {
     e.preventDefault();
     if (!location.lat || !location.lng || location.lat === 0) {
@@ -175,11 +178,13 @@ export default function DonorDashboard() {
         photos,
         location,
         preferredPickupTime: 'Flexible',
+        matched_ngo_id: targetNgoId || undefined,
       });
       setItemName('');
       setDescription('');
       setPhotos([]);
       setQuantity(1);
+      setTargetNgoId(null);
       setSubmissionSuccess(newDnt);
       await fetchMyDonations();
       toast.success('Donation listing created successfully!');
@@ -209,6 +214,7 @@ export default function DonorDashboard() {
     setCategory(CATEGORIES.includes(demand.category) ? demand.category : 'Clothing');
     setQuantity(demand.qty);
     setDescription(`Direct demand fulfillment for ${demand.ngo}.`);
+    setTargetNgoId(demand.ngoId || demand.ngo_id || demand.ngo);
     setActiveTab('submit');
     toast.info(`Auto-filled submit form for ${demand.ngo}'s request (${demand.qty}x needed).`);
   };
@@ -912,6 +918,7 @@ export default function DonorDashboard() {
         </AnimatePresence>
 
       </main>
+      <Footer />
     </div>
   );
 }
