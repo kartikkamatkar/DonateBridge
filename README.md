@@ -99,7 +99,7 @@ Once the database is seeded (`python manage.py seed_db`), you can log in to the 
 ------------------------------------------------
 
 3. Ready Test Accounts (Database Seeded)
-Aap neeche diye gaye kisi bhi account se direct sign-in kar sakte hain:
+Aap neeche diye gaye kisi bhi account se direct sign-in kar sakte hain:.
 
 Role	Email / Username	Password
 Donor (Test)	donor@test.com / donortest	password123
