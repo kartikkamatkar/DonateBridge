@@ -25,7 +25,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function NgoConsole() {
   const { user } = useAuth();
   const {
-    myNgo, needs, donations, fetchNeeds,
+    myNgo, needs, donations, fetchNeeds, fetchDonations,
     addNeed, deleteNeed, claimDonation, updateDonation,
     getSmartMatchesForNgo
   } = useRealDB();
@@ -69,38 +69,49 @@ export default function NgoConsole() {
     String(n.ngo_id) === String(currentNgo.id) || 
     String(n.ngo) === String(currentNgo.id)
   );
-  const allPledges = donations.filter(d => 
-    String(d.matchedNgoId) === String(currentNgo.id) || 
-    String(d.matched_ngo) === String(currentNgo.id) || 
-    String(d.matched_ngo?.id) === String(currentNgo.id) ||
-    d.status === 'MATCHED' || d.status === 'DELIVERED'
-  );
-  const activeIncoming = donations.filter(d => 
-    (String(d.matchedNgoId) === String(currentNgo.id) || String(d.matched_ngo) === String(currentNgo.id)) && 
-    d.status === 'MATCHED'
-  );
-  const deliveredDonations = donations.filter(d => 
-    (String(d.matchedNgoId) === String(currentNgo.id) || String(d.matched_ngo) === String(currentNgo.id)) && 
-    d.status === 'DELIVERED'
-  );
+  
+  const isTargetNgo = (d) => {
+    if (!currentNgo?.id) return false;
+    let targetId = null;
+
+    if (typeof d.matched_ngo === 'object' && d.matched_ngo !== null) {
+      targetId = d.matched_ngo.id;
+    } else if (typeof d.matched_ngo_details === 'object' && d.matched_ngo_details !== null) {
+      targetId = d.matched_ngo_details.id;
+    } else if (typeof d.matchedNgoId === 'object' && d.matchedNgoId !== null) {
+      targetId = d.matchedNgoId.id;
+    } else if (d.matched_ngo) {
+      targetId = d.matched_ngo;
+    } else if (d.matchedNgoId) {
+      targetId = d.matchedNgoId;
+    }
+
+    if (!targetId) return false;
+    return String(targetId) === String(currentNgo.id);
+  };
+
+  const allPledges = donations.filter(d => isTargetNgo(d));
+  const activeIncoming = donations.filter(d => isTargetNgo(d) && d.status === 'MATCHED');
+  const deliveredDonations = donations.filter(d => isTargetNgo(d) && d.status === 'DELIVERED');
   const totalReceived = deliveredDonations.reduce((acc, curr) => acc + (curr.quantity || 1), 0);
   const totalInTransit = activeIncoming.reduce((acc, curr) => acc + (curr.quantity || 1), 0);
   const activeNeedsCount = ngoNeeds.length;
 
-  const fetchMatches = () => {
-    if (currentNgo?.verificationStatus === 'approved') {
-      setLoadingMatches(true);
-      getSmartMatchesForNgo()
-        .then(matches => setSmartMatches(matches || []))
-        .catch(() => setSmartMatches([]))
-        .finally(() => setLoadingMatches(false));
-    }
-  };
-
   useEffect(() => {
-    fetchNeeds({ all: 'true' });
-    fetchMatches();
-  }, [currentNgo?.id, currentNgo?.verificationStatus, fetchNeeds]);
+    const loadAllData = () => {
+      fetchNeeds({ all: 'true' });
+      fetchDonations({ all_statuses: 'true' });
+      if (currentNgo?.verificationStatus === 'approved') {
+        getSmartMatchesForNgo()
+          .then(matches => setSmartMatches(matches || []))
+          .catch(() => setSmartMatches([]));
+      }
+    };
+
+    loadAllData();
+    const interval = setInterval(loadAllData, 4000); // Live 4s network sync
+    return () => clearInterval(interval);
+  }, [currentNgo?.id, currentNgo?.verificationStatus, fetchNeeds, fetchDonations, getSmartMatchesForNgo]);
 
   useEffect(() => {
     if (activeTab === 'analytics' && currentNgo?.id) {
@@ -120,7 +131,16 @@ export default function NgoConsole() {
 
   const handleRefreshData = async () => {
     setIsRefreshing(true);
-    fetchMatches();
+    await Promise.all([
+      fetchNeeds({ all: 'true' }),
+      fetchDonations({ all_statuses: 'true' })
+    ]);
+    if (currentNgo?.verificationStatus === 'approved') {
+      try {
+        const matches = await getSmartMatchesForNgo();
+        setSmartMatches(matches || []);
+      } catch {}
+    }
     toast.success('Data synchronized with network');
     setTimeout(() => setIsRefreshing(false), 600);
   };

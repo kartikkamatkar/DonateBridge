@@ -83,9 +83,10 @@ export default function SearchDirectory() {
     localStorage.setItem('db_wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
-  // Server-side filter trigger
+  // Server-side filter trigger with 400ms debounce (no duplicate request spam)
   useEffect(() => {
     if (!coordsLoaded) return;
+
     const timer = setTimeout(() => {
       const params = {};
       if (query) params.query = query;
@@ -103,7 +104,7 @@ export default function SearchDirectory() {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [query, selectedCategory, distanceRange, minTrustScore, searchType, userCoords, coordsLoaded, fetchDonations, fetchNgos]);
+  }, [query, selectedCategory, distanceRange, minTrustScore, searchType, userCoords, coordsLoaded]);
 
   // Dynamic Route calculation when selected item changes
   useEffect(() => {
@@ -156,7 +157,33 @@ export default function SearchDirectory() {
 
   // Filter and sort items list
   const displayItems = useMemo(() => {
-    const raw = searchType === 'donations' ? donations : ngos;
+    let raw = searchType === 'donations' ? donations : ngos;
+
+    if (searchType === 'donations') {
+      raw = raw.filter(item => item.status === 'VERIFIED' || item.status === 'PENDING');
+    }
+
+    // Immediate Category Filter
+    if (selectedCategory !== 'All') {
+      const targetNorm = normalizeCategory(selectedCategory);
+      raw = raw.filter(item => {
+        const itemNorm = normalizeCategory(item.category || item.ngoType || '');
+        return itemNorm.includes(targetNorm) || targetNorm.includes(itemNorm);
+      });
+    }
+
+    // Immediate Search Query Filter
+    if (query.trim()) {
+      const q = query.toLowerCase().trim();
+      raw = raw.filter(item => {
+        const titleMatch = (item.title || item.name || '').toLowerCase().includes(q);
+        const catMatch = (item.category || item.ngoType || '').toLowerCase().includes(q);
+        const descMatch = (item.description || '').toLowerCase().includes(q);
+        const addrMatch = (item.pickup_address || item.address || item.city || '').toLowerCase().includes(q);
+        return titleMatch || catMatch || descMatch || addrMatch;
+      });
+    }
+
     let list = raw.map(item => {
       const lat = item.location ? item.location.lat : item.lat;
       const lng = item.location ? item.location.lng : item.lng;
@@ -169,7 +196,7 @@ export default function SearchDirectory() {
       };
     });
 
-    list = list.filter(item => item._dist <= distanceRange + 5);
+    list = list.filter(item => item._dist <= distanceRange + 15);
 
     if (sortBy === 'distance') {
       list.sort((a, b) => a._dist - b._dist);
@@ -178,11 +205,11 @@ export default function SearchDirectory() {
     } else if (sortBy === 'qty') {
       list.sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
     } else if (sortBy === 'date') {
-      list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      list.sort((a, b) => new Date(b.createdAt || b.submittedAt || 0) - new Date(a.createdAt || a.submittedAt || 0));
     }
 
     return list;
-  }, [searchType, donations, ngos, userCoords, distanceRange, sortBy, currentNgo, needs]);
+  }, [searchType, donations, ngos, userCoords, distanceRange, sortBy, currentNgo, needs, selectedCategory, query]);
 
   const toggleWishlist = (id, e) => {
     if (e) e.stopPropagation();

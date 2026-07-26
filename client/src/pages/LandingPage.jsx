@@ -27,6 +27,33 @@ const CATEGORY_IMAGES = {
   Medical: "https://images.unsplash.com/photo-1584308666744-24d59ce3618d?auto=format&fit=crop&q=80&w=600",
 };
 
+const TRACKER_STAGES = [
+  {
+    title: '1. Pledged',
+    status: 'COMPLETED',
+    time: '10:15 AM (Today)',
+    log: '[SYSTEM] Item verified by AI inspection & match confirmed for Hope Foundation Hub.'
+  },
+  {
+    title: '2. Dispatched',
+    status: 'COMPLETED',
+    time: '11:30 AM (Today)',
+    log: '[COURIER] Express Partner #DB-990 picked up supplies from donor location.'
+  },
+  {
+    title: '3. In-Transit',
+    status: 'ACTIVE',
+    time: '12:45 PM (Active)',
+    log: '[GPS] Live spatial routing active (4.2km from recipient NGO facility).'
+  },
+  {
+    title: '4. Verified',
+    status: 'PENDING',
+    time: 'Est. 1:15 PM',
+    log: '[DELIVERY] Awaiting QR verification token scan at NGO doorstep.'
+  }
+];
+
 export default function LandingPage() {
   const { isAuthenticated } = useAuth();
   const { ngos, donations, needs, loadingNeeds } = useRealDB();
@@ -50,6 +77,43 @@ export default function LandingPage() {
   // Impact Estimator state
   const [impactCategory, setImpactCategory] = useState('Food');
   const [impactQuantity, setImpactQuantity] = useState(100);
+
+  const getImpactMetrics = () => {
+    const qty = parseInt(impactQuantity, 10) || 1;
+    let beneficiaries = qty;
+    let beneficiaryLabel = 'People Fed';
+    let co2Factor = 2.5;
+
+    if (impactCategory === 'Food') {
+      beneficiaries = qty * 2;
+      beneficiaryLabel = 'Meals Served';
+      co2Factor = 1.8;
+    } else if (impactCategory === 'Clothing') {
+      beneficiaries = Math.round(qty * 0.8);
+      beneficiaryLabel = 'Families Clothed';
+      co2Factor = 5.2;
+    } else if (impactCategory === 'Books') {
+      beneficiaries = qty;
+      beneficiaryLabel = 'Students Educated';
+      co2Factor = 3.1;
+    } else if (impactCategory === 'Medical') {
+      beneficiaries = Math.round(qty * 1.5);
+      beneficiaryLabel = 'Patients Supported';
+      co2Factor = 4.0;
+    } else if (impactCategory === 'Electronics') {
+      beneficiaries = Math.round(qty * 0.5);
+      beneficiaryLabel = 'Classrooms Connected';
+      co2Factor = 12.5;
+    }
+
+    return {
+      beneficiaries: beneficiaries.toLocaleString(),
+      beneficiaryLabel,
+      co2: (qty * co2Factor).toFixed(1)
+    };
+  };
+
+  const impactMetrics = getImpactMetrics();
   
   // Stepper Tracker state
   const [trackerStep, setTrackerStep] = useState(2); 

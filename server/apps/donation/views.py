@@ -77,7 +77,24 @@ class DonationViewSet(viewsets.ModelViewSet):
         return DonationDetailsSerializer
 
     def get_queryset(self):
-        queryset = Donation.objects.select_related('donor', 'matched_ngo').prefetch_related('photos').filter(status='VERIFIED')
+        queryset = Donation.objects.select_related('donor', 'matched_ngo').prefetch_related('photos')
+        
+        status_param = self.request.query_params.get('status')
+        ngo_id = self.request.query_params.get('ngo_id') or self.request.query_params.get('ngo')
+        
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+            
+        if ngo_id:
+            if ngo_id == 'me' and hasattr(self.request.user, 'ngo_profile'):
+                queryset = queryset.filter(matched_ngo=self.request.user.ngo_profile)
+            elif ngo_id != 'all':
+                try:
+                    queryset = queryset.filter(matched_ngo_id=int(ngo_id))
+                except (ValueError, TypeError):
+                    pass
+        elif not status_param:
+            queryset = queryset.exclude(status='REJECTED')
         
         category = self.request.query_params.get('category')
         if category:
@@ -116,7 +133,7 @@ class DonationViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        donation = serializer.save(donor=self.request.user)
+        donation = serializer.save(donor=self.request.user, status='VERIFIED')
         
         matched_ngo_id = self.request.data.get('matched_ngo_id') or self.request.data.get('ngo_id') or self.request.data.get('ngoId')
         matching_need = None
@@ -161,6 +178,12 @@ class DonationViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 print("[Notification Error]", e)
 
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if instance.status == 'DELIVERED' and not instance.delivered_at:
+            instance.delivered_at = django_timezone.now()
+            instance.save()
+
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def my_donations(self, request):
         donations = Donation.objects.select_related('donor', 'matched_ngo').prefetch_related('photos').filter(donor=request.user).order_by('-submitted_at')
@@ -177,7 +200,10 @@ class DonationViewSet(viewsets.ModelViewSet):
         if ngo.verification_status != 'approved':
             return Response({"error": "Your NGO verification status must be approved to claim donations"}, status=status.HTTP_403_FORBIDDEN)
             
-        if donation.status != 'VERIFIED':
+        if donation.status == 'MATCHED' and donation.matched_ngo == ngo:
+            return Response(DonationDetailsSerializer(donation, context={'request': request}).data, status=status.HTTP_200_OK)
+
+        if donation.status not in ['VERIFIED', 'PENDING']:
             return Response({"error": "Donation is not available for claim"}, status=status.HTTP_400_BAD_REQUEST)
             
         # Match Score logic & fulfill quantity update
