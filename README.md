@@ -90,7 +90,7 @@ Once the database is seeded (`python manage.py seed_db`), you can log in to the 
 
 ## 📁 Repository Structure
 
-- **`client/`**: The frontend React application. Powered by Vite, styled with Tailwind CSS, and using Leaflet for interactive logistics maps.
+- **`client/`**: The frontend React application. Powered by Vite, styled with Tailwind CSS, and using Leaflet for interactive logistics maps..
 - **`server/`**: The backend Django API. Handles JWT authentication, automated donation-to-need smart matching algorithms, logistics tracking, and an extensive admin moderation panel.
 
 
