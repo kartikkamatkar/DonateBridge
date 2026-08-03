@@ -105,4 +105,4 @@ Role	Email / Username	Password
 Donor (Test)	donor@test.com / donortest	password123
 Donor	donor@gmail.com / johndoe	donor123
 Superuser / Admin	admin@donatebridge.org / admin	admin123
-NGO	contact@hopefoundation.org / hopefoundation	ngo12345
+NGO	contact@hopefoundation.org / hopefoundation	ngo12345..
