@@ -24,7 +24,7 @@ export default function About() {
   },
   {
    q: 'What kind of items can I donate?',
-   a: 'You can donate physical assets including textbooks, clothing, winter blankets, food staples, sports kits, learning electronics, and medical equipment.'
+   a: 'You can donate physical assets including textbooks, clothing shorts, winter blankets, food staples, sports kits, learning electronics, and medical equipment.'
   }
  ];
 
